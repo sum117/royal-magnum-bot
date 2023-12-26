@@ -10,15 +10,24 @@
     "build:changelog": "npx @discordx/changelog --src src",
     "dev": "node --loader ts-node/esm/transpile-only src/main.ts",
     "start": "node build/main.js",
-    "watch": "nodemon --exec npm run dev"
+    "watch": "nodemon --exec pnpm dev"
   },
   "dependencies": {
     "@discordx/importer": "^1.3.0",
     "@discordx/pagination": "^3.5.0",
+    "axios": "^1.6.2",
+    "better-sqlite3": "^9.2.2",
     "discord.js": "^14.14.1",
-    "discordx": "^11.9.0"
+    "discordx": "^11.9.0",
+    "dotenv": "^16.3.1",
+    "lodash": "^4.17.21",
+    "luxon": "^3.4.4",
+    "quick.db": "^9.1.7",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.202",
+    "@types/luxon": "^3.3.7",
     "@types/node": "^20.10.5",
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",

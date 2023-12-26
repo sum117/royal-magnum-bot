@@ -14,5 +14,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
+  "ts-node": {
+    "experimentalSpecifierResolution": "node"
+  },
   "exclude": ["build", "node_modules"]
 }
