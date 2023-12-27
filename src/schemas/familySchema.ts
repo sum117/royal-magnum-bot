@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const family = z.object({
+export const familySchema = z.object({
   title: z.string(),
   description: z.string(),
   slug: z.string(),
   image: z.string(),
 });
 
-export type Family = z.infer<typeof family>;
+export type Family = z.infer<typeof familySchema>;

@@ -15,10 +15,13 @@ export const characterSheetSchema = z.object({
 });
 
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
-
-export type CharacterSheet = z.infer<typeof characterSheetSchema>;
-export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;
-
 export const characterSheetSchemaInput = characterSheetSchema.omit({ characterId: true, isApproved: true, userId: true, isActive: true });
 
+export const storeCharacterSheetSchemaInput = characterSheetSchemaInput.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
+export const storeCharacterSheetSchema = characterSheetSchema.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
+
+export type StoreCharacterSheetInput = z.infer<typeof storeCharacterSheetSchemaInput>;
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
+export type CharacterSheet = z.infer<typeof characterSheetSchema>;
+export type StoreCharacterSheet = z.infer<typeof storeCharacterSheetSchema>;
+export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;

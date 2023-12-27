@@ -8,10 +8,10 @@ export const COMMANDS: CommandData = {
   spawnSheet: { name: "spawn-sheet", description: "Cria um componente de criação de ficha", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
   characterList: { name: "character-list", description: "Lista as fichas de um usuário" },
   setCharacter: { name: "set-character", description: "Define uma ficha como ativa" },
+  addStoreCharacter: { name: "add-store-character", description: "Adiciona uma ficha à loja", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
 };
 
 export const COMMAND_OPTIONS: CommandOptionData = {
-  characterList: { name: "user", description: "Usuário para listar as fichas", required: true, type: ApplicationCommandOptionType.User },
   setCharacter: {
     name: "character",
     description: "Ficha para definir como ativa",
@@ -22,4 +22,17 @@ export const COMMAND_OPTIONS: CommandOptionData = {
       await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.characterId })));
     },
   },
+  addStoreCharacterFamily: {
+    name: "family",
+    description: "Família da ficha",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const families = await Database.getFamilies();
+      await interaction.respond(families.map((family) => ({ name: family.title, value: family.slug })));
+    },
+  },
+  addStoreCharacterPrice: { name: "price", description: "Preço da ficha", required: true, type: ApplicationCommandOptionType.Integer },
+  addStoreCharacterImageURL: { name: "image-url", description: "URL da imagem da ficha", required: false, type: ApplicationCommandOptionType.String },
+  characterList: { name: "user", description: "Usuário para listar as fichas", required: true, type: ApplicationCommandOptionType.User },
 };

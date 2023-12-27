@@ -1,6 +1,9 @@
 import axios from "axios";
-import { Attachment, EmbedBuilder, GuildTextBasedChannel, Message } from "discord.js";
+import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, EmbedBuilder, GuildTextBasedChannel, Message } from "discord.js";
 import lodash from "lodash";
+import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./commands/character";
+import Database from "./database";
+import { CharacterSheet, StoreCharacterSheet } from "./schemas/characterSheetSchema";
 
 export default class Utils {
   public static async uploadToImgur(url: string) {
@@ -56,5 +59,32 @@ export default class Utils {
       description += line;
     }
     return { title, description, slug: lodash.kebabCase(title) };
+  }
+
+  public static getCharacterDetailsButton(userId: string, characterId: string) {
+    return new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
+    );
+  }
+
+  public static async getCharacterPreviewEmbed(sheet: CharacterSheet | StoreCharacterSheet) {
+    const embed = new EmbedBuilder();
+    const family = await Database.getFamily(sheet.familySlug);
+    embed.setTitle(`${sheet.royalTitle} ${sheet.name} de ${family?.title}`);
+    embed.setImage(sheet.imageUrl);
+    embed.setColor(Colors.Blurple);
+    return embed;
+  }
+
+  public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
+    if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
+      await buttonInteraction.deferReply({ ephemeral: true });
+      const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
+      const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
+      const embed = new EmbedBuilder()
+        .setColor(Colors.Blurple)
+        .setDescription(`# História \n${sheet?.backstory}\n# Dádiva / Transformação \n${sheet?.transformation}`);
+      await buttonInteraction.editReply({ embeds: [embed] });
+    }
   }
 }
