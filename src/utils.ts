@@ -1,9 +1,13 @@
 import axios from "axios";
-import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, EmbedBuilder, GuildTextBasedChannel, Message } from "discord.js";
+import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, EmbedBuilder, Message } from "discord.js";
+import { readFile } from "fs/promises";
 import lodash from "lodash";
+import path from "path";
+import yaml from "yaml";
 import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./commands/character";
 import Database from "./database";
 import { CharacterSheet, StoreCharacterSheet } from "./schemas/characterSheetSchema";
+import { Family } from "./schemas/familySchema";
 
 export default class Utils {
   public static async uploadToImgur(url: string) {
@@ -31,17 +35,10 @@ export default class Utils {
     return { imgurLink: imgurLink, name: imageName };
   }
 
-  public static async fetchFamiliesFromDiscord(channel: GuildTextBasedChannel) {
-    const messages = await channel.messages.fetch({ limit: 100 });
-    const families = [];
-    for (const [_, message] of messages) {
-      if (message.attachments.size < 1) continue;
-      const attachment = message.attachments.first()!;
-      const { title, description, slug } = this.parseContent(message.content);
-      if (title === "Explicação") continue;
-      const image = attachment.url;
-      families.push({ title, description, slug, image });
-    }
+  public static async fetchFamilies() {
+    const projectRoot = process.cwd();
+    const file = await readFile(path.join(projectRoot, "transformations.yaml"), "utf-8");
+    const { families } = <{ families: Array<Family> }>yaml.parse(file);
     return families;
   }
 

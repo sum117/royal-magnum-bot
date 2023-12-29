@@ -1,0 +1,30 @@
+families:
+  - title: Aeternos
+    slug: aeternos
+    description: "Filhos do Arcanjo Maior Yos, moldados a partir das núvens com sangue celestial, de cor azul."
+    image: https://i.imgur.com/nZhPSLi.png
+
+  - title: Vespas Negras
+    slug: vespas-negras
+    description: "Trazidos ao plano pelo Demônio Superior Azhta. Andarilhos infernais com um senso de justiça impiedoso, mas legítimo."
+    image: https://i.imgur.com/NALNtyR.png
+
+  - title: Soberanos
+    slug: soberanos
+    description: "Gerações das profundezas abissais da Deusa Ada, hominídeos de carne salobra que tornam o que tocam em líquido."
+    image: https://i.imgur.com/JpAvMbc.png
+
+  - title: Consumadores
+    slug: consumadores
+    description: "Seguidores de Mirthir. Criaturas sem gênero com a força de vontade exalando para além da pele."
+    image: https://i.imgur.com/NHzRtzh.png
+
+  - title: Lorentais
+    slug: lorentais
+    description: 'Crias da Entidade "Lorenta", provenientes do barro. Da terra úmida vieram, e para a terra úmida voltarão.'
+    image: https://i.imgur.com/0ZFwrss.png
+
+  - title: Abelhas Reais
+    slug: abelhas-reais
+    description: "Vindos da Alta Colmeia Celeste, abençoados pela entidade Hibma. Suas armaduras tem tanta vida quanto os insetos na terra, e seus corpos são feitos de queratina pura."
+    image: https://i.imgur.com/ehRuBVj.png
