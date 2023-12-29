@@ -23,6 +23,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
     "quick.db": "^9.1.7",
+    "yaml": "^2.3.4",
     "zod": "^3.22.4"
   },
   "devDependencies": {

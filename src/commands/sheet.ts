@@ -62,7 +62,7 @@ export default class Sheet {
     if (!familiesChannel?.isTextBased()) return;
 
     await interaction.deferReply({ ephemeral: true, fetchReply: true });
-    const families = await Utils.fetchFamiliesFromDiscord(familiesChannel);
+    const families = await Utils.fetchFamilies();
     const selectMenuOptions = new Array<{ label: string; value: string }>();
     for (const family of families) {
       await Database.setFamily(family.slug, family);
@@ -131,7 +131,6 @@ export default class Sheet {
     });
 
     const imgurLink = await this.collectAttachment(modalSubmit);
-
     if (!imgurLink) {
       await modalSubmit.editReply("Não foi possível concluir a criação da ficha. Você não enviou um anexo válido a tempo.");
       return;
