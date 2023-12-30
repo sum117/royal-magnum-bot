@@ -12,9 +12,15 @@ export const COMMANDS: CommandData = {
   showFamilyDetails: { name: "show-family-details", description: "Mostra os detalhes de uma família" },
   addStoreCharacter: { name: "add-store-character", description: "Adiciona uma ficha à loja", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
   giveRoyalToken: { name: "give-royal-token", description: "Dá uma ficha real a um usuário", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
+  changePicture: {
+    name: "change-picture",
+    description: "Muda a imagem do bot e do servidor ao mesmo tempo.",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
 } as const;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
+  changePictureURL: { name: "url", description: "URL da imagem", required: true, type: ApplicationCommandOptionType.String },
   giveRoyalTokenUser: { name: "user", description: "Usuário para dar a ficha real", required: true, type: ApplicationCommandOptionType.User },
   setCharacter: {
     name: "character",
