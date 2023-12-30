@@ -25,7 +25,7 @@ export default class Store {
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterImageURL) imageURL: string,
     interaction: CommandInteraction,
   ) {
-    await interaction.showModal(CreateSheetModal);
+    await interaction.showModal(CreateSheetModal(true));
     const modalSubmit = await interaction
       .awaitModalSubmit({ time: Duration.fromObject({ minutes: 60 }).as("milliseconds"), filter: (i) => i.user.id === interaction.user.id })
       .catch(() => {

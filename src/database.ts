@@ -2,12 +2,12 @@ import crypto from "crypto";
 import { Message } from "discord.js";
 import { QuickDB } from "quick.db";
 import {
-  CharacterSheet,
-  CharacterSheetInput,
   CharacterSheetPartial,
+  CharacterSheetType,
+  CharacterSheetTypeInput,
   StoreCharacterSheet,
   StoreCharacterSheetInput,
-  characterSheetSchema,
+  characterTypeSchema,
   storeCharacterSheetSchema,
 } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
@@ -36,8 +36,9 @@ export default class Database {
   }
 
   public static async insertUser(userId: string) {
-    await db.set(`users.${userId}`, { money: 0 });
-    return { money: 0 };
+    const userToSet = { money: 0, royalTokens: 0 };
+    await db.set(`users.${userId}`, userToSet);
+    return userToSet;
   }
 
   public static async updateUser(userId: string, user: { money: number }) {
@@ -54,11 +55,11 @@ export default class Database {
     return message;
   }
 
-  public static async insertSheet(userId: string, sheet: CharacterSheetInput) {
+  public static async insertSheet(userId: string, sheet: CharacterSheetTypeInput) {
     const characterId = crypto.randomBytes(16).toString("hex");
-    const sheetToInsert = characterSheetSchema.parse({ ...sheet, characterId, isApproved: false, userId, isActive: false });
+    const sheetToInsert = characterTypeSchema.parse({ ...sheet, characterId, isApproved: false, userId, isActive: false });
 
-    await db.set<CharacterSheet>(`sheets.${userId}.${characterId}`, sheetToInsert);
+    await db.set<CharacterSheetType>(`sheets.${userId}.${characterId}`, sheetToInsert);
     return sheetToInsert;
   }
 
@@ -104,19 +105,19 @@ export default class Database {
   }
 
   public static async updateSheet(userId: string, characterId: string, sheet: CharacterSheetPartial) {
-    const oldSheet = await db.get<CharacterSheet>(`sheets.${userId}.${characterId}`);
+    const oldSheet = await db.get<CharacterSheetType>(`sheets.${userId}.${characterId}`);
     if (!oldSheet) return null;
     const updatedSheet = { ...oldSheet, ...sheet };
-    await db.set<CharacterSheet>(`sheets.${userId}.${characterId}`, updatedSheet);
-    return characterSheetSchema.parse(updatedSheet);
+    await db.set<CharacterSheetType>(`sheets.${userId}.${characterId}`, updatedSheet);
+    return characterTypeSchema.parse(updatedSheet);
   }
 
   public static async getActiveSheet(userId: string) {
-    const sheets = await db.get<Record<string, CharacterSheet>>(`sheets.${userId}`);
+    const sheets = await db.get<Record<string, CharacterSheetType>>(`sheets.${userId}`);
     if (!sheets) return null;
     const activeSheet = Object.values(sheets).find((sheet) => sheet.isActive);
     if (!activeSheet) return null;
-    return characterSheetSchema.parse(activeSheet);
+    return characterTypeSchema.parse(activeSheet);
   }
 
   public static async setActiveSheet(userId: string, characterId: string) {
@@ -129,23 +130,23 @@ export default class Database {
   }
 
   public static async getSheet(userId: string, characterId: string) {
-    const sheet = await db.get<CharacterSheet>(`sheets.${userId}.${characterId}`);
+    const sheet = await db.get<CharacterSheetType>(`sheets.${userId}.${characterId}`);
     if (!sheet) return null;
-    return characterSheetSchema.parse(sheet);
+    return characterTypeSchema.parse(sheet);
   }
 
   public static async getSheets(userId: string) {
-    const sheets = await db.get<Record<string, CharacterSheet>>(`sheets.${userId}`);
+    const sheets = await db.get<Record<string, CharacterSheetType>>(`sheets.${userId}`);
     if (!sheets) return [];
-    return Object.values(sheets).map((sheet) => characterSheetSchema.parse(sheet));
+    return Object.values(sheets).map((sheet) => characterTypeSchema.parse(sheet));
   }
 
   public static async getUserSheetsByName(userId: string, name: string) {
-    const sheets = await db.get<Record<string, CharacterSheet>>(`sheets.${userId}`);
+    const sheets = await db.get<Record<string, CharacterSheetType>>(`sheets.${userId}`);
     if (!sheets) return [];
     return Object.values(sheets)
       .filter((sheet) => sheet.name.toLowerCase().includes(name.toLowerCase()))
-      .map((sheet) => characterSheetSchema.parse(sheet))
+      .map((sheet) => characterTypeSchema.parse(sheet))
       .slice(0, this.PAGINATION_LIMIT);
   }
 

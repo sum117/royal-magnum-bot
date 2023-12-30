@@ -6,7 +6,7 @@ import path from "path";
 import yaml from "yaml";
 import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./commands/character";
 import Database from "./database";
-import { CharacterSheet, StoreCharacterSheet } from "./schemas/characterSheetSchema";
+import { CharacterSheetType, royalCharacterSchema } from "./schemas/characterSheetSchema";
 import { Family } from "./schemas/familySchema";
 
 export default class Utils {
@@ -64,10 +64,16 @@ export default class Utils {
     );
   }
 
-  public static async getCharacterPreviewEmbed(sheet: CharacterSheet | StoreCharacterSheet) {
+  public static async getCharacterPreviewEmbed(sheet: CharacterSheetType) {
     const embed = new EmbedBuilder();
-    const family = await Database.getFamily(sheet.familySlug);
-    embed.setTitle(`${sheet.royalTitle} ${sheet.name} de ${family?.title}`);
+    const royalSheet = royalCharacterSchema.safeParse(sheet);
+    if (royalSheet.success) {
+      const family = await Database.getFamily(royalSheet.data.familySlug);
+      embed.setTitle(`${royalSheet.data.royalTitle} ${royalSheet.data.name} de ${family?.title}`);
+    } else {
+      embed.setTitle(sheet.name);
+    }
+
     embed.setImage(sheet.imageUrl);
     embed.setColor(Colors.Blurple);
     return embed;
@@ -77,10 +83,18 @@ export default class Utils {
     if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
       await buttonInteraction.deferReply({ ephemeral: true });
       const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
+
       const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
-      const embed = new EmbedBuilder()
-        .setColor(Colors.Blurple)
-        .setDescription(`# História \n${sheet?.backstory}\n# Dádiva / Transformação \n${sheet?.transformation}`);
+
+      const embed = new EmbedBuilder().setColor(Colors.Blurple);
+
+      const royalSheet = royalCharacterSchema.safeParse(sheet);
+
+      if (royalSheet.success) {
+        embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
+      } else {
+        embed.setDescription(`# História \n${sheet?.backstory}`);
+      }
       await buttonInteraction.editReply({ embeds: [embed] });
     }
   }

@@ -18,7 +18,7 @@ import {
 import { ButtonComponent, Discord, Slash } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
-import CreateSheetModal, { createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
+import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
 import { COMMANDS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS } from "../data/constants";
 import Database from "../database";
@@ -27,8 +27,9 @@ import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
 
 export const createSheetButtonId = "createSheetButtonId";
+export const createRoyalSheetButtonId = "createRoyalSheetButtonId";
 export const selectSheetButtonId = "selectSheetButtonId";
-export const getSpawnModalButtonId = (family: Family) => `spawnModalButtonId_${family.slug}`;
+export const getSpawnModalButtonId = (isRoyal: boolean, family?: Family) => `spawnModalButtonId_${family?.slug ?? "unknown"}_${isRoyal}`;
 
 @Discord()
 export default class Sheet {
@@ -48,15 +49,16 @@ export default class Sheet {
       .setThumbnail("https://i.imgur.com/9Fkj6f5.jpg");
 
     if (randomColor) embed.setColor(randomColor);
-    const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(createSheetButtonId).setEmoji("📝").setLabel("Criar ficha").setStyle(ButtonStyle.Success),
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder().setCustomId(createSheetButtonId).setEmoji("📝").setLabel("Criar ficha").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId(createRoyalSheetButtonId).setEmoji("👑").setLabel("Criar ficha real").setStyle(ButtonStyle.Success),
     );
-    const messageOptions: BaseMessageOptions = { embeds: [embed], components: [button] };
+    const messageOptions: BaseMessageOptions = { embeds: [embed], components: [buttonRow] };
     await interaction.editReply(messageOptions);
   }
 
-  @ButtonComponent({ id: createSheetButtonId })
-  public async createSheetButtonListener(interaction: ButtonInteraction) {
+  @ButtonComponent({ id: createRoyalSheetButtonId })
+  public async createRoyalSheetButtonListener(interaction: ButtonInteraction) {
     if (!interaction.inCachedGuild()) return;
     const familiesChannel = interaction.guild.channels.cache.get(CHANNEL_IDS.familiesChannel);
     if (!familiesChannel?.isTextBased()) return;
@@ -107,7 +109,7 @@ export default class Sheet {
     }
 
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getSpawnModalButtonId(family)).setLabel(`Formulário dos(as) ${family.title}`).setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(getSpawnModalButtonId(true, family)).setLabel(`Formulário dos(as) ${family.title}`).setStyle(ButtonStyle.Success),
     );
     await selectMenuSubmit.editReply({
       content: `Você selecionou a família ${bold(family.title)}. Pressione o botão abaixo para preencher o formulário de personagem.`,
@@ -116,9 +118,20 @@ export default class Sheet {
     });
   }
 
+  @ButtonComponent({ id: createSheetButtonId })
+  public async createSheetButtonListener(interaction: ButtonInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder().setCustomId(getSpawnModalButtonId(false)).setLabel("Formulário de personagem").setStyle(ButtonStyle.Success),
+    );
+    await interaction.editReply({ content: "Pressione o botão abaixo para preencher o formulário de personagem.", components: [button] });
+  }
+
   @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
-    await interaction.showModal(CreateSheetModal);
+    const [, familySlug, isRoyal] = interaction.customId.split("_");
+    await interaction.showModal(CreateSheetModal(isRoyal === "true"));
+
     const modalSubmit = await this.awaitSubmission(interaction);
     if (!modalSubmit || !modalSubmit.inCachedGuild() || !modalSubmit.channel) return;
 
@@ -142,37 +155,7 @@ export default class Sheet {
       return;
     }
 
-    const [name, royalTitle, backstory, appearance, transformation] = createSheetModalFieldIds.map((customId) =>
-      modalSubmit.fields.getTextInputValue(customId),
-    );
-    const [, familySlug] = interaction.customId.split("_");
-    const family = await Database.getFamily(familySlug);
-    if (!family) {
-      await modalSubmit.editReply("Não foi possível concluir a criação da ficha. A família selecionada não existe.");
-      return;
-    }
-
-    const sheetEmbed = new EmbedBuilder()
-      .setAuthor({
-        name: modalSubmit.user.username,
-        iconURL: modalSubmit.user.displayAvatarURL({ forceStatic: true, size: 128 }),
-      })
-      .setTitle(`Ficha de ${royalTitle} ${name} da família ${family.title}`)
-      .setDescription(`# História \n${backstory}\n# Dádiva / Transformação \n${transformation}`)
-      .setImage(imgurLink)
-      .setColor(Colors.Blurple)
-      .setTimestamp(DateTime.now().toJSDate())
-      .addFields([{ name: "Aparência", value: appearance }]);
-
-    const savedSheet = await Database.insertSheet(modalSubmit.user.id, {
-      name,
-      royalTitle,
-      backstory,
-      appearance,
-      transformation,
-      imageUrl: imgurLink,
-      familySlug,
-    });
+    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, isRoyal, imgurLink);
     const evaluationButtons = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder().setCustomId(`approve_${savedSheet.characterId}_${savedSheet.userId}`).setLabel("Aprovar").setStyle(ButtonStyle.Success),
       new ButtonBuilder().setCustomId(`reject_${savedSheet.characterId}_${savedSheet.userId}`).setLabel("Reprovar").setStyle(ButtonStyle.Danger),
@@ -234,6 +217,37 @@ export default class Sheet {
       console.log(`${interaction.user.username} não enviou a ficha a tempo.`);
       return null;
     }
+  }
+
+  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, isRoyal: string, imgurLink: string) {
+    const fieldIds = isRoyal === "true" ? createRoyalSheetModalFieldIds : createSheetModalFieldIds;
+    const [name, backstory, appearance, royalTitle, transformation] = fieldIds.map((customId) => modalSubmit.fields.getTextInputValue(customId));
+    const sheetData =
+      isRoyal === "true"
+        ? { name, royalTitle, backstory, appearance, transformation, imageUrl: imgurLink, familySlug }
+        : { name, backstory, appearance, imageUrl: imgurLink };
+
+    const sheetEmbed = new EmbedBuilder()
+      .setAuthor({
+        name: modalSubmit.user.username,
+        iconURL: modalSubmit.user.displayAvatarURL({ forceStatic: true, size: 128 }),
+      })
+      .setTitle(`Ficha de ${name}`)
+      .setDescription(`# História \n${backstory}`)
+      .setImage(imgurLink)
+      .setColor(Colors.Blurple)
+      .setTimestamp(DateTime.now().toJSDate())
+      .addFields([{ name: "Aparência", value: appearance }]);
+
+    const savedSheet = await Database.insertSheet(modalSubmit.user.id, sheetData);
+
+    if (isRoyal === "true") {
+      const family = await Database.getFamily(familySlug);
+      sheetEmbed.setTitle(`Ficha de ${royalTitle} ${name} da família ${family?.title}`);
+      sheetEmbed.setDescription(`# História \n${backstory}\n# Dádiva / Transformação \n${transformation}`);
+    }
+
+    return { sheetEmbed, savedSheet };
   }
 
   private async collectAttachment(interaction: ModalSubmitInteraction) {

@@ -3,6 +3,7 @@ import { ArgsOf, Discord, Guard, On } from "discordx";
 import { Duration } from "luxon";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
+import { royalCharacterSchema } from "../schemas/characterSheetSchema";
 import Utils from "../utils";
 
 @Discord()
@@ -17,16 +18,20 @@ export default class CharacterEvents {
 
     const character = await Database.getActiveSheet(message.author.id);
     if (!character) return;
-    const family = await Database.getFamily(character.familySlug);
-    if (!family) return;
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: family.title })
       .setTimestamp()
       .setThumbnail(character.imageUrl)
       .setColor(Colors.Blurple)
       .setDescription(message.content)
-      .setTitle(`${character.royalTitle} ${character.name}`);
+      .setTitle(character.name);
+
+    const royalCharacter = royalCharacterSchema.safeParse(character);
+    if (royalCharacter.success) {
+      const family = await Database.getFamily(royalCharacter.data.familySlug);
+      embed.setTitle(`${royalCharacter.data.royalTitle} ${royalCharacter.data.name}`);
+      embed.setAuthor({ name: family?.title ?? "Família não encontrada" });
+    }
 
     await Utils.scheduleMessageToDelete(message, 0);
 
