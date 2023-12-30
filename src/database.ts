@@ -12,7 +12,7 @@ import {
 } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
-import { userSchema } from "./schemas/userSchema";
+import { UserOptional, userSchema } from "./schemas/userSchema";
 
 const db = new QuickDB();
 
@@ -41,7 +41,7 @@ export default class Database {
     return userToSet;
   }
 
-  public static async updateUser(userId: string, user: { money: number }) {
+  public static async updateUser(userId: string, user: UserOptional) {
     const oldUser = await db.get(`users.${userId}`);
     if (!oldUser) return null;
     const updatedUser = { ...oldUser, ...user };

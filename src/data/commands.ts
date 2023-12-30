@@ -4,14 +4,17 @@ import Database from "../database";
 
 type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, string>>;
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
+
 export const COMMANDS: CommandData = {
   spawnSheet: { name: "spawn-sheet", description: "Cria um componente de criação de ficha", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
   characterList: { name: "character-list", description: "Lista as fichas de um usuário" },
   setCharacter: { name: "set-character", description: "Define uma ficha como ativa" },
   addStoreCharacter: { name: "add-store-character", description: "Adiciona uma ficha à loja", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
-};
+  giveRoyalToken: { name: "give-royal-token", description: "Dá uma ficha real a um usuário", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
+} as const;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
+  giveRoyalTokenUser: { name: "user", description: "Usuário para dar a ficha real", required: true, type: ApplicationCommandOptionType.User },
   setCharacter: {
     name: "character",
     description: "Ficha para definir como ativa",
@@ -35,4 +38,4 @@ export const COMMAND_OPTIONS: CommandOptionData = {
   addStoreCharacterPrice: { name: "price", description: "Preço da ficha", required: true, type: ApplicationCommandOptionType.Integer },
   addStoreCharacterImageURL: { name: "image-url", description: "URL da imagem da ficha", required: false, type: ApplicationCommandOptionType.String },
   characterList: { name: "user", description: "Usuário para listar as fichas", required: true, type: ApplicationCommandOptionType.User },
-};
+} as const;

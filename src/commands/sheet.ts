@@ -9,17 +9,18 @@ import {
   Colors,
   ComponentType,
   EmbedBuilder,
+  GuildMember,
   ModalSubmitInteraction,
   PermissionFlagsBits,
   StringSelectMenuBuilder,
   bold,
   userMention,
 } from "discord.js";
-import { ButtonComponent, Discord, Slash } from "discordx";
+import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
-import { COMMANDS } from "../data/commands";
+import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS } from "../data/constants";
 import Database from "../database";
 import { Family } from "../schemas/familySchema";
@@ -57,6 +58,15 @@ export default class Sheet {
     await interaction.editReply(messageOptions);
   }
 
+  @Slash(COMMANDS.giveRoyalToken)
+  public async giveRoyalToken(@SlashOption(COMMAND_OPTIONS.giveRoyalTokenUser) user: GuildMember, interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const databaseUser = await Database.getUser(user.id);
+    await Database.updateUser(user.id, { royalTokens: databaseUser.royalTokens + 1 });
+    await interaction.editReply({ content: `Ficha real dada com sucesso para ${userMention(user.id)}` });
+    await interaction.channel?.send({ content: `👑 ${user.toString()} recebeu uma ficha real de ${interaction.user.toString()}!` });
+  }
+
   @ButtonComponent({ id: createRoyalSheetButtonId })
   public async createRoyalSheetButtonListener(interaction: ButtonInteraction) {
     if (!interaction.inCachedGuild()) return;
@@ -64,6 +74,13 @@ export default class Sheet {
     if (!familiesChannel?.isTextBased()) return;
 
     await interaction.deferReply({ ephemeral: true, fetchReply: true });
+
+    const user = await Database.getUser(interaction.user.id);
+    if (user.royalTokens < 1) {
+      await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
+      return;
+    }
+
     const families = await Utils.fetchFamilies();
     const selectMenuOptions = new Array<{ label: string; value: string }>();
     for (const family of families) {
