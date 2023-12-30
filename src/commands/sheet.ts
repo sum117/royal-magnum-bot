@@ -147,7 +147,8 @@ export default class Sheet {
   @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
     const [, familySlug, isRoyal] = interaction.customId.split("_");
-    await interaction.showModal(CreateSheetModal(isRoyal === "true"));
+    const isRoyalSheet = isRoyal === "true";
+    await interaction.showModal(CreateSheetModal(isRoyalSheet));
 
     const modalSubmit = await this.awaitSubmission(interaction);
     if (!modalSubmit || !modalSubmit.inCachedGuild() || !modalSubmit.channel) return;
@@ -180,6 +181,12 @@ export default class Sheet {
     await modalSubmit.editReply({
       content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${sheetWaitingChannel?.toString()}`,
     });
+
+    if (isRoyalSheet) {
+      const user = await Database.getUser(savedSheet.userId);
+      await Database.updateUser(savedSheet.userId, { royalTokens: user.royalTokens - 1 });
+    }
+
     await sheetWaitingChannel.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
   }
 

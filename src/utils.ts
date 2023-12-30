@@ -89,7 +89,6 @@ export default class Utils {
       const embed = new EmbedBuilder().setColor(Colors.Blurple);
 
       const royalSheet = royalCharacterSchema.safeParse(sheet);
-
       if (royalSheet.success) {
         embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
       } else {
