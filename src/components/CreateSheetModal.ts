@@ -22,7 +22,7 @@ const getCreateSheetModal = (isRoyal: boolean) => {
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
           .setCustomId(createSheetModalFieldIds[1])
-          .setPlaceholder("Antes de ser uma nobre, Artha era um simples camponês que [...]")
+          .setPlaceholder("Antes de ser um nobre, Artha era um simples camponês que [...]")
           .setMinLength(1)
           .setMaxLength(2000)
           .setRequired(true)
@@ -32,12 +32,12 @@ const getCreateSheetModal = (isRoyal: boolean) => {
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
           .setCustomId(createSheetModalFieldIds[2])
-          .setPlaceholder("Aparência")
+          .setPlaceholder("Artha é um homem de cabelos longos e [...]")
           .setMinLength(1)
           .setMaxLength(512)
           .setRequired(true)
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("Artha Avarossa"),
+          .setLabel("Aparência"),
       ),
     );
 

@@ -3,7 +3,7 @@ import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
 import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
-import CreateSheetModal, { createSheetModalFieldIds } from "../components/CreateSheetModal";
+import CreateSheetModal, { createRoyalSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
@@ -37,7 +37,9 @@ export default class Store {
       return;
     }
     await modalSubmit.deferReply();
-    const [name, royalTitle, backstory, appearance, transformation] = createSheetModalFieldIds.map((fieldId) => modalSubmit.fields.getTextInputValue(fieldId));
+    const [name, backstory, appearance, royalTitle, transformation] = createRoyalSheetModalFieldIds.map((fieldId) =>
+      modalSubmit.fields.getTextInputValue(fieldId),
+    );
 
     const sheet = await Database.insertStoreSheet({
       name,

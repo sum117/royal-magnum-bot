@@ -20,7 +20,7 @@ export default class Utils {
 
   @Slash(COMMANDS.avatar)
   public async avatar(@SlashOption(COMMAND_OPTIONS.avatarTarget) target: GuildMember, interaction: CommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply();
     const user = await interaction.client.users.fetch(target);
     await interaction.editReply(user.displayAvatarURL());
   }
