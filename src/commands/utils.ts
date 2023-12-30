@@ -1,4 +1,4 @@
-import { CommandInteraction } from "discord.js";
+import { CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { imageGifUrl } from "../schemas/utils";
@@ -16,5 +16,36 @@ export default class Utils {
     await interaction.guild?.setIcon(url);
     await interaction.client.user?.setAvatar(url);
     await interaction.editReply("Imagem alterada com sucesso.");
+  }
+
+  @Slash(COMMANDS.avatar)
+  public async avatar(@SlashOption(COMMAND_OPTIONS.avatarTarget) target: GuildMember, interaction: CommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const user = await interaction.client.users.fetch(target);
+    await interaction.editReply(user.displayAvatarURL());
+  }
+
+  @Slash(COMMANDS.serverInfo)
+  public async serverInfo(interaction: CommandInteraction) {
+    if (!interaction.inCachedGuild()) return;
+    await interaction.deferReply();
+    const guild = await interaction.client.guilds.fetch(interaction.guildId);
+    const embed = new EmbedBuilder()
+      .setTitle(guild.name)
+      .setThumbnail(guild.iconURL() ?? null)
+      .setDescription(
+        `${guild.name} é um servidor de Roleplay Medieval que mistura geopolitica e alta fantasia em um mundo dominado por entidades divinas e seus humanos escolhidos. Seja um príncipe ou uma princesa de uma das familias reais ou um plebeu que busca fama e fortuna.`,
+      )
+      .addFields([
+        { name: "ID", value: guild.id, inline: true },
+        { name: "Dono", value: `<@${guild.ownerId}>`, inline: true },
+        { name: "Criado em", value: guild.createdAt.toUTCString(), inline: true },
+        { name: "Membros", value: guild.memberCount.toString(), inline: true },
+        { name: "Cargos", value: guild.roles.cache.size.toString(), inline: true },
+        { name: "Canais", value: guild.channels.cache.size.toString(), inline: true },
+        { name: "Emojis", value: guild.emojis.cache.size.toString(), inline: true },
+        { name: "Boosts", value: guild?.premiumSubscriptionCount?.toString() ?? "0", inline: true },
+      ]);
+    await interaction.editReply({ embeds: [embed], content: "https://discord.gg/8rtKfrgVFy" });
   }
 }

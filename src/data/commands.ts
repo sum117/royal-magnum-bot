@@ -17,9 +17,12 @@ export const COMMANDS: CommandData = {
     description: "Muda a imagem do bot e do servidor ao mesmo tempo.",
     defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   },
+  avatar: { name: "avatar", description: "Inspectiona o avatar de um usuário" },
+  serverInfo: { name: "server-info", description: "Mostra informações do servidor" },
 } as const;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
+  avatarTarget: { name: "target", description: "Usuário para inspecionar o avatar", required: true, type: ApplicationCommandOptionType.User },
   changePictureURL: { name: "url", description: "URL da imagem", required: true, type: ApplicationCommandOptionType.String },
   giveRoyalTokenUser: { name: "user", description: "Usuário para dar a ficha real", required: true, type: ApplicationCommandOptionType.User },
   setCharacter: {
