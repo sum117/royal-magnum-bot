@@ -7,7 +7,7 @@ import yaml from "yaml";
 import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./commands/character";
 import Database from "./database";
 import { CharacterSheetType, royalCharacterSchema } from "./schemas/characterSheetSchema";
-import { Family } from "./schemas/familySchema";
+import { Family, familySchema } from "./schemas/familySchema";
 
 export default class Utils {
   public static async uploadToImgur(url: string) {
@@ -35,11 +35,12 @@ export default class Utils {
     return { imgurLink: imgurLink, name: imageName };
   }
 
-  public static async fetchFamilies() {
+  public static async fetchBaseFamilies() {
     const projectRoot = process.cwd();
     const file = await readFile(path.join(projectRoot, "transformations.yaml"), "utf-8");
     const { families } = <{ families: Array<Family> }>yaml.parse(file);
-    return families;
+    const emptyFamilyObject = { population: 0, populationCap: 0, populationGrowth: 0, wood: 0, stone: 0, iron: 0, food: 0, gold: 0 };
+    return families.map((family) => familySchema.parse({ ...emptyFamilyObject, ...family }));
   }
 
   private static parseContent(content: string) {

@@ -5,9 +5,11 @@ import {
   CharacterSheetPartial,
   CharacterSheetType,
   CharacterSheetTypeInput,
+  RoyalCharacterSheet,
   StoreCharacterSheet,
   StoreCharacterSheetInput,
   characterTypeSchema,
+  royalCharacterSchema,
   storeCharacterSheetSchema,
 } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
@@ -150,9 +152,29 @@ export default class Database {
       .slice(0, this.PAGINATION_LIMIT);
   }
 
+  public static async getSheetsByFamily(familySlug: string) {
+    const sheets = await db.get<Record<string, CharacterSheetType>>("sheets");
+    if (!sheets) return [];
+    return Object.values(sheets).filter((sheet): sheet is RoyalCharacterSheet => {
+      const royalSheet = royalCharacterSchema.safeParse(sheet);
+      if (royalSheet.success) return royalSheet.data.familySlug === familySlug;
+      return false;
+    });
+  }
+
   public static async setFamily(slug: string, family: Family) {
+    const familyExists = await db.get<Family>(`families.${slug}`);
+    if (familyExists) return null;
     await db.set<Family>(`families.${slug}`, family);
     return family;
+  }
+
+  public static async updateFamily(slug: string, family: Family) {
+    const oldFamily = await db.get<Family>(`families.${slug}`);
+    if (!oldFamily) return null;
+    const updatedFamily = { ...oldFamily, ...family };
+    await db.set<Family>(`families.${slug}`, updatedFamily);
+    return updatedFamily;
   }
 
   public static async getFamily(slug: string) {

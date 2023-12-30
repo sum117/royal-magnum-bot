@@ -1,11 +1,12 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
-import { ChatInputCommandInteraction, Colors, GuildMember, bold } from "discord.js";
+import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, bold } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { PAGINATION_DEFAULT_OPTIONS } from "../data/constants";
+import { PAGINATION_DEFAULT_OPTIONS, RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet } from "../schemas/characterSheetSchema";
+import { resourcesSchema } from "../schemas/familySchema";
 import Utils from "../utils";
 
 export const characterDetailsButtonIdPrefix = "character-details";
@@ -60,5 +61,44 @@ export default class Character {
       content: `${bold(sheet.name)} definida como personagem ativo(a).`,
       files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
     });
+  }
+
+  @Slash(COMMANDS.showFamilyDetails)
+  public async showFamilyDetails(@SlashOption(COMMAND_OPTIONS.showFamilyDetails) familySlug: string, interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
+    const family = await Database.getFamily(familySlug);
+    if (!family) {
+      await interaction.editReply({ content: "Família não encontrada." });
+      return;
+    }
+
+    const resources = resourcesSchema.parse(family);
+    const resourcesString = Object.entries(resources)
+      .map(([key, value]) => {
+        type ResourceName = keyof typeof resources;
+        const emoji = RESOURCES_EMOJIS[key as ResourceName];
+        const translation = RESOURCES_TRANSLATIONS[key as ResourceName];
+        return `${emoji} ${bold(translation)}: ${value}`;
+      })
+      .join("\n");
+
+    const playersInFamily = lodash.shuffle(await Database.getSheetsByFamily(familySlug));
+
+    const playerLimit = 10;
+    const playerRest = Math.max(playersInFamily.length - playerLimit, 0);
+    const playersString = playersInFamily
+      .map((sheet) => `${sheet.royalTitle} ${sheet.name}`)
+      .slice(0, playerLimit)
+      .join("\n");
+
+    const embed = new EmbedBuilder();
+    embed.setTitle(family.title);
+    embed.setThumbnail(family.image);
+    embed.setColor(Colors.Blurple);
+    embed.setDescription(
+      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`,
+    );
+    embed.addFields([{ name: "👥 População", value: `${family.population}/${family.populationCap} (${family.populationGrowth}/ano)`, inline: true }]);
+    await interaction.editReply({ embeds: [embed] });
   }
 }

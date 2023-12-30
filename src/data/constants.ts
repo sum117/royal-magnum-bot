@@ -14,6 +14,22 @@ export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
 };
 
+export const RESOURCES_EMOJIS = {
+  wood: "🪵",
+  stone: "🪨",
+  iron: "⛏️",
+  food: "🍞",
+  gold: "💰",
+} as const;
+
+export const RESOURCES_TRANSLATIONS = {
+  wood: "Madeira",
+  stone: "Pedra",
+  iron: "Ferro",
+  food: "Comida",
+  gold: "Ouro",
+} as const;
+
 export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png";
 
 export const PAGINATION_DEFAULT_OPTIONS = {

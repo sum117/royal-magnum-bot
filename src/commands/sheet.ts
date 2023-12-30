@@ -81,7 +81,7 @@ export default class Sheet {
       return;
     }
 
-    const families = await Utils.fetchFamilies();
+    const families = await Utils.fetchBaseFamilies();
     const selectMenuOptions = new Array<{ label: string; value: string }>();
     for (const family of families) {
       await Database.setFamily(family.slug, family);
