@@ -6,7 +6,7 @@ import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { PAGINATION_DEFAULT_OPTIONS, RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet } from "../schemas/characterSheetSchema";
-import { resourcesSchema } from "../schemas/familySchema";
+import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
 export const characterDetailsButtonIdPrefix = "character-details";

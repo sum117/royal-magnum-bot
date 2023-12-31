@@ -6,6 +6,7 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS: CommandData = {
+  createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua familia." },
   spawnSheet: { name: "spawn-sheet", description: "Cria um componente de criação de ficha", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
   characterList: { name: "character-list", description: "Lista as fichas de um usuário" },
   setCharacter: { name: "set-character", description: "Define uma ficha como ativa" },
@@ -67,4 +68,48 @@ export const COMMAND_OPTIONS: CommandOptionData = {
   addStoreCharacterPrice: { name: "price", description: "Preço da ficha", required: true, type: ApplicationCommandOptionType.Integer },
   addStoreCharacterImageURL: { name: "image-url", description: "URL da imagem da ficha", required: false, type: ApplicationCommandOptionType.String },
   characterList: { name: "user", description: "Usuário para listar as fichas", required: true, type: ApplicationCommandOptionType.User },
+  createChannelChannel: {
+    name: "channel",
+    description: "Canal para criar o canal",
+    required: true,
+    type: ApplicationCommandOptionType.Channel,
+  },
+  createChannelName: { name: "name", description: "Nome do canal", required: true, type: ApplicationCommandOptionType.String },
+  createChannelDescription: { name: "description", description: "Descrição do canal", required: true, type: ApplicationCommandOptionType.String },
+  createChannelImage: { name: "image-url", description: "URL da imagem do canal", required: true, type: ApplicationCommandOptionType.Attachment },
+  createChannelType: {
+    name: "type",
+    description: "Tipo do canal",
+    required: false,
+    type: ApplicationCommandOptionType.String,
+    autocomplete(interaction) {
+      const options = [
+        { name: "Básico", value: "basic" },
+        { name: "Mercado", value: "market" },
+        { name: "Taberna", value: "tavern" },
+        { name: "Treino", value: "training" },
+        { name: "Ferreiro", value: "blacksmith" },
+        { name: "Quartel", value: "barracks" },
+        { name: "Real", value: "royal" },
+      ];
+      return interaction.respond(options);
+    },
+  },
+  createChannelResourceType: {
+    name: "resource-type",
+    description: "Tipo de recurso",
+    required: false,
+    type: ApplicationCommandOptionType.String,
+    autocomplete(interaction) {
+      const options = [
+        { name: "Madeira", value: "wood" },
+        { name: "Pedra", value: "stone" },
+        { name: "Ferro", value: "iron" },
+        { name: "Comida", value: "food" },
+        { name: "Ouro", value: "gold" },
+      ];
+      return interaction.respond(options);
+    },
+  },
+  createChannelEfficiency: { name: "efficiency", description: "Eficiência do canal", required: false, type: ApplicationCommandOptionType.Integer },
 } as const;

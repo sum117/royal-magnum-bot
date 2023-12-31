@@ -30,6 +30,20 @@ export const RESOURCES_TRANSLATIONS = {
   gold: "Ouro",
 } as const;
 
+export const CHANNEL_TYPES_TRANSLATIONS = {
+  basic: "Básico",
+  tavern: "Taberna",
+  barracks: "Quartel",
+  blacksmith: "Ferreiro",
+  market: "Mercado",
+  training: "Treinamento",
+  royal: "Real",
+} as const;
+
+export const CRON_EXPRESSIONS = {
+  EveryFourHours: "0 */4 * * *",
+};
+
 export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png";
 
 export const PAGINATION_DEFAULT_OPTIONS = {

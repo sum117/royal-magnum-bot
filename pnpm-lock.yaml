@@ -32,6 +32,9 @@ dependencies:
   luxon:
     specifier: ^3.4.4
     version: 3.4.4
+  node-cron:
+    specifier: ^3.0.3
+    version: 3.0.3
   quick.db:
     specifier: ^9.1.7
     version: 9.1.7
@@ -52,6 +55,9 @@ devDependencies:
   '@types/node':
     specifier: ^20.10.5
     version: 20.10.5
+  '@types/node-cron':
+    specifier: ^3.0.11
+    version: 3.0.11
   nodemon:
     specifier: ^3.0.2
     version: 3.0.2
@@ -255,6 +261,10 @@ packages:
 
   /@types/luxon@3.3.7:
     resolution: {integrity: sha512-gKc9P2d4g5uYwmy4s/MO/yOVPmvHyvzka1YH6i5dM03UrFofHSmgc0D0ymbDRStFWHusk6cwwF6nhLm/ckBbbQ==}
+    dev: true
+
+  /@types/node-cron@3.0.11:
+    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
     dev: true
 
   /@types/node@20.10.5:
@@ -789,6 +799,13 @@ packages:
       semver: 7.5.4
     dev: false
 
+  /node-cron@3.0.3:
+    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
+    engines: {node: '>=6.0.0'}
+    dependencies:
+      uuid: 8.3.2
+    dev: false
+
   /nodemon@3.0.2:
     resolution: {integrity: sha512-9qIN2LNTrEzpOPBaWHTm4Asy1LxXLSickZStAQ4IZe7zsoIpD/A7LWxhZV3t4Zu352uBcqVnRsDXSMR2Sc3lTA==}
     engines: {node: '>=10'}
@@ -1127,6 +1144,11 @@ packages:
 
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
+    dev: false
+
+  /uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
     dev: false
 
   /v8-compile-cache-lib@3.0.1:

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Message } from "discord.js";
 import { QuickDB } from "quick.db";
+import { Channel, ChannelInput, ChannelPartial, channelSchema } from "./schemas/channelSchema";
 import {
   CharacterSheetPartial,
   CharacterSheetType,
@@ -196,5 +197,33 @@ export default class Database {
     return Object.values(families)
       .map((family) => familySchema.parse(family))
       .slice(0, this.PAGINATION_LIMIT);
+  }
+
+  public static async insertChannel(channel: ChannelInput) {
+    const channelExists = await db.get(`channels.${channel.id}`);
+    if (channelExists) return null;
+    const channelToInsert = channelSchema.parse(channel);
+    await db.set(`channels.${channel.id}`, channelToInsert);
+    return channelToInsert;
+  }
+  public static async getChannel(channelId: string) {
+    const channel = await db.get<Channel>(`channels.${channelId}`);
+
+    if (!channel) return null;
+
+    return channelSchema.parse(channel);
+  }
+
+  public static async updateChannel(channelId: string, channel: ChannelPartial) {
+    const oldChannel = await db.get<ChannelInput>(`channels.${channelId}`);
+    if (!oldChannel) return null;
+    const updatedChannel = { ...oldChannel, ...channel };
+    await db.set(`channels.${channelId}`, updatedChannel);
+    return updatedChannel;
+  }
+
+  public static async deleteChannel(channelId: string) {
+    await db.delete(`channels.${channelId}`);
+    return;
   }
 }
