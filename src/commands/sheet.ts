@@ -22,17 +22,19 @@ import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { ATTACHMENT_ICON_URL, CHANNEL_IDS } from "../data/constants";
+import { ATTACHMENT_ICON_URL, CHANNEL_IDS, PROFESSIONS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
+import { Profession, characterTypeSchemaInput } from "../schemas/characterSheetSchema";
 import { Family } from "../schemas/familySchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
 
 export const createSheetButtonId = "createSheetButtonId";
 export const createRoyalSheetButtonId = "createRoyalSheetButtonId";
-export const selectSheetButtonId = "selectSheetButtonId";
+export const familySelectMenuId = "familySelectMenuId";
+export const professionSelectMenuId = "professionSelectMenuId";
 export const familySheetButtonId = "familySheetButtonId";
-export const getSpawnModalButtonId = (isRoyal: boolean, family?: Family) => `spawnModalButtonId_${family?.slug ?? "unknown"}_${isRoyal}`;
+export const getSpawnModalButtonId = (profession: Profession, family?: Family) => `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}`;
 
 type HandleEvaluationButtonsParams<UpdateT> = {
   interaction: ButtonInteraction;
@@ -41,6 +43,8 @@ type HandleEvaluationButtonsParams<UpdateT> = {
   action: "approve" | "reject";
   userId: string;
 };
+type EvaluateTuple = ["approve" | "reject", "character" | "family", string, string];
+type SpawnModalTuple = ["spawnModalButtonId", string, Profession];
 
 @Discord()
 export default class Sheet {
@@ -103,7 +107,7 @@ export default class Sheet {
     const selectMenus = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
       new StringSelectMenuBuilder()
         .setPlaceholder("Escolha sua família")
-        .setCustomId(selectSheetButtonId)
+        .setCustomId(familySelectMenuId)
         .setMinValues(1)
         .setMaxValues(1)
         .setOptions(selectMenuOptions),
@@ -114,7 +118,7 @@ export default class Sheet {
     const selectMenuSubmit = await messageWithSelector
       .awaitMessageComponent({
         time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
-        filter: (menuInteraction) => menuInteraction.customId === selectSheetButtonId,
+        filter: (menuInteraction) => menuInteraction.customId === familySelectMenuId,
         componentType: ComponentType.StringSelect,
       })
       .catch(() => {
@@ -138,7 +142,7 @@ export default class Sheet {
     }
 
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getSpawnModalButtonId(true, family)).setLabel(`Formulário dos(as) ${family.title}`).setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(getSpawnModalButtonId("royal", family)).setLabel(`Formulário dos(as) ${family.title}`).setStyle(ButtonStyle.Success),
     );
     await selectMenuSubmit.editReply({
       content: `Você selecionou a família ${bold(family.title)}. Pressione o botão abaixo para preencher o formulário de personagem.`,
@@ -150,10 +154,49 @@ export default class Sheet {
   @ButtonComponent({ id: createSheetButtonId })
   public async createSheetButtonListener(interaction: ButtonInteraction) {
     await interaction.deferReply({ ephemeral: true });
-    const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getSpawnModalButtonId(false)).setLabel("Formulário de personagem").setStyle(ButtonStyle.Success),
+
+    type ProfessionKey = keyof typeof PROFESSIONS_TRANSLATIONS;
+    const selectMenuOptions = new Array<{ label: string; value: string }>();
+    for (const profession of Object.keys(PROFESSIONS_TRANSLATIONS)) {
+      selectMenuOptions.push({ label: PROFESSIONS_TRANSLATIONS[profession as ProfessionKey], value: profession });
+    }
+    const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha sua profissão")
+        .setCustomId(professionSelectMenuId)
+        .setMinValues(1)
+        .setMaxValues(1)
+        .setOptions(selectMenuOptions),
     );
-    await interaction.editReply({ content: "Pressione o botão abaixo para preencher o formulário de personagem.", components: [button] });
+    const message = await interaction.editReply({ content: "Selecione uma profissão para criar sua ficha:", components: [selectMenu] });
+    const selectMenuSubmit = await message
+      .awaitMessageComponent({
+        time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
+        filter: (menuInteraction) => menuInteraction.customId === professionSelectMenuId,
+        componentType: ComponentType.StringSelect,
+      })
+      .catch(() => {
+        console.log(`${interaction.user.username} não selecionou uma profissão a tempo.`);
+        return null;
+      });
+
+    if (!selectMenuSubmit) {
+      await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
+      return;
+    }
+
+    await selectMenuSubmit.deferReply({ ephemeral: true });
+    const profession = selectMenuSubmit.values[0] as Profession;
+    const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder().setCustomId(getSpawnModalButtonId(profession)).setLabel("Formulário de personagem").setStyle(ButtonStyle.Success),
+    );
+    await selectMenuSubmit.editReply({
+      content: `Você selecionou a profissão ${bold(
+        PROFESSIONS_TRANSLATIONS[profession as ProfessionKey],
+      )}. Pressione o botão abaixo para preencher o formulário de personagem.`,
+      components: [button],
+    });
+    await interaction.editReply({ content: "Profissão selecionada com sucesso.", components: [] });
   }
 
   @ButtonComponent({ id: familySheetButtonId })
@@ -215,8 +258,8 @@ export default class Sheet {
 
   @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
-    const [, familySlug, isRoyal] = interaction.customId.split("_");
-    const isRoyalSheet = isRoyal === "true";
+    const [, familySlug, profession] = interaction.customId.split("_") as SpawnModalTuple;
+    const isRoyalSheet = profession === "royal";
     await interaction.showModal(CreateSheetModal(isRoyalSheet));
 
     const modalSubmit = await this.awaitSubmission(interaction);
@@ -242,7 +285,7 @@ export default class Sheet {
       return;
     }
 
-    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, isRoyal, imgurLink);
+    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imgurLink);
     const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
     await modalSubmit.editReply({
       content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${sheetWaitingChannel?.toString()}`,
@@ -258,8 +301,7 @@ export default class Sheet {
 
   @ButtonComponent({ id: /^approve|reject_.*$/ })
   public async evaluateSheetButtonListener(interaction: ButtonInteraction) {
-    type IDTuple = ["approve" | "reject", "character" | "family", string, string];
-    const [action, namespace, characterIdOrFamilySlug, userId] = interaction.customId.split("_") as IDTuple;
+    const [action, namespace, characterIdOrFamilySlug, userId] = interaction.customId.split("_") as EvaluateTuple;
 
     if (namespace === "character") {
       const databaseUpdateFn = async () => await Database.updateSheet(userId, characterIdOrFamilySlug, { isApproved: action === "approve" });
@@ -354,13 +396,13 @@ export default class Sheet {
     }
   }
 
-  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, isRoyal: string, imgurLink: string) {
-    const fieldIds = isRoyal === "true" ? createRoyalSheetModalFieldIds : createSheetModalFieldIds;
+  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, profession: Profession, imgurLink: string) {
+    const fieldIds = profession === "royal" ? createRoyalSheetModalFieldIds : createSheetModalFieldIds;
     const [name, backstory, appearance, royalTitle, transformation] = fieldIds.map((customId) => modalSubmit.fields.getTextInputValue(customId));
     const sheetData =
-      isRoyal === "true"
-        ? { name, royalTitle, backstory, appearance, transformation, imageUrl: imgurLink, familySlug }
-        : { name, backstory, appearance, imageUrl: imgurLink };
+      profession === "royal"
+        ? { name, royalTitle, backstory, appearance, transformation, imageUrl: imgurLink, familySlug, profession: "royal" }
+        : { name, backstory, appearance, imageUrl: imgurLink, profession: "other" };
 
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
@@ -374,9 +416,9 @@ export default class Sheet {
       .setTimestamp(DateTime.now().toJSDate())
       .addFields([{ name: "Aparência", value: appearance }]);
 
-    const savedSheet = await Database.insertSheet(modalSubmit.user.id, sheetData);
+    const savedSheet = await Database.insertSheet(modalSubmit.user.id, characterTypeSchemaInput.parse(sheetData));
 
-    if (isRoyal === "true") {
+    if (profession === "royal") {
       const family = await Database.getFamily(familySlug);
       sheetEmbed.setTitle(`Ficha de ${royalTitle} ${name} da família ${family?.title}`);
       sheetEmbed.setDescription(`# História \n${backstory}\n# Dádiva / Transformação \n${transformation}`);

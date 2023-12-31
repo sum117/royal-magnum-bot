@@ -39,7 +39,7 @@ export default class Database {
   }
 
   public static async insertUser(userId: string) {
-    const userToSet = { money: 0, royalTokens: 0, familyTokens: 0 };
+    const userToSet = { money: 0, royalTokens: 0, familyTokens: 0, lastMessageAt: new Date().toISOString() };
     await db.set(`users.${userId}`, userToSet);
     return userToSet;
   }
@@ -60,7 +60,7 @@ export default class Database {
 
   public static async insertSheet(userId: string, sheet: CharacterSheetTypeInput) {
     const characterId = crypto.randomBytes(16).toString("hex");
-    const sheetToInsert = characterTypeSchema.parse({ ...sheet, characterId, isApproved: false, userId, isActive: false });
+    const sheetToInsert = characterTypeSchema.parse({ ...sheet, characterId, userId });
 
     await db.set<CharacterSheetType>(`sheets.${userId}.${characterId}`, sheetToInsert);
     return sheetToInsert;
@@ -68,13 +68,12 @@ export default class Database {
 
   public static async insertStoreSheet(sheet: StoreCharacterSheetInput) {
     const characterId = crypto.randomBytes(16).toString("hex");
-    const sheetToInsert = {
+    const sheetToInsert = storeCharacterSheetSchema.parse({
       ...sheet,
       characterId,
-      isApproved: false,
-      isActive: false,
       userId: "store",
-    };
+      profession: "royal",
+    });
     await db.set<StoreCharacterSheet>(`store.${characterId}`, sheetToInsert);
     return storeCharacterSheetSchema.parse(sheetToInsert);
   }

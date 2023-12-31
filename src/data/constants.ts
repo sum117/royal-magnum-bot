@@ -30,6 +30,32 @@ export const RESOURCES_TRANSLATIONS = {
   gold: "Ouro",
 } as const;
 
+export const PROFESSIONS_TRANSLATIONS = {
+  blacksmith: "Ferreiro(a)",
+  merchant: "Mercador(a)",
+  farmer: "Fazendeiro(a)",
+  hunter: "Caçador(a)",
+  fisherman: "Pescador(a)",
+  miner: "Mineiro(a)",
+  lumberjack: "Lenhador(a)",
+  alchemist: "Alquimista",
+  cook: "Cozinheiro(a)",
+  tailor: "Costureiro(a)",
+  carpenter: "Carpinteiro(a)",
+  librarian: "Bibliotecário(a)",
+  musician: "Músico(a)",
+  writer: "Escrivã(o)",
+  priest: "Sacerdote",
+  doctor: "Médico(a)",
+  sailor: "Marinheiro(a)",
+  soldier: "Soldado",
+  guard: "Guarda",
+  servant: "Servo(a)",
+  slave: "Escravo(a)",
+  knight: "Cavaleiro(a)",
+  squire: "Escudeiro(a)",
+  courtier: "Cortesã(o)",
+} as const;
 export const CHANNEL_TYPES_TRANSLATIONS = {
   basic: "Básico",
   tavern: "Taberna",

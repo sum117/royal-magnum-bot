@@ -51,6 +51,7 @@ export default class Store {
       familySlug: family,
       imageUrl: imageURL,
       isStoreCharacter: true,
+      profession: "royal",
     });
 
     const embed = await Utils.getCharacterPreviewEmbed(sheet);
