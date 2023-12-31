@@ -1,34 +1,93 @@
 import { z } from "zod";
 
+export const professionEnumSchema = z
+  .enum([
+    "royal",
+    "blacksmith",
+    "merchant",
+    "farmer",
+    "hunter",
+    "fisherman",
+    "miner",
+    "lumberjack",
+    "alchemist",
+    "cook",
+    "tailor",
+    "carpenter",
+    "architect",
+    "artist",
+    "musician",
+    "writer",
+    "priest",
+    "doctor",
+    "sailor",
+    "soldier",
+    "guard",
+    "thief",
+    "assassin",
+    "spy",
+    "noble",
+    "knight",
+    "squire",
+    "bard",
+    "jester",
+    "courtier",
+    "servant",
+    "slave",
+    "beggar",
+    "peasant",
+    "child",
+    "elderly",
+    "other",
+  ])
+  .default("other");
 export const characterSheetSchema = z.object({
   name: z.string().min(3).max(32),
   backstory: z.string().min(1).max(2048),
   appearance: z.string().min(1).max(1024),
   characterId: z.string(),
-  isApproved: z.boolean(),
-  isActive: z.boolean(),
+  isApproved: z.boolean().default(false),
+  isActive: z.boolean().default(false),
   imageUrl: z.string(),
   userId: z.string(),
+  xp: z.number().default(0),
+  level: z.number().default(1),
+  profession: professionEnumSchema,
 });
 
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
-export const characterSheetSchemaInput = characterSheetSchema.omit({ characterId: true, isApproved: true, userId: true, isActive: true });
+export const characterSheetSchemaInput = characterSheetSchema.omit({
+  characterId: true,
+  isApproved: true,
+  userId: true,
+  isActive: true,
+  level: true,
+  xp: true,
+});
 
 export const royalCharacterSchema = characterSheetSchema.extend({
   familySlug: z.string(),
   transformation: z.string().min(1).max(2048),
   royalTitle: z.string().min(1).max(32),
+  profession: z.enum(["royal"]).default("royal"),
 });
 
 export const royalCharacterSchemaPartial = royalCharacterSchema.partial();
-export const royalCharacterSchemaInput = royalCharacterSchema.omit({ characterId: true, isApproved: true, userId: true, isActive: true });
+export const royalCharacterSchemaInput = royalCharacterSchema.omit({
+  characterId: true,
+  isApproved: true,
+  userId: true,
+  isActive: true,
+  level: true,
+  xp: true,
+});
 
 export const characterTypeSchema = z.union([characterSheetSchema, royalCharacterSchema]);
 export const characterTypeSchemaInput = z.union([characterSheetSchemaInput, royalCharacterSchemaInput]);
 
 export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
 export const storeCharacterSheetSchema = royalCharacterSchema.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
-
+export type Profession = z.infer<typeof professionEnumSchema>;
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;
 export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;

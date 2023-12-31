@@ -1,5 +1,6 @@
-import { BaseMessageOptions, Colors, EmbedBuilder, Events } from "discord.js";
+import { BaseMessageOptions, Colors, EmbedBuilder, Events, Message } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
+import lodash from "lodash";
 import { Duration } from "luxon";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
@@ -38,14 +39,12 @@ export default class CharacterEvents {
     const attachment = message.attachments.first();
     const payload: BaseMessageOptions = { embeds: [embed] };
     if (attachment) {
-      const imgurLink = await Utils.uploadToImgur(attachment.url);
-      const imageName = imgurLink.split("/").pop();
-      if (!imageName) return;
-      embed.setImage(`attachment://${imageName}`);
-      payload.files = [{ attachment: attachment.url, name: imageName }];
+      const { imgurLink, name } = await Utils.handleAttachment(attachment, embed);
+      payload.files = [{ attachment: imgurLink, name }];
     }
     const embedMessage = await message.channel.send(payload);
     embedMessage.author.id = message.author.id;
+    await this.handleMoneyGain(message);
     await Database.insertMessage(embedMessage);
   }
 
@@ -100,5 +99,15 @@ export default class CharacterEvents {
           Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
     }
+  }
+
+  private async handleMoneyGain(message: Message) {
+    const randomMoney = lodash.random(250, 500);
+    const user = await Database.getUser(message.author.id);
+    const hasBeenThirtyMinutes =
+      Duration.fromISO(user?.lastMessageAt ?? new Date().toISOString())
+        .plus({ minutes: 30 })
+        .toMillis() < Date.now();
+    if (hasBeenThirtyMinutes) await Database.updateUser(message.author.id, { money: user?.money + randomMoney, lastMessageAt: new Date().toISOString() });
   }
 }
