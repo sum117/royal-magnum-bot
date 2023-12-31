@@ -7,11 +7,11 @@ export const CHANNEL_IDS = {
   approvedSheetRoom: "1189023345669316608",
   characterStore: "1189378489862848633",
   familiesChannel: "1188557191280595085",
-  announcementsChannel: "1189379467009855569"
+  announcementsChannel: "1189379467009855569",
 } as const;
 
 export const ROLE_IDS = {
-  storeCharacterAnnouncements: "1189380530999930990"
+  storeCharacterAnnouncements: "1189380530999930990",
 };
 
 export const RESOURCES_EMOJIS = {
@@ -19,7 +19,7 @@ export const RESOURCES_EMOJIS = {
   stone: "🪨",
   iron: "⛏️",
   food: "🍞",
-  gold: "💰"
+  gold: "💰",
 } as const;
 
 export const RESOURCES_TRANSLATIONS = {
@@ -27,7 +27,7 @@ export const RESOURCES_TRANSLATIONS = {
   stone: "Pedra",
   iron: "Ferro",
   food: "Comida",
-  gold: "Ouro"
+  gold: "Ouro",
 } as const;
 
 export const PROFESSIONS_TRANSLATIONS = {
@@ -54,7 +54,7 @@ export const PROFESSIONS_TRANSLATIONS = {
   slave: "Escravo(a)",
   knight: "Cavaleiro(a)",
   squire: "Escudeiro(a)",
-  courtier: "Cortesã(o)"
+  courtier: "Cortesã(o)",
 } as const;
 
 export const PROFESSIONS_PRONOUNS_TRANSLATIONS = {
@@ -81,7 +81,7 @@ export const PROFESSIONS_PRONOUNS_TRANSLATIONS = {
   slave: { male: "Escravo", female: "Escrava" },
   knight: { male: "Cavaleiro", female: "Cavaleira" },
   squire: { male: "Escudeiro", female: "Escudeira" },
-  courtier: { male: "Cortesão", female: "Cortesã" }
+  courtier: { male: "Cortesão", female: "Cortesã" },
 } as const;
 
 export const CHANNEL_TYPES_TRANSLATIONS = {
@@ -91,14 +91,14 @@ export const CHANNEL_TYPES_TRANSLATIONS = {
   blacksmith: "Ferreiro",
   market: "Mercado",
   training: "Treinamento",
-  royal: "Real"
+  royal: "Real",
 } as const;
 export const GENDER_TRANSLATIONS_MAP = {
   male: "Masculino",
-  female: "Feminino"
+  female: "Feminino",
 };
 export const CRON_EXPRESSIONS = {
-  EveryFourHours: "0 */4 * * *"
+  EveryFourHours: "0 */4 * * *",
 };
 
 export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png";
@@ -109,5 +109,5 @@ export const PAGINATION_DEFAULT_OPTIONS = {
   previous: { style: ButtonStyle.Primary, label: "Anterior", emoji: { name: "⬅️" } },
   next: { style: ButtonStyle.Primary, label: "Próximo", emoji: { name: "➡️" } },
   start: { style: ButtonStyle.Primary, label: "Início", emoji: { name: "⏪" } },
-  end: { style: ButtonStyle.Primary, label: "Fim", emoji: { name: "⏩" } }
+  end: { style: ButtonStyle.Primary, label: "Fim", emoji: { name: "⏩" } },
 };

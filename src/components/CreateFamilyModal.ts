@@ -15,7 +15,7 @@ const CreateFamilyModal = new ModalBuilder()
         .setMaxLength(32)
         .setRequired(true)
         .setStyle(TextInputStyle.Short)
-        .setLabel("Nome")
+        .setLabel("Nome"),
     ),
     new ActionRowBuilder<TextInputBuilder>().setComponents(
       new TextInputBuilder()
@@ -25,7 +25,7 @@ const CreateFamilyModal = new ModalBuilder()
         .setMaxLength(2000)
         .setRequired(true)
         .setStyle(TextInputStyle.Paragraph)
-        .setLabel("Descrição")
+        .setLabel("Descrição"),
     ),
     new ActionRowBuilder<TextInputBuilder>().setComponents(
       new TextInputBuilder()
@@ -35,8 +35,8 @@ const CreateFamilyModal = new ModalBuilder()
         .setMaxLength(512)
         .setRequired(true)
         .setStyle(TextInputStyle.Short)
-        .setLabel("Imagem")
-    )
+        .setLabel("Imagem"),
+    ),
   );
 
 export default CreateFamilyModal;

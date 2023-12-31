@@ -15,17 +15,13 @@ import {
   ModalSubmitInteraction,
   PermissionFlagsBits,
   StringSelectMenuBuilder,
-  userMention
+  userMention,
 } from "discord.js";
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
-import CreateSheetModal, {
-  createRoyalSheetModalFieldIds,
-  createSheetModalFieldIds,
-  createSheetModalId
-} from "../components/CreateSheetModal";
+import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
@@ -65,7 +61,7 @@ export default class Sheet {
     const embed = new EmbedBuilder()
       .setAuthor({
         name: interaction.guild.name,
-        iconURL: interaction.guild.iconURL({ forceStatic: true, size: 128 }) ?? undefined
+        iconURL: interaction.guild.iconURL({ forceStatic: true, size: 128 }) ?? undefined,
       })
       .setTitle(`Criação de ficha de personagem  de ${interaction.guild.name}`)
       .setFooter({ text: "Clique no botão abaixo para começar a criação de ficha" })
@@ -75,7 +71,7 @@ export default class Sheet {
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder().setCustomId(createSheetButtonId).setEmoji("📝").setLabel("Criar ficha").setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId(createRoyalSheetButtonId).setEmoji("👑").setLabel("Criar ficha real").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId(familySheetButtonId).setEmoji("🏘️").setLabel("Criar ficha de família").setStyle(ButtonStyle.Secondary)
+      new ButtonBuilder().setCustomId(familySheetButtonId).setEmoji("🏘️").setLabel("Criar ficha de família").setStyle(ButtonStyle.Secondary),
     );
     const messageOptions: BaseMessageOptions = { embeds: [embed], components: [buttonRow] };
     await interaction.editReply(messageOptions);
@@ -118,12 +114,12 @@ export default class Sheet {
         .setCustomId(familySelectMenuId)
         .setMinValues(1)
         .setMaxValues(1)
-        .setOptions(selectMenuOptions)
+        .setOptions(selectMenuOptions),
     );
 
     const message = await interaction.editReply({
       content: "Selecione os campos a seguir para criar sua ficha:",
-      components: [selectMenus]
+      components: [selectMenus],
     });
     const familySelectMenuSubmit = await this.awaitSelectMenu(message, familySelectMenuId);
     if (!familySelectMenuSubmit) {
@@ -132,7 +128,7 @@ export default class Sheet {
     }
     await familySelectMenuSubmit.reply({
       content: `Você selecionou a família ${bold(familySelectMenuSubmit.values[0])}.`,
-      ephemeral: true
+      ephemeral: true,
     });
     const familySlug = familySelectMenuSubmit.values[0];
     const family = await Database.getFamily(familySlug);
@@ -143,7 +139,7 @@ export default class Sheet {
 
     const secondMessage = await interaction.editReply({
       content: "Selecione seu gênero agora:",
-      components: [this.getGenderSelectMenu()]
+      components: [this.getGenderSelectMenu()],
     });
     const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
     if (!genderSelectMenuSubmit) {
@@ -152,7 +148,7 @@ export default class Sheet {
     }
     await genderSelectMenuSubmit.reply({
       content: "Gênero selecionado com sucesso.",
-      ephemeral: true
+      ephemeral: true,
     });
 
     const gender = genderSelectMenuSubmit.values[0] as "male" | "female";
@@ -160,15 +156,15 @@ export default class Sheet {
       new ButtonBuilder()
         .setCustomId(getSpawnModalButtonId("royal", gender, family))
         .setLabel(`Formulário dos(as) ${family.title}`)
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
     );
 
     await interaction.editReply({
       content: `Você selecionou a família ${bold(family.title)} e o gênero ${bold(
-        GENDER_TRANSLATIONS_MAP[gender]
+        GENDER_TRANSLATIONS_MAP[gender],
       )}. Pressione o botão abaixo para preencher o formulário de personagem.`,
       files: [new AttachmentBuilder(family.image).setName(`${family.slug}.png`)],
-      components: [button]
+      components: [button],
     });
   }
 
@@ -187,11 +183,11 @@ export default class Sheet {
         .setCustomId(professionSelectMenuId)
         .setMinValues(1)
         .setMaxValues(1)
-        .setOptions(selectMenuOptions)
+        .setOptions(selectMenuOptions),
     );
     const message = await interaction.editReply({
       content: "Selecione uma profissão para criar sua ficha:",
-      components: [selectMenu]
+      components: [selectMenu],
     });
     const professionSelectMenu = await this.awaitSelectMenu(message, professionSelectMenuId);
     if (!professionSelectMenu) {
@@ -201,12 +197,12 @@ export default class Sheet {
     const profession = professionSelectMenu.values[0] as ProfessionKey;
     await professionSelectMenu.reply({
       content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])}.`,
-      ephemeral: true
+      ephemeral: true,
     });
 
     const secondMessage = await interaction.editReply({
       content: "Selecione seu gênero agora:",
-      components: [this.getGenderSelectMenu()]
+      components: [this.getGenderSelectMenu()],
     });
     const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
     if (!genderSelectMenuSubmit) {
@@ -221,13 +217,13 @@ export default class Sheet {
       new ButtonBuilder()
         .setCustomId(getSpawnModalButtonId(profession as Profession, gender))
         .setLabel("Formulário de personagem")
-        .setStyle(ButtonStyle.Success)
+        .setStyle(ButtonStyle.Success),
     );
     await interaction.editReply({
       content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])} e o gênero ${
         GENDER_TRANSLATIONS_MAP[gender]
       }. Pressione o botão abaixo para preencher o formulário de personagem.`,
-      components: [button]
+      components: [button],
     });
   }
 
@@ -237,19 +233,20 @@ export default class Sheet {
 
     const entitiesSelectMenuOptions = (await Utils.fetchEntityNames()).map((entity) => ({
       label: entity.title,
-      value: entity.slug
+      value: entity.slug,
     }));
     const selectMenuComponent = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
-      new StringSelectMenuBuilder().setCustomId(entitySelectMenuId)
+      new StringSelectMenuBuilder()
+        .setCustomId(entitySelectMenuId)
         .setMaxValues(1)
         .setMinValues(1)
         .setPlaceholder("Escolha uma entidade")
-        .addOptions(entitiesSelectMenuOptions)
+        .addOptions(entitiesSelectMenuOptions),
     );
 
     const message = await interaction.editReply({
       components: [selectMenuComponent],
-      content: "Você precisa selecionar uma entidade para representar sua família:"
+      content: "Você precisa selecionar uma entidade para representar sua família:",
     });
     const entitySelectMenuSubmit = await this.awaitSelectMenu(message, entitySelectMenuId);
     if (!entitySelectMenuSubmit) {
@@ -274,7 +271,9 @@ export default class Sheet {
 
     const isImage = imageGifUrl.safeParse(image).success;
     if (!isImage) {
-      await createFamilyModalSubmission.editReply({ content: "A imagem enviada não é válida. Certifique-se de que ela é um link de imagem que termina em .png ou .jpg" });
+      await createFamilyModalSubmission.editReply({
+        content: "A imagem enviada não é válida. Certifique-se de que ela é um link de imagem que termina em .png ou .jpg",
+      });
       return;
     }
 
@@ -299,7 +298,7 @@ export default class Sheet {
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
         name: createFamilyModalSubmission.user.username,
-        iconURL: createFamilyModalSubmission.user.displayAvatarURL({ forceStatic: true, size: 128 })
+        iconURL: createFamilyModalSubmission.user.displayAvatarURL({ forceStatic: true, size: 128 }),
       })
       .setTitle(`Ficha da família ${name}`)
       .setDescription(`# Descrição \n${description}`)
@@ -326,7 +325,7 @@ export default class Sheet {
     await modalSubmit.followUp({
       ephemeral: true,
       content: `Ficha criada com sucesso, por favor envie uma imagem do personagem EM ANEXO para concluir o processo.`,
-      files: [attachment]
+      files: [attachment],
     });
 
     const imgurLink = await this.collectAttachment(modalSubmit);
@@ -344,7 +343,7 @@ export default class Sheet {
     const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imgurLink);
     const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
     await modalSubmit.editReply({
-      content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${sheetWaitingChannel?.toString()}`
+      content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${sheetWaitingChannel?.toString()}`,
     });
 
     if (isRoyalSheet) {
@@ -407,10 +406,10 @@ export default class Sheet {
         .setCustomId(genderSelectMenuId)
         .addOptions([
           { label: "Masculino", value: "male" },
-          { label: "Feminino", value: "female" }
+          { label: "Feminino", value: "female" },
         ])
         .setMaxValues(1)
-        .setMinValues(1)
+        .setMinValues(1),
     );
   }
 
@@ -419,7 +418,7 @@ export default class Sheet {
       .awaitMessageComponent({
         time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
         filter: (menuInteraction) => menuInteraction.customId === id,
-        componentType: ComponentType.StringSelect
+        componentType: ComponentType.StringSelect,
       })
       .catch(() => {
         console.log(`Um usuário não selecionou uma família, profissão ou gênero a tempo.`);
@@ -427,13 +426,7 @@ export default class Sheet {
       });
   }
 
-  private async handleEvaluationButtons<UpdateT>({
-                                                   interaction,
-                                                   databaseUpdateFn,
-                                                   databaseDeleteFn,
-                                                   action,
-                                                   userId
-                                                 }: HandleEvaluationButtonsParams<UpdateT>) {
+  private async handleEvaluationButtons<UpdateT>({ interaction, databaseUpdateFn, databaseDeleteFn, action, userId }: HandleEvaluationButtonsParams<UpdateT>) {
     if (!interaction.inCachedGuild()) return;
     await interaction.deferReply({ ephemeral: true });
     const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
@@ -459,7 +452,7 @@ export default class Sheet {
         embed.setColor(Colors.Green);
         embed.setFooter({
           text: `Aprovado por ${interaction.user.username}`,
-          iconURL: interaction.user.displayAvatarURL({ forceStatic: true })
+          iconURL: interaction.user.displayAvatarURL({ forceStatic: true }),
         });
         embed.setTimestamp(DateTime.now().toJSDate());
 
@@ -480,7 +473,7 @@ export default class Sheet {
     try {
       return await interaction.awaitModalSubmit({
         time: Duration.fromObject({ minutes: 60 }).as("milliseconds"),
-        filter: (modalInteraction) => modalInteraction.customId === id
+        filter: (modalInteraction) => modalInteraction.customId === id,
       });
     } catch (error) {
       console.log(`${interaction.user.username} não enviou a ficha a tempo.`);
@@ -494,21 +487,21 @@ export default class Sheet {
     const sheetData =
       profession === "royal"
         ? {
-          name,
-          royalTitle,
-          backstory,
-          appearance,
-          transformation,
-          imageUrl: imgurLink,
-          familySlug,
-          profession: "royal"
-        }
+            name,
+            royalTitle,
+            backstory,
+            appearance,
+            transformation,
+            imageUrl: imgurLink,
+            familySlug,
+            profession: "royal",
+          }
         : { name, backstory, appearance, imageUrl: imgurLink, profession: "other" };
 
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
         name: modalSubmit.user.username,
-        iconURL: modalSubmit.user.displayAvatarURL({ forceStatic: true, size: 128 })
+        iconURL: modalSubmit.user.displayAvatarURL({ forceStatic: true, size: 128 }),
       })
       .setTitle(`Ficha de ${name}`)
       .setDescription(`# História \n${backstory}`)
@@ -533,7 +526,7 @@ export default class Sheet {
 
     const attachmentCollector = interaction.channel.createMessageCollector({
       time: Duration.fromObject({ minutes: 10 }).as("milliseconds"),
-      filter: (message) => message.author.id === interaction.user.id
+      filter: (message) => message.author.id === interaction.user.id,
     });
     try {
       return await new Promise<string>((resolve, reject) => {

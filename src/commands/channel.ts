@@ -9,7 +9,7 @@ import {
   Colors,
   EmbedBuilder,
   Message,
-  TextChannel
+  TextChannel,
 } from "discord.js";
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -63,12 +63,12 @@ export default class Channel {
       { name: "Tipo", value: CHANNEL_TYPES_TRANSLATIONS[channel.type], inline: true },
       { name: "Eficiência", value: `${channel.efficiency}%`, inline: true },
       { name: "Recurso", value: RESOURCES_TRANSLATIONS[channel.resourceType], inline: true },
-      { name: "Nível", value: channel.level.toString(), inline: true }
+      { name: "Nível", value: channel.level.toString(), inline: true },
     );
     embed.setImage(channel.image);
     embed.setColor(lodash.sample(Object.values(Colors)) as ColorResolvable);
     const dismissButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId(dismissButtonId).setLabel("Fechar").setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId(dismissButtonId).setLabel("Fechar").setStyle(ButtonStyle.Danger),
     );
     return { embeds: [embed], components: [dismissButton] };
   }
@@ -88,7 +88,7 @@ export default class Channel {
     @SlashOption(COMMAND_OPTIONS.createChannelType) type: ChannelType = "basic",
     @SlashOption(COMMAND_OPTIONS.createChannelResourceType) resourceType: ResourceType = "food",
     @SlashOption(COMMAND_OPTIONS.createChannelEfficiency) efficiency: number = 0,
-    interaction: ChatInputCommandInteraction
+    interaction: ChatInputCommandInteraction,
   ) {
     await interaction.deferReply({ ephemeral: true });
     if (!channel.isTextBased() || channel.isThread()) {
@@ -109,7 +109,7 @@ export default class Channel {
       type,
       efficiency,
       id: channel.id,
-      resourceType
+      resourceType,
     });
     if (!createdChannel) {
       await interaction.editReply({ content: "Não foi possível criar o canal. Já há um canal registrado no banco de dados com esse ID." });

@@ -23,13 +23,13 @@ export default class Store {
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterPrice) price: number,
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterFamily) family: string,
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterImageURL) imageURL: string,
-    interaction: CommandInteraction
+    interaction: CommandInteraction,
   ) {
     await interaction.showModal(CreateSheetModal(true));
     const modalSubmit = await interaction
       .awaitModalSubmit({
         time: Duration.fromObject({ minutes: 60 }).as("milliseconds"),
-        filter: (i) => i.user.id === interaction.user.id
+        filter: (i) => i.user.id === interaction.user.id,
       })
       .catch(() => {
         console.log("Modal para adicionar ficha à loja expirou.");
@@ -41,7 +41,7 @@ export default class Store {
     }
     await modalSubmit.deferReply();
     const [name, backstory, appearance, royalTitle, transformation] = createRoyalSheetModalFieldIds.map((fieldId) =>
-      modalSubmit.fields.getTextInputValue(fieldId)
+      modalSubmit.fields.getTextInputValue(fieldId),
     );
 
     const sheet = await Database.insertStoreSheet({
@@ -54,17 +54,17 @@ export default class Store {
       familySlug: family,
       imageUrl: imageURL,
       isStoreCharacter: true,
-      profession: "royal"
+      profession: "royal",
     });
 
     const embed = await Utils.getCharacterPreviewEmbed(sheet);
     embed.setAuthor({
       name: `Personagem Canônico à venda por  C$${price}`,
-      iconURL: interaction.guild?.iconURL({ forceStatic: true, size: 128 }) ?? undefined
+      iconURL: interaction.guild?.iconURL({ forceStatic: true, size: 128 }) ?? undefined,
     });
     const backstoryPreview = lodash.truncate(backstory, { omission: " (...)", length: 256 });
     embed.setDescription(
-      `# Preview\n${backstoryPreview}\n\n*Inspecione o personagem utilizando o botão "Detalhes" abaixo. Para comprá-lo, clique no botão "Comprar".*\n\n**Atenção:** A compra é irreversível.`
+      `# Preview\n${backstoryPreview}\n\n*Inspecione o personagem utilizando o botão "Detalhes" abaixo. Para comprá-lo, clique no botão "Comprar".*\n\n**Atenção:** A compra é irreversível.`,
     );
 
     const storeChannel = interaction.guild?.channels.cache.get(CHANNEL_IDS.characterStore);
@@ -78,15 +78,15 @@ export default class Store {
       embeds: [embed],
       components: [
         Utils.getCharacterDetailsButton(sheet.userId, sheet.characterId).addComponents(
-          new ButtonBuilder().setCustomId(getBuyStoreCharacterButtonId(sheet.characterId)).setLabel("Comprar").setStyle(ButtonStyle.Success)
-        )
-      ]
+          new ButtonBuilder().setCustomId(getBuyStoreCharacterButtonId(sheet.characterId)).setLabel("Comprar").setStyle(ButtonStyle.Success),
+        ),
+      ],
     });
     await announcementsChannel.send({
       content: `${interaction.user.toString()} adicionou um(a) personagem à loja ${storeChannel.toString()}, ${roleMention(
-        ROLE_IDS.storeCharacterAnnouncements
+        ROLE_IDS.storeCharacterAnnouncements,
       )} !\n\nNome: ${bold(sheet.name)}`,
-      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }]
+      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
     });
 
     Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Personagem adicionado à loja com sucesso!" }));
@@ -119,7 +119,7 @@ export default class Store {
     }
 
     const confirmationPrompt = new ConfirmationPrompt({
-      promptMessage: `Você tem certeza que deseja comprar ${bold(sheet.name)} por C$${sheet.price}? Essa ação é irreversível.`
+      promptMessage: `Você tem certeza que deseja comprar ${bold(sheet.name)} por C$${sheet.price}? Essa ação é irreversível.`,
     });
     const sentPrompt = await confirmationPrompt.send(buttonInteraction);
 
@@ -132,8 +132,8 @@ export default class Store {
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
             content: `🎉 Personagem ${bold(sheet.name)} comprado(a) com sucesso por C$${bold(sheet.price.toString())}!`,
-            components: []
-          })
+            components: [],
+          }),
         );
         const announcementsChannel = promptInteraction.guild?.channels.cache.get(CHANNEL_IDS.announcementsChannel);
         if (!announcementsChannel || !announcementsChannel.isTextBased()) {
@@ -142,14 +142,16 @@ export default class Store {
         }
         await announcementsChannel.send({
           content: `🎉 ${buttonInteraction.user.toString()} comprou um(a) personagem canônico(a) da loja: ${bold(sheet.name)}!`,
-          files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }]
+          files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
         });
         Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
-        Utils.scheduleMessageToDelete(await promptInteraction.editReply({
-          content: "Compra cancelada.",
-          components: []
-        }));
+        Utils.scheduleMessageToDelete(
+          await promptInteraction.editReply({
+            content: "Compra cancelada.",
+            components: [],
+          }),
+        );
       }
     });
   }

@@ -33,13 +33,13 @@ export default class Character {
         const embed = await Utils.getCharacterPreviewEmbed(sheet);
         embed.setAuthor({
           name: `Fichas de ${user.displayName}`,
-          iconURL: user.user.avatarURL({ forceStatic: true }) ?? undefined
+          iconURL: user.user.avatarURL({ forceStatic: true }) ?? undefined,
         });
         embed.setDescription(sheets.map((sheet, index) => formatSheetListString(sheet, index === page)).join("\n"));
         embed.setColor(randomColor ?? Colors.Blurple);
         pages.push({
           embeds: [embed],
-          components: [Utils.getCharacterDetailsButton(user.id, sheet.characterId)]
+          components: [Utils.getCharacterDetailsButton(user.id, sheet.characterId)],
         });
       }
       return pages[page];
@@ -62,7 +62,7 @@ export default class Character {
     await Database.setActiveSheet(interaction.user.id, characterId);
     await interaction.editReply({
       content: `${bold(sheet.name)} definida como personagem ativo(a).`,
-      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }]
+      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
     });
   }
 
@@ -99,13 +99,15 @@ export default class Character {
     embed.setThumbnail(family.image);
     embed.setColor(Colors.Blurple);
     embed.setDescription(
-      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`
+      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`,
     );
-    embed.addFields([{
-      name: "👥 População",
-      value: `${family.population}/${family.populationCap} (${family.populationGrowth}/ano)`,
-      inline: true
-    }]);
+    embed.addFields([
+      {
+        name: "👥 População",
+        value: `${family.population}/${family.populationCap} (${family.populationGrowth}/ano)`,
+        inline: true,
+      },
+    ]);
     await interaction.editReply({ embeds: [embed] });
   }
 }

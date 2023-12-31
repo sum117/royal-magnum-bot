@@ -1,14 +1,5 @@
 import axios from "axios";
-import {
-  ActionRowBuilder,
-  Attachment,
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
-  Colors,
-  EmbedBuilder,
-  Message
-} from "discord.js";
+import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, EmbedBuilder, Message } from "discord.js";
 import { readFile } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
@@ -18,14 +9,14 @@ import Database from "./database";
 import { CharacterSheetType, royalCharacterSchema } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
 
-type Entity = { title: string, slug: string };
-type RootYamlType = { families: Array<Family>, entities: Array<Entity> };
+type Entity = { title: string; slug: string };
+type RootYamlType = { families: Array<Family>; entities: Array<Entity> };
 export default class Utils {
   public static async uploadToImgur(url: string) {
     const response = await axios.post(
       "https://api.imgur.com/3/image",
       { image: url },
-      { headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` } }
+      { headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` } },
     );
     return response.data.data.link as string;
   }
@@ -57,7 +48,7 @@ export default class Utils {
       stone: 0,
       iron: 0,
       food: 0,
-      gold: 0
+      gold: 0,
     };
     return families.map((family) => familySchema.parse({ ...emptyFamilyObject, ...family }));
   }
@@ -69,7 +60,7 @@ export default class Utils {
 
   public static getCharacterDetailsButton(userId: string, characterId: string) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
     );
   }
 

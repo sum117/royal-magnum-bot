@@ -24,7 +24,7 @@ export const channelSchema = z.object({
     .default(new Date().toISOString()),
 
   resourceType: resourceEnumSchema,
-  type: channelTypeEnumSchema
+  type: channelTypeEnumSchema,
 });
 
 export type ChannelType = z.infer<typeof channelTypeEnumSchema>;
@@ -32,7 +32,7 @@ export const channelInputSchema = channelSchema.omit({
   troops: true,
   lastActive: true,
   conqueredBy: true,
-  level: true
+  level: true,
 });
 export const channelPartialSchema = channelSchema.partial();
 

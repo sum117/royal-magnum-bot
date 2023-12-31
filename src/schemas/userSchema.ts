@@ -12,7 +12,7 @@ export const userSchema = z.object({
       const date = new Date(value);
       return date instanceof Date && !isNaN(date.getTime());
     })
-    .default(new Date().toISOString())
+    .default(new Date().toISOString()),
 });
 export const userSchemaOptional = userSchema.partial();
 

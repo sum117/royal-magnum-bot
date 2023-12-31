@@ -14,13 +14,13 @@ export const bot = new Client({
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.GuildMessageReactions,
     IntentsBitField.Flags.GuildVoiceStates,
-    IntentsBitField.Flags.MessageContent
+    IntentsBitField.Flags.MessageContent,
   ],
   silent: false,
   simpleCommand: {
-    prefix: "!"
+    prefix: "!",
   },
-  partials: [Partials.Reaction, Partials.Message]
+  partials: [Partials.Reaction, Partials.Message],
 });
 
 bot.once("ready", async (readyClient) => {
@@ -49,7 +49,7 @@ async function registerSchedules(readyClient: DiscordClient<true>) {
     async () => {
       for (const [_id, rpChannel] of roleplayingChannels) await Channel.manageChannelPlaceholder(rpChannel);
     },
-    { runOnInit: true }
+    { runOnInit: true },
   );
 }
 

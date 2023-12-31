@@ -11,7 +11,7 @@ import {
   RoyalCharacterSheet,
   StoreCharacterSheet,
   StoreCharacterSheetInput,
-  storeCharacterSheetSchema
+  storeCharacterSheetSchema,
 } from "./schemas/characterSheetSchema";
 import { Family, FamilyInput, familySchema, FamilyUpdateInput } from "./schemas/familySchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
@@ -27,7 +27,7 @@ export default class Database {
       id: message.id,
       channelId: message.channelId,
       content: message.embeds[0]?.description,
-      authorId: message.author.id
+      authorId: message.author.id,
     };
     await db.set(`messages.${message.id}`, messageToInsert);
     return messageToInsert;
@@ -73,7 +73,7 @@ export default class Database {
       ...sheet,
       characterId,
       userId: "store",
-      profession: "royal"
+      profession: "royal",
     });
     await db.set<StoreCharacterSheet>(`store.${characterId}`, sheetToInsert);
     return storeCharacterSheetSchema.parse(sheetToInsert);
@@ -128,7 +128,7 @@ export default class Database {
     await db.set(`sheets.${userId}.${characterId}.isActive`, true);
     const sheets = await this.getSheets(userId);
     await Promise.all(
-      sheets.filter((sheet) => sheet.characterId !== characterId).map((sheet) => this.updateSheet(userId, sheet.characterId, { isActive: false }))
+      sheets.filter((sheet) => sheet.characterId !== characterId).map((sheet) => this.updateSheet(userId, sheet.characterId, { isActive: false })),
     );
     return true;
   }
