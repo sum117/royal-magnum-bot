@@ -7,10 +7,11 @@ export const familySchema = z
     description: z.string(),
     slug: z.string(),
     image: z.string(),
+    entity: z.string(),
     population: z.number().default(0),
     populationCap: z.number().default(0),
     populationGrowth: z.number().default(0),
-    isApproved: z.boolean().default(false),
+    isApproved: z.boolean().default(false)
   })
   .merge(resourcesSchema);
 
@@ -19,6 +20,7 @@ export const familyInput = familySchema.pick({
   description: true,
   slug: true,
   image: true,
+  entity: true,
 });
 
 export const familyUpdateInput = familySchema.partial();
