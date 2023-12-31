@@ -17,7 +17,19 @@ export const familySchema = z
     population: z.number().default(0),
     populationCap: z.number().default(0),
     populationGrowth: z.number().default(0),
+    isApproved: z.boolean().default(false),
   })
   .merge(resourcesSchema);
 
+export const familyInput = familySchema.pick({
+  title: true,
+  description: true,
+  slug: true,
+  image: true,
+});
+
+export const familyUpdateInput = familySchema.partial();
+
+export type FamilyUpdateInput = z.infer<typeof familyUpdateInput>;
+export type FamilyInput = z.infer<typeof familyInput>;
 export type Family = z.infer<typeof familySchema>;

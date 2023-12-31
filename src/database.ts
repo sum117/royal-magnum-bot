@@ -12,7 +12,7 @@ import {
   royalCharacterSchema,
   storeCharacterSheetSchema,
 } from "./schemas/characterSheetSchema";
-import { Family, familySchema } from "./schemas/familySchema";
+import { Family, FamilyInput, FamilyUpdateInput, familySchema } from "./schemas/familySchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
 import { UserOptional, userSchema } from "./schemas/userSchema";
 
@@ -38,7 +38,7 @@ export default class Database {
   }
 
   public static async insertUser(userId: string) {
-    const userToSet = { money: 0, royalTokens: 0 };
+    const userToSet = { money: 0, royalTokens: 0, familyTokens: 0 };
     await db.set(`users.${userId}`, userToSet);
     return userToSet;
   }
@@ -102,8 +102,9 @@ export default class Database {
     return updatedSheet;
   }
 
-  public static deleteSheet(userId: string, characterId: string) {
-    return db.delete(`sheets.${userId}.${characterId}`);
+  public static async deleteSheet(userId: string, characterId: string) {
+    await db.delete(`sheets.${userId}.${characterId}`);
+    return;
   }
 
   public static async updateSheet(userId: string, characterId: string, sheet: CharacterSheetPartial) {
@@ -162,14 +163,20 @@ export default class Database {
     });
   }
 
-  public static async setFamily(slug: string, family: Family) {
+  public static async setFamily(slug: string, family: FamilyInput) {
     const familyExists = await db.get<Family>(`families.${slug}`);
     if (familyExists) return null;
-    await db.set<Family>(`families.${slug}`, family);
-    return family;
+    const defaultFamily = familySchema.parse(family);
+    await db.set<Family>(`families.${slug}`, defaultFamily);
+    return defaultFamily;
   }
 
-  public static async updateFamily(slug: string, family: Family) {
+  public static async deleteFamily(slug: string) {
+    await db.delete(`families.${slug}`);
+    return;
+  }
+
+  public static async updateFamily(slug: string, family: FamilyUpdateInput) {
     const oldFamily = await db.get<Family>(`families.${slug}`);
     if (!oldFamily) return null;
     const updatedFamily = { ...oldFamily, ...family };
