@@ -56,6 +56,34 @@ export const PROFESSIONS_TRANSLATIONS = {
   squire: "Escudeiro(a)",
   courtier: "Cortesã(o)",
 } as const;
+
+export const PROFESSIONS_PRONOUNS_TRANSLATIONS = {
+  blacksmith: { male: "Ferreiro", female: "Ferreira" },
+  merchant: { male: "Mercador", female: "Mercadora" },
+  farmer: { male: "Fazendeiro", female: "Fazendeira" },
+  hunter: { male: "Caçador", female: "Caçadora" },
+  fisherman: { male: "Pescador", female: "Pescadora" },
+  miner: { male: "Mineiro", female: "Mineira" },
+  lumberjack: { male: "Lenhador", female: "Lenhadora" },
+  alchemist: { male: "Alquimista", female: "Alquimista" },
+  cook: { male: "Cozinheiro", female: "Cozinheira" },
+  tailor: { male: "Costureiro", female: "Costureira" },
+  carpenter: { male: "Carpinteiro", female: "Carpinteira" },
+  librarian: { male: "Bibliotecário", female: "Bibliotecária" },
+  musician: { male: "Músico", female: "Música" },
+  writer: { male: "Escrivão", female: "Escrivã" },
+  priest: { male: "Sacerdote", female: "Sacerdotisa" },
+  doctor: { male: "Médico", female: "Médica" },
+  sailor: { male: "Marinheiro", female: "Marinheira" },
+  soldier: { male: "Soldado", female: "Soldada" },
+  guard: { male: "Guarda", female: "Guarda" },
+  servant: { male: "Servo", female: "Serva" },
+  slave: { male: "Escravo", female: "Escrava" },
+  knight: { male: "Cavaleiro", female: "Cavaleira" },
+  squire: { male: "Escudeiro", female: "Escudeira" },
+  courtier: { male: "Cortesão", female: "Cortesã" },
+} as const;
+
 export const CHANNEL_TYPES_TRANSLATIONS = {
   basic: "Básico",
   tavern: "Taberna",
@@ -65,7 +93,10 @@ export const CHANNEL_TYPES_TRANSLATIONS = {
   training: "Treinamento",
   royal: "Real",
 } as const;
-
+export const GENDER_TRANSLATIONS_MAP = {
+  male: "Masculino",
+  female: "Feminino",
+};
 export const CRON_EXPRESSIONS = {
   EveryFourHours: "0 */4 * * *",
 };

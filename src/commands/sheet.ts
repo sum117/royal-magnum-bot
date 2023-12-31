@@ -10,6 +10,7 @@ import {
   ComponentType,
   EmbedBuilder,
   GuildMember,
+  Message,
   ModalSubmitInteraction,
   PermissionFlagsBits,
   StringSelectMenuBuilder,
@@ -22,7 +23,7 @@ import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { ATTACHMENT_ICON_URL, CHANNEL_IDS, PROFESSIONS_TRANSLATIONS } from "../data/constants";
+import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { Profession, characterTypeSchemaInput } from "../schemas/characterSheetSchema";
 import { Family } from "../schemas/familySchema";
@@ -34,7 +35,9 @@ export const createRoyalSheetButtonId = "createRoyalSheetButtonId";
 export const familySelectMenuId = "familySelectMenuId";
 export const professionSelectMenuId = "professionSelectMenuId";
 export const familySheetButtonId = "familySheetButtonId";
-export const getSpawnModalButtonId = (profession: Profession, family?: Family) => `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}`;
+export const genderSelectMenuId = "genderSelectMenuId";
+export const getSpawnModalButtonId = (profession: Profession, gender: "male" | "female", family?: Family) =>
+  `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}_${gender}`;
 
 type HandleEvaluationButtonsParams<UpdateT> = {
   interaction: ButtonInteraction;
@@ -113,39 +116,46 @@ export default class Sheet {
         .setOptions(selectMenuOptions),
     );
 
-    const messageWithSelector = await interaction.editReply({ content: "Selecione uma família para criar sua ficha:", components: [selectMenus] });
-
-    const selectMenuSubmit = await messageWithSelector
-      .awaitMessageComponent({
-        time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
-        filter: (menuInteraction) => menuInteraction.customId === familySelectMenuId,
-        componentType: ComponentType.StringSelect,
-      })
-      .catch(() => {
-        console.log(`${interaction.user.username} não selecionou uma família a tempo.`);
-        return null;
-      });
-
-    if (!selectMenuSubmit) {
+    const message = await interaction.editReply({ content: "Selecione os campos a seguir para criar sua ficha:", components: [selectMenus] });
+    const familySelectMenuSubmit = await this.awaitSelectMenu(message, familySelectMenuId);
+    if (!familySelectMenuSubmit) {
       await interaction.editReply({ content: "Você não selecionou uma família a tempo." });
       return;
     }
-
-    await selectMenuSubmit.deferReply({ ephemeral: true });
-    await interaction.editReply({ content: "Família selecionada com sucesso.", components: [] });
-
-    const familySlug = selectMenuSubmit.values[0];
+    await familySelectMenuSubmit.reply({
+      content: `Você selecionou a família ${bold(familySelectMenuSubmit.values[0])}.`,
+      ephemeral: true,
+    });
+    const familySlug = familySelectMenuSubmit.values[0];
     const family = await Database.getFamily(familySlug);
     if (!family) {
       await interaction.editReply({ content: "A família selecionada não existe." });
       return;
     }
 
+    const secondMessage = await interaction.editReply({ content: "Selecione seu gênero agora:", components: [this.getGenderSelectMenu()] });
+    const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
+    if (!genderSelectMenuSubmit) {
+      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      return;
+    }
+    await genderSelectMenuSubmit.reply({
+      content: "Gênero selecionado com sucesso.",
+      ephemeral: true,
+    });
+
+    const gender = genderSelectMenuSubmit.values[0] as "male" | "female";
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getSpawnModalButtonId("royal", family)).setLabel(`Formulário dos(as) ${family.title}`).setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(getSpawnModalButtonId("royal", gender, family))
+        .setLabel(`Formulário dos(as) ${family.title}`)
+        .setStyle(ButtonStyle.Success),
     );
-    await selectMenuSubmit.editReply({
-      content: `Você selecionou a família ${bold(family.title)}. Pressione o botão abaixo para preencher o formulário de personagem.`,
+
+    await interaction.editReply({
+      content: `Você selecionou a família ${bold(family.title)} e o gênero ${bold(
+        GENDER_TRANSLATIONS_MAP[gender],
+      )}. Pressione o botão abaixo para preencher o formulário de personagem.`,
       files: [new AttachmentBuilder(family.image).setName(`${family.slug}.png`)],
       components: [button],
     });
@@ -169,34 +179,39 @@ export default class Sheet {
         .setOptions(selectMenuOptions),
     );
     const message = await interaction.editReply({ content: "Selecione uma profissão para criar sua ficha:", components: [selectMenu] });
-    const selectMenuSubmit = await message
-      .awaitMessageComponent({
-        time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
-        filter: (menuInteraction) => menuInteraction.customId === professionSelectMenuId,
-        componentType: ComponentType.StringSelect,
-      })
-      .catch(() => {
-        console.log(`${interaction.user.username} não selecionou uma profissão a tempo.`);
-        return null;
-      });
-
-    if (!selectMenuSubmit) {
+    const professionSelectMenu = await this.awaitSelectMenu(message, professionSelectMenuId);
+    if (!professionSelectMenu) {
       await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
       return;
     }
+    const profession = professionSelectMenu.values[0] as ProfessionKey;
+    await professionSelectMenu.reply({
+      content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])}.`,
+      ephemeral: true,
+    });
 
-    await selectMenuSubmit.deferReply({ ephemeral: true });
-    const profession = selectMenuSubmit.values[0] as Profession;
+    const secondMessage = await interaction.editReply({ content: "Selecione seu gênero agora:", components: [this.getGenderSelectMenu()] });
+    const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
+    if (!genderSelectMenuSubmit) {
+      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      return;
+    }
+    await genderSelectMenuSubmit.reply({ content: "Gênero selecionado com sucesso.", ephemeral: true });
+
+    const gender = genderSelectMenuSubmit.values[0] as "male" | "female";
+
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getSpawnModalButtonId(profession)).setLabel("Formulário de personagem").setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(getSpawnModalButtonId(profession as Profession, gender))
+        .setLabel("Formulário de personagem")
+        .setStyle(ButtonStyle.Success),
     );
-    await selectMenuSubmit.editReply({
-      content: `Você selecionou a profissão ${bold(
-        PROFESSIONS_TRANSLATIONS[profession as ProfessionKey],
-      )}. Pressione o botão abaixo para preencher o formulário de personagem.`,
+    await interaction.editReply({
+      content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])} e o gênero ${
+        GENDER_TRANSLATIONS_MAP[gender]
+      }. Pressione o botão abaixo para preencher o formulário de personagem.`,
       components: [button],
     });
-    await interaction.editReply({ content: "Profissão selecionada com sucesso.", components: [] });
   }
 
   @ButtonComponent({ id: familySheetButtonId })
@@ -343,7 +358,31 @@ export default class Sheet {
 
     return new ActionRowBuilder<ButtonBuilder>().setComponents(approveButton, rejectButton);
   }
-
+  private getGenderSelectMenu() {
+    return new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha seu gênero")
+        .setCustomId(genderSelectMenuId)
+        .addOptions([
+          { label: "Masculino", value: "male" },
+          { label: "Feminino", value: "female" },
+        ])
+        .setMaxValues(1)
+        .setMinValues(1),
+    );
+  }
+  private async awaitSelectMenu(message: Message, id = familySelectMenuId) {
+    return await message
+      .awaitMessageComponent({
+        time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
+        filter: (menuInteraction) => menuInteraction.customId === id,
+        componentType: ComponentType.StringSelect,
+      })
+      .catch(() => {
+        console.log(`Um usuário não selecionou uma família, profissão ou gênero a tempo.`);
+        return null;
+      });
+  }
   private async handleEvaluationButtons<UpdateT>({ interaction, databaseUpdateFn, databaseDeleteFn, action, userId }: HandleEvaluationButtonsParams<UpdateT>) {
     if (!interaction.inCachedGuild()) return;
     await interaction.deferReply({ ephemeral: true });
