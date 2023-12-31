@@ -1,5 +1,6 @@
-import { CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
+import { Attachment, ChatInputCommandInteraction, CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
+import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { imageGifUrl } from "../schemas/utils";
 
@@ -47,5 +48,16 @@ export default class Utils {
         { name: "Boosts", value: guild?.premiumSubscriptionCount?.toString() ?? "0", inline: true },
       ]);
     await interaction.editReply({ embeds: [embed], content: "https://discord.gg/8rtKfrgVFy" });
+  }
+
+  @Slash(COMMANDS.addEmoji)
+  public async addEmoji(
+    @SlashOption(COMMAND_OPTIONS.addEmojiName) name: string,
+    @SlashOption(COMMAND_OPTIONS.addEmojiAttachment) attachment: Attachment,
+    interaction: ChatInputCommandInteraction,
+  ) {
+    await interaction.deferReply({ ephemeral: true });
+    const emoji = await interaction.guild?.emojis.create({ attachment: attachment.url, name: lodash.snakeCase(name) });
+    await interaction.editReply(`Emoji ${emoji} adicionado com sucesso.`);
   }
 }

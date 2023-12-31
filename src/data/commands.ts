@@ -19,9 +19,18 @@ export const COMMANDS: CommandData = {
   },
   avatar: { name: "avatar", description: "Inspectiona o avatar de um usuário" },
   serverInfo: { name: "server-info", description: "Mostra informações do servidor" },
+  addEmoji: { name: "add-emoji", description: "Adiciona um emoji ao servidor", defaultMemberPermissions: [PermissionFlagsBits.Administrator] },
+  giveFamilyToken: {
+    name: "give-family-token",
+    description: "Dá uma ficha de família a um usuário",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
 } as const;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
+  giveFamilyTokenUser: { name: "user", description: "Usuário para dar a ficha de família", required: true, type: ApplicationCommandOptionType.User },
+  addEmojiName: { name: "name", description: "Nome do emoji", required: true, type: ApplicationCommandOptionType.String },
+  addEmojiAttachment: { name: "attachment", description: "Arquivo para adicionar como emoji", required: true, type: ApplicationCommandOptionType.Attachment },
   avatarTarget: { name: "target", description: "Usuário para inspecionar o avatar", required: true, type: ApplicationCommandOptionType.User },
   changePictureURL: { name: "url", description: "URL da imagem", required: true, type: ApplicationCommandOptionType.String },
   giveRoyalTokenUser: { name: "user", description: "Usuário para dar a ficha real", required: true, type: ApplicationCommandOptionType.User },
