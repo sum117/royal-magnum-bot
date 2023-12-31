@@ -1,8 +1,8 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
-import { ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember, bold } from "discord.js";
+import { bold, ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
+import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { PAGINATION_DEFAULT_OPTIONS, RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet } from "../schemas/characterSheetSchema";
@@ -31,12 +31,15 @@ export default class Character {
       const pages = [];
       for (const sheet of sheets) {
         const embed = await Utils.getCharacterPreviewEmbed(sheet);
-        embed.setAuthor({ name: `Fichas de ${user.displayName}`, iconURL: user.user.avatarURL({ forceStatic: true }) ?? undefined });
+        embed.setAuthor({
+          name: `Fichas de ${user.displayName}`,
+          iconURL: user.user.avatarURL({ forceStatic: true }) ?? undefined
+        });
         embed.setDescription(sheets.map((sheet, index) => formatSheetListString(sheet, index === page)).join("\n"));
         embed.setColor(randomColor ?? Colors.Blurple);
         pages.push({
           embeds: [embed],
-          components: [Utils.getCharacterDetailsButton(user.id, sheet.characterId)],
+          components: [Utils.getCharacterDetailsButton(user.id, sheet.characterId)]
         });
       }
       return pages[page];
@@ -59,7 +62,7 @@ export default class Character {
     await Database.setActiveSheet(interaction.user.id, characterId);
     await interaction.editReply({
       content: `${bold(sheet.name)} definida como personagem ativo(a).`,
-      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
+      files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }]
     });
   }
 
@@ -96,9 +99,13 @@ export default class Character {
     embed.setThumbnail(family.image);
     embed.setColor(Colors.Blurple);
     embed.setDescription(
-      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`,
+      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`
     );
-    embed.addFields([{ name: "👥 População", value: `${family.population}/${family.populationCap} (${family.populationGrowth}/ano)`, inline: true }]);
+    embed.addFields([{
+      name: "👥 População",
+      value: `${family.population}/${family.populationCap} (${family.populationGrowth}/ano)`,
+      inline: true
+    }]);
     await interaction.editReply({ embeds: [embed] });
   }
 }

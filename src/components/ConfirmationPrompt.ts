@@ -8,7 +8,7 @@ import {
   ComponentType,
   InteractionCollector,
   InteractionResponse,
-  Message,
+  Message
 } from "discord.js";
 import { Duration } from "luxon";
 import { cancelButtonId, confirmButtonId } from "../commands/store";
@@ -34,8 +34,8 @@ export class ConfirmationPrompt implements BaseMessageOptions {
     this.components = [
       new ActionRowBuilder<ButtonBuilder>().setComponents(
         new ButtonBuilder().setCustomId(this.confirmButtonId).setLabel("Confirmar").setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(this.cancelButtonId).setLabel("Cancelar").setStyle(ButtonStyle.Danger),
-      ),
+        new ButtonBuilder().setCustomId(this.cancelButtonId).setLabel("Cancelar").setStyle(ButtonStyle.Danger)
+      )
     ];
   }
 
@@ -52,7 +52,7 @@ export class ConfirmationPrompt implements BaseMessageOptions {
       time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
       filter: (i) => i.user.id === interaction.user.id && (i.customId === this.confirmButtonId || i.customId === this.cancelButtonId),
       componentType: ComponentType.Button,
-      max: 1,
+      max: 1
     });
     this.collector = collector as InteractionCollector<ButtonInteraction>;
     return this as ConfirmationPrompt & { collector: InteractionCollector<ButtonInteraction> };

@@ -14,5 +14,5 @@ export const troopsSchema = z.object({
   imageUrl: z.string(),
   quantity: z.number(),
   familySlug: z.string(),
-  allies: z.array(z.string()),
+  allies: z.array(z.string())
 });

@@ -17,7 +17,7 @@ const getCreateSheetModal = (isRoyal: boolean) => {
           .setMaxLength(32)
           .setRequired(true)
           .setStyle(TextInputStyle.Short)
-          .setLabel("Nome"),
+          .setLabel("Nome")
       ),
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
@@ -27,7 +27,7 @@ const getCreateSheetModal = (isRoyal: boolean) => {
           .setMaxLength(2000)
           .setRequired(true)
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("História"),
+          .setLabel("História")
       ),
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
@@ -37,8 +37,8 @@ const getCreateSheetModal = (isRoyal: boolean) => {
           .setMaxLength(512)
           .setRequired(true)
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("Aparência"),
-      ),
+          .setLabel("Aparência")
+      )
     );
 
   if (isRoyal) {
@@ -51,7 +51,7 @@ const getCreateSheetModal = (isRoyal: boolean) => {
           .setMaxLength(32)
           .setRequired(true)
           .setStyle(TextInputStyle.Short)
-          .setLabel("Título Real"),
+          .setLabel("Título Real")
       ),
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
@@ -61,8 +61,8 @@ const getCreateSheetModal = (isRoyal: boolean) => {
           .setMaxLength(2000)
           .setRequired(true)
           .setStyle(TextInputStyle.Paragraph)
-          .setLabel("Dádiva / Transformação"),
-      ),
+          .setLabel("Dádiva / Transformação")
+      )
     );
   }
 

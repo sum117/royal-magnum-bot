@@ -1,7 +1,7 @@
 import { Attachment, ChatInputCommandInteraction, CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
+import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { imageGifUrl } from "../schemas/utils";
 
 @Discord()
@@ -35,7 +35,7 @@ export default class Utils {
       .setTitle(guild.name)
       .setThumbnail(guild.iconURL() ?? null)
       .setDescription(
-        `${guild.name} é um servidor de Roleplay Medieval que mistura geopolitica e alta fantasia em um mundo dominado por entidades divinas e seus humanos escolhidos. Seja um príncipe ou uma princesa de uma das familias reais ou um plebeu que busca fama e fortuna.`,
+        `${guild.name} é um servidor de Roleplay Medieval que mistura geopolitica e alta fantasia em um mundo dominado por entidades divinas e seus humanos escolhidos. Seja um príncipe ou uma princesa de uma das familias reais ou um plebeu que busca fama e fortuna.`
       )
       .addFields([
         { name: "ID", value: guild.id, inline: true },
@@ -45,7 +45,7 @@ export default class Utils {
         { name: "Cargos", value: guild.roles.cache.size.toString(), inline: true },
         { name: "Canais", value: guild.channels.cache.size.toString(), inline: true },
         { name: "Emojis", value: guild.emojis.cache.size.toString(), inline: true },
-        { name: "Boosts", value: guild?.premiumSubscriptionCount?.toString() ?? "0", inline: true },
+        { name: "Boosts", value: guild?.premiumSubscriptionCount?.toString() ?? "0", inline: true }
       ]);
     await interaction.editReply({ embeds: [embed], content: "https://discord.gg/8rtKfrgVFy" });
   }
@@ -54,7 +54,7 @@ export default class Utils {
   public async addEmoji(
     @SlashOption(COMMAND_OPTIONS.addEmojiName) name: string,
     @SlashOption(COMMAND_OPTIONS.addEmojiAttachment) attachment: Attachment,
-    interaction: ChatInputCommandInteraction,
+    interaction: ChatInputCommandInteraction
   ) {
     await interaction.deferReply({ ephemeral: true });
     const emoji = await interaction.guild?.emojis.create({ attachment: attachment.url, name: lodash.snakeCase(name) });

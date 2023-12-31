@@ -19,16 +19,21 @@ export const channelSchema = z.object({
     .refine((value) => {
       if (!value) return true;
       const date = new Date(value);
-      return date instanceof Date && !isNaN(date.getTime());
+      return !isNaN(date.getTime());
     })
     .default(new Date().toISOString()),
 
   resourceType: resourceEnumSchema,
-  type: channelTypeEnumSchema,
+  type: channelTypeEnumSchema
 });
 
 export type ChannelType = z.infer<typeof channelTypeEnumSchema>;
-export const channelInputSchema = channelSchema.omit({ troops: true, lastActive: true, conqueredBy: true, level: true });
+export const channelInputSchema = channelSchema.omit({
+  troops: true,
+  lastActive: true,
+  conqueredBy: true,
+  level: true
+});
 export const channelPartialSchema = channelSchema.partial();
 
 export type ChannelInput = z.infer<typeof channelInputSchema>;

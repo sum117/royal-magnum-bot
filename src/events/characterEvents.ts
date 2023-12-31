@@ -66,14 +66,14 @@ export default class CharacterEvents {
         this.isEditingMap.set(user.id, true);
 
         const feedback = await reaction.message.channel.send(
-          `${user.toString()}, você tem 30 minutos para editar sua mensagem. Qualquer mensagem enviada por você nesse canal será considerada a mensagem final.`,
+          `${user.toString()}, você tem 30 minutos para editar sua mensagem. Qualquer mensagem enviada por você nesse canal será considerada a mensagem final.`
         );
         Utils.scheduleMessageToDelete(feedback);
 
         const collector = reaction.message.channel.createMessageCollector({
           filter: (msg) => msg.author.id === user.id,
           time: Duration.fromObject({ minutes: 30 }).as("milliseconds"),
-          max: 1,
+          max: 1
         });
 
         collector.on("end", async (collectedMessages) => {
@@ -108,6 +108,9 @@ export default class CharacterEvents {
       Duration.fromISO(user?.lastMessageAt ?? new Date().toISOString())
         .plus({ minutes: 30 })
         .toMillis() < Date.now();
-    if (hasBeenThirtyMinutes) await Database.updateUser(message.author.id, { money: user?.money + randomMoney, lastMessageAt: new Date().toISOString() });
+    if (hasBeenThirtyMinutes) await Database.updateUser(message.author.id, {
+      money: user?.money + randomMoney,
+      lastMessageAt: new Date().toISOString()
+    });
   }
 }

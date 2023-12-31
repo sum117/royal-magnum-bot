@@ -5,6 +5,7 @@ import { Client } from "discordx";
 import "dotenv/config";
 import cron from "node-cron";
 import Channel from "./commands/channel";
+import { CRON_EXPRESSIONS } from "./data/constants";
 
 export const bot = new Client({
   intents: [
@@ -13,13 +14,13 @@ export const bot = new Client({
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.GuildMessageReactions,
     IntentsBitField.Flags.GuildVoiceStates,
-    IntentsBitField.Flags.MessageContent,
+    IntentsBitField.Flags.MessageContent
   ],
   silent: false,
   simpleCommand: {
-    prefix: "!",
+    prefix: "!"
   },
-  partials: [Partials.Reaction, Partials.Message],
+  partials: [Partials.Reaction, Partials.Message]
 });
 
 bot.once("ready", async (readyClient) => {
@@ -44,11 +45,11 @@ async function registerSchedules(readyClient: DiscordClient<true>) {
   if (!roleplayingChannels) return;
 
   cron.schedule(
-    "0 */4 * * *",
+    CRON_EXPRESSIONS.EveryFourHours,
     async () => {
       for (const [_id, rpChannel] of roleplayingChannels) await Channel.manageChannelPlaceholder(rpChannel);
     },
-    { runOnInit: true },
+    { runOnInit: true }
   );
 }
 

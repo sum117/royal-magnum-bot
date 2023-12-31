@@ -6,7 +6,7 @@ export const resourcesSchema = z.object({
   stone: z.number().default(0),
   iron: z.number().default(0),
   food: z.number().default(0),
-  gold: z.number().default(0),
+  gold: z.number().default(0)
 });
 
 export type ResourceType = z.infer<typeof resourceEnumSchema>;
