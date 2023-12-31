@@ -10,6 +10,7 @@ export const characterSheetSchema = z.object({
   imageUrl: z.string(),
   userId: z.string(),
 });
+
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
 export const characterSheetSchemaInput = characterSheetSchema.omit({ characterId: true, isApproved: true, userId: true, isActive: true });
 
@@ -18,6 +19,7 @@ export const royalCharacterSchema = characterSheetSchema.extend({
   transformation: z.string().min(1).max(2048),
   royalTitle: z.string().min(1).max(32),
 });
+
 export const royalCharacterSchemaPartial = royalCharacterSchema.partial();
 export const royalCharacterSchemaInput = royalCharacterSchema.omit({ characterId: true, isApproved: true, userId: true, isActive: true });
 
