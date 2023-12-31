@@ -20,7 +20,7 @@ export const familyInput = familySchema.pick({
   description: true,
   slug: true,
   image: true,
-  entity: true,
+  entity: true
 });
 
 export const familyUpdateInput = familySchema.partial();

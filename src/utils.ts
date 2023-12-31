@@ -17,8 +17,9 @@ import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./c
 import Database from "./database";
 import { CharacterSheetType, royalCharacterSchema } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
-type Entity = {title: string, slug: string};
-type RootYamlType = {families: Array<Family>, entities: Array<Entity>};
+
+type Entity = { title: string, slug: string };
+type RootYamlType = { families: Array<Family>, entities: Array<Entity> };
 export default class Utils {
   public static async uploadToImgur(url: string) {
     const response = await axios.post(
@@ -47,7 +48,7 @@ export default class Utils {
   }
 
   public static async fetchBaseFamilies() {
-    const {families} = await this.fetchRootYaml<RootYamlType>();
+    const { families } = await this.fetchRootYaml<RootYamlType>();
     const emptyFamilyObject = {
       population: 0,
       populationCap: 0,
@@ -62,14 +63,10 @@ export default class Utils {
   }
 
   public static async fetchEntityNames() {
-    const {entities} = await this.fetchRootYaml<RootYamlType>();
+    const { entities } = await this.fetchRootYaml<RootYamlType>();
     return entities;
   }
-  private static async fetchRootYaml<T>() {
-    const projectRoot = process.cwd();
-    const file = await readFile(path.join(projectRoot, "transformations.yaml"), "utf-8");
-    return yaml.parse(file) as T;
-  }
+
   public static getCharacterDetailsButton(userId: string, characterId: string) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary)
@@ -108,6 +105,12 @@ export default class Utils {
       }
       await buttonInteraction.editReply({ embeds: [embed] });
     }
+  }
+
+  private static async fetchRootYaml<T>() {
+    const projectRoot = process.cwd();
+    const file = await readFile(path.join(projectRoot, "transformations.yaml"), "utf-8");
+    return yaml.parse(file) as T;
   }
 
   private static parseContent(content: string) {

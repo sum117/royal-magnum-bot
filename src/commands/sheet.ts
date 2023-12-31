@@ -235,7 +235,10 @@ export default class Sheet {
   public async createFamilySheetButtonListener(interaction: ButtonInteraction) {
     await interaction.deferReply({ ephemeral: true });
 
-    const entitiesSelectMenuOptions = (await Utils.fetchEntityNames()).map((entity) => ({ label: entity.title, value: entity.slug }));
+    const entitiesSelectMenuOptions = (await Utils.fetchEntityNames()).map((entity) => ({
+      label: entity.title,
+      value: entity.slug
+    }));
     const selectMenuComponent = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
       new StringSelectMenuBuilder().setCustomId(entitySelectMenuId)
         .setMaxValues(1)
@@ -244,7 +247,10 @@ export default class Sheet {
         .addOptions(entitiesSelectMenuOptions)
     );
 
-    const message = await interaction.editReply({components: [selectMenuComponent], content: "Você precisa selecionar uma entidade para representar sua família:"});
+    const message = await interaction.editReply({
+      components: [selectMenuComponent],
+      content: "Você precisa selecionar uma entidade para representar sua família:"
+    });
     const entitySelectMenuSubmit = await this.awaitSelectMenu(message, entitySelectMenuId);
     if (!entitySelectMenuSubmit) {
       await interaction.editReply({ content: "Você não selecionou uma entidade a tempo." });
