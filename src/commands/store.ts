@@ -9,6 +9,7 @@ import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
 import Utils from "../utils";
 import { characterDetailsButtonIdPrefix } from "./character";
+import { bot } from "../main";
 
 export const buyStoreCharacterButtonIdPrefix = "buy-sheet";
 export const getBuyStoreCharacterButtonId = (characterId: string) => `${buyStoreCharacterButtonIdPrefix}-${characterId}`;
@@ -18,6 +19,9 @@ export const cancelButtonId = "cancelButtonId";
 
 @Discord()
 export default class Store {
+  private announcementsChannel = bot.systemChannels.get(CHANNEL_IDS.announcementsChannel);
+  private storeChannel = bot.systemChannels.get(CHANNEL_IDS.characterStore);
+
   @Slash(COMMANDS.addStoreCharacter)
   public async addStoreCharacter(
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterPrice) price: number,
@@ -67,14 +71,7 @@ export default class Store {
       `# Preview\n${backstoryPreview}\n\n*Inspecione o personagem utilizando o botão "Detalhes" abaixo. Para comprá-lo, clique no botão "Comprar".*\n\n**Atenção:** A compra é irreversível.`,
     );
 
-    const storeChannel = interaction.guild?.channels.cache.get(CHANNEL_IDS.characterStore);
-    const announcementsChannel = interaction.guild?.channels.cache.get(CHANNEL_IDS.announcementsChannel);
-    if (!storeChannel || !storeChannel.isTextBased() || !announcementsChannel || !announcementsChannel.isTextBased()) {
-      Utils.scheduleMessageToDelete(await interaction.editReply({ content: "Canal da loja não encontrado." }));
-      return;
-    }
-
-    await storeChannel.send({
+    await this.storeChannel?.send({
       embeds: [embed],
       components: [
         Utils.getCharacterDetailsButton(sheet.userId, sheet.characterId).addComponents(
@@ -82,8 +79,9 @@ export default class Store {
         ),
       ],
     });
-    await announcementsChannel.send({
-      content: `${interaction.user.toString()} adicionou um(a) personagem à loja ${storeChannel.toString()}, ${roleMention(
+
+    await this.announcementsChannel?.send({
+      content: `${interaction.user.toString()} adicionou um(a) personagem à loja ${this.storeChannel?.toString()}, ${roleMention(
         ROLE_IDS.storeCharacterAnnouncements,
       )} !\n\nNome: ${bold(sheet.name)}`,
       files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
@@ -135,15 +133,12 @@ export default class Store {
             components: [],
           }),
         );
-        const announcementsChannel = promptInteraction.guild?.channels.cache.get(CHANNEL_IDS.announcementsChannel);
-        if (!announcementsChannel || !announcementsChannel.isTextBased()) {
-          Utils.scheduleMessageToDelete(await promptInteraction.editReply({ content: "Canal de anúncios não encontrado." }));
-          return;
-        }
-        await announcementsChannel.send({
+
+        await this.announcementsChannel?.send({
           content: `🎉 ${buttonInteraction.user.toString()} comprou um(a) personagem canônico(a) da loja: ${bold(sheet.name)}!`,
           files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
         });
+
         Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
         Utils.scheduleMessageToDelete(

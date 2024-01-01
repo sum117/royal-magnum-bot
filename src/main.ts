@@ -5,7 +5,7 @@ import { Client } from "discordx";
 import "dotenv/config";
 import cron from "node-cron";
 import Channel from "./commands/channel";
-import { CRON_EXPRESSIONS } from "./data/constants";
+import { CHANNEL_IDS, CRON_EXPRESSIONS } from "./data/constants";
 
 export const bot = new Client({
   intents: [
@@ -24,6 +24,7 @@ export const bot = new Client({
 });
 
 bot.once("ready", async (readyClient) => {
+  assignSystemChannels(readyClient);
   await bot.initApplicationCommands();
   console.log("Bot started");
   await registerSchedules(readyClient);
@@ -36,6 +37,18 @@ bot.on("interactionCreate", (interaction: Interaction) => {
 bot.on("messageCreate", async (message: Message) => {
   await bot.executeCommand(message);
 });
+
+function assignSystemChannels(readyClient: DiscordClient<true>) {
+  const guild = readyClient.guilds.cache.first();
+  if (!guild) return;
+  bot.systemChannels = guild.channels.cache.filter((channel): channel is TextChannel => {
+    type PropertyChannelType = (typeof CHANNEL_IDS)[keyof typeof CHANNEL_IDS];
+    return Object.values(CHANNEL_IDS).includes(channel.id as PropertyChannelType) && channel.isTextBased();
+  });
+  bot.systemChannels.forEach((channel) => {
+    console.log(`Found system channel: ${channel.name} and assigned to bot.systemChannels successfully.`);
+  });
+}
 
 async function registerSchedules(readyClient: DiscordClient<true>) {
   const isRoleplayingChannel = (channel: DiscordChannel): channel is TextChannel =>

@@ -29,6 +29,7 @@ import { characterTypeSchemaInput, Profession } from "../schemas/characterSheetS
 import { Family } from "../schemas/familySchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
+import { bot } from "../main";
 
 export const createSheetButtonId = "createSheetButtonId";
 export const createRoyalSheetButtonId = "createRoyalSheetButtonId";
@@ -52,6 +53,9 @@ type SpawnModalTuple = ["spawnModalButtonId", string, Profession];
 
 @Discord()
 export default class Sheet {
+  private sheetWaitingChannel = bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom);
+  private approvedSheetChannel = bot.systemChannels.get(CHANNEL_IDS.approvedSheetRoom);
+
   @Slash(COMMANDS.spawnSheet)
   public async spawnSheetCreator(interaction: ChatInputCommandInteraction) {
     if (!interaction.inCachedGuild()) return;
@@ -175,6 +179,7 @@ export default class Sheet {
     type ProfessionKey = keyof typeof PROFESSIONS_TRANSLATIONS;
     const selectMenuOptions = new Array<{ label: string; value: string }>();
     for (const profession of Object.keys(PROFESSIONS_TRANSLATIONS)) {
+      if (profession === "royal") continue;
       selectMenuOptions.push({ label: PROFESSIONS_TRANSLATIONS[profession as ProfessionKey], value: profession });
     }
     const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
@@ -289,12 +294,6 @@ export default class Sheet {
       return;
     }
 
-    const sheetWaitingChannel = createFamilyModalSubmission.guild.channels.cache.get(CHANNEL_IDS.sheetWaitingRoom);
-    if (!sheetWaitingChannel?.isTextBased()) {
-      await createFamilyModalSubmission.editReply("Não foi possível concluir a criação da ficha. O canal de espera não existe.");
-      return;
-    }
-
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
         name: createFamilyModalSubmission.user.username,
@@ -307,7 +306,7 @@ export default class Sheet {
       .setTimestamp(DateTime.now().toJSDate());
 
     const evaluationButtons = this.getEvaluationButtons("family", slug, createFamilyModalSubmission.user.id);
-    await sheetWaitingChannel.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
+    await this.sheetWaitingChannel?.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
     await createFamilyModalSubmission.editReply({ content: "Família postada com sucesso. Aguarde a aprovação de um moderador." });
   }
 
@@ -334,16 +333,10 @@ export default class Sheet {
       return;
     }
 
-    const sheetWaitingChannel = modalSubmit.guild.channels.cache.get(CHANNEL_IDS.sheetWaitingRoom);
-    if (!sheetWaitingChannel?.isTextBased()) {
-      await modalSubmit.editReply("Não foi possível concluir a criação da ficha. O canal de espera não existe.");
-      return;
-    }
-
     const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imgurLink);
     const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
     await modalSubmit.editReply({
-      content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${sheetWaitingChannel?.toString()}`,
+      content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${this.sheetWaitingChannel?.toString()}`,
     });
 
     if (isRoyalSheet) {
@@ -351,7 +344,7 @@ export default class Sheet {
       await Database.updateUser(savedSheet.userId, { royalTokens: user.royalTokens - 1 });
     }
 
-    await sheetWaitingChannel.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
+    await this.sheetWaitingChannel?.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
   }
 
   @ButtonComponent({ id: /^approve|reject_.*$/ })
@@ -437,11 +430,6 @@ export default class Sheet {
 
     switch (action) {
       case "approve":
-        const approvedSheetChannel = interaction.guild.channels.cache.get(CHANNEL_IDS.approvedSheetRoom);
-        if (!approvedSheetChannel?.isTextBased()) {
-          await interaction.editReply({ content: "Não foi possível aprovar a ficha. O canal de fichas aprovadas não existe." });
-          return;
-        }
         const apiEmbed = interaction.message.embeds.at(0);
         if (!apiEmbed) {
           await interaction.editReply({ content: "Não foi possível aprovar a ficha. A ficha não possui um embed." });
@@ -458,7 +446,7 @@ export default class Sheet {
 
         await databaseUpdateFn();
         await interaction.editReply({ content: "Ficha aprovada com sucesso." });
-        await approvedSheetChannel.send({ content: userMention(userId), embeds: [embed] });
+        await this.approvedSheetChannel?.send({ content: userMention(userId), embeds: [embed] });
         Utils.scheduleMessageToDelete(interaction.message, 1000);
         break;
       case "reject":
