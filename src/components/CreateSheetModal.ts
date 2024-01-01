@@ -56,7 +56,7 @@ const getCreateSheetModal = (isRoyal: boolean) => {
       new ActionRowBuilder<TextInputBuilder>().setComponents(
         new TextInputBuilder()
           .setCustomId(createRoyalSheetModalFieldIds[4])
-          .setPlaceholder("Uma libelula gigante [...]")
+          .setPlaceholder("Uma libélula gigante [...]")
           .setMinLength(1)
           .setMaxLength(2000)
           .setRequired(true)

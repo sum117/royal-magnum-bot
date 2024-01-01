@@ -6,7 +6,7 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS: CommandData = {
-  createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua familia." },
+  createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua família." },
   spawnSheet: {
     name: "spawn-sheet",
     description: "Cria um componente de criação de ficha",

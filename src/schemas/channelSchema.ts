@@ -2,7 +2,7 @@ import { z } from "zod";
 import { resourceEnumSchema } from "./resourceSchema";
 import { troopsSchema } from "./troopsSchema";
 
-export const channelTypeEnumSchema = z.enum(["blacksmith", "tavern", "market", "barracks", "training", "royal", "basic"]).default("basic");
+export const channelTypeEnumSchema = z.enum(["blacksmith", "tavern", "market", "barracks", "training", "royal", "basic", "clergy", "health"]).default("basic");
 export const channelSchema = z.object({
   placeholderMessageId: z.string().optional(),
   id: z.string(),

@@ -1,6 +1,9 @@
 import { PaginationType } from "@discordx/pagination";
 import { ButtonStyle } from "discord.js";
 import { Duration } from "luxon";
+import { Profession } from "../schemas/characterSheetSchema";
+import { ChannelType } from "../schemas/channelSchema";
+import { ResourceType } from "../schemas/resourceSchema";
 
 export const CHANNEL_IDS = {
   sheetWaitingRoom: "1189003168273674281",
@@ -13,8 +16,18 @@ export const CHANNEL_IDS = {
 export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
 };
-
-export const RESOURCES_EMOJIS = {
+export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
+  royal: ["royal"],
+  blacksmith: ["blacksmith"],
+  market: ["merchant", "alchemist", "cook", "tailor", "carpenter"],
+  barracks: ["soldier", "guard", "squire", "knight", "blacksmith"],
+  training: ["soldier", "guard", "squire", "knight", "blacksmith"],
+  tavern: ["musician", "writer", "courtier"],
+  basic: ["farmer", "hunter", "fisherman", "miner", "lumberjack", "sailor"],
+  clergy: ["priest", "doctor", "librarian"],
+  health: ["doctor"],
+};
+export const RESOURCES_EMOJIS: Record<ResourceType, string> = {
   wood: "🪵",
   stone: "🪨",
   iron: "⛏️",
@@ -22,7 +35,7 @@ export const RESOURCES_EMOJIS = {
   gold: "💰",
 } as const;
 
-export const RESOURCES_TRANSLATIONS = {
+export const RESOURCES_TRANSLATIONS: Record<ResourceType, string> = {
   wood: "Madeira",
   stone: "Pedra",
   iron: "Ferro",
@@ -30,7 +43,8 @@ export const RESOURCES_TRANSLATIONS = {
   gold: "Ouro",
 } as const;
 
-export const PROFESSIONS_TRANSLATIONS = {
+export const PROFESSIONS_TRANSLATIONS: Record<Profession, string> = {
+  other: "Outro",
   blacksmith: "Ferreiro(a)",
   merchant: "Mercador(a)",
   farmer: "Fazendeiro(a)",
@@ -55,9 +69,12 @@ export const PROFESSIONS_TRANSLATIONS = {
   knight: "Cavaleiro(a)",
   squire: "Escudeiro(a)",
   courtier: "Cortesã(o)",
+  royal: "Nobre",
 } as const;
 
-export const PROFESSIONS_PRONOUNS_TRANSLATIONS = {
+export const PROFESSIONS_PRONOUNS_TRANSLATIONS: Record<Profession, { male: string; female: string }> = {
+  royal: { male: "Principe", female: "Princesa" },
+  other: { male: "Camponês", female: "Camponesa" },
   blacksmith: { male: "Ferreiro", female: "Ferreira" },
   merchant: { male: "Mercador", female: "Mercadora" },
   farmer: { male: "Fazendeiro", female: "Fazendeira" },
@@ -84,7 +101,7 @@ export const PROFESSIONS_PRONOUNS_TRANSLATIONS = {
   courtier: { male: "Cortesão", female: "Cortesã" },
 } as const;
 
-export const CHANNEL_TYPES_TRANSLATIONS = {
+export const CHANNEL_TYPES_TRANSLATIONS: Record<ChannelType, string> = {
   basic: "Básico",
   tavern: "Taberna",
   barracks: "Quartel",
@@ -92,6 +109,8 @@ export const CHANNEL_TYPES_TRANSLATIONS = {
   market: "Mercado",
   training: "Treinamento",
   royal: "Real",
+  clergy: "Clero",
+  health: "Saúde",
 } as const;
 export const GENDER_TRANSLATIONS_MAP = {
   male: "Masculino",

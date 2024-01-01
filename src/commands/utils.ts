@@ -35,7 +35,7 @@ export default class Utils {
       .setTitle(guild.name)
       .setThumbnail(guild.iconURL() ?? null)
       .setDescription(
-        `${guild.name} é um servidor de Roleplay Medieval que mistura geopolitica e alta fantasia em um mundo dominado por entidades divinas e seus humanos escolhidos. Seja um príncipe ou uma princesa de uma das familias reais ou um plebeu que busca fama e fortuna.`,
+        `${guild.name} é um servidor de Roleplay Medieval que mistura geopolítica e alta fantasia em um mundo dominado por entidades divinas e seus humanos escolhidos. Seja um príncipe ou uma princesa de uma das famílias reais ou um plebeu que busca fama e fortuna.`,
       )
       .addFields([
         { name: "ID", value: guild.id, inline: true },
