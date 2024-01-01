@@ -303,7 +303,10 @@ export default class Sheet {
       .setTimestamp(DateTime.now().toJSDate());
 
     const evaluationButtons = this.getEvaluationButtons("family", slug, createFamilyModalSubmission.user.id);
-    await bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
+    await bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.send({
+      embeds: [sheetEmbed],
+      components: [evaluationButtons],
+    });
     await createFamilyModalSubmission.editReply({ content: "Família postada com sucesso. Aguarde a aprovação de um moderador." });
   }
 
@@ -341,7 +344,10 @@ export default class Sheet {
       await Database.updateUser(savedSheet.userId, { royalTokens: user.royalTokens - 1 });
     }
 
-    await bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.send({ embeds: [sheetEmbed], components: [evaluationButtons] });
+    await bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.send({
+      embeds: [sheetEmbed],
+      components: [evaluationButtons],
+    });
   }
 
   @ButtonComponent({ id: /^approve|reject_.*$/ })
@@ -443,7 +449,10 @@ export default class Sheet {
 
         await databaseUpdateFn();
         await interaction.editReply({ content: "Ficha aprovada com sucesso." });
-        await bot.systemChannels.get(CHANNEL_IDS.approvedSheetRoom)?.send({ content: userMention(userId), embeds: [embed] });
+        await bot.systemChannels.get(CHANNEL_IDS.approvedSheetRoom)?.send({
+          content: userMention(userId),
+          embeds: [embed],
+        });
         Utils.scheduleMessageToDelete(interaction.message, 1000);
         break;
       case "reject":

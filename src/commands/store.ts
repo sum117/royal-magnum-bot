@@ -1,4 +1,4 @@
-import { bold, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, roleMention, TextChannel } from "discord.js";
+import { bold, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, roleMention } from "discord.js";
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
