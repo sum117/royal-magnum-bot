@@ -26,8 +26,8 @@ export const bot = new Client({
 bot.once("ready", async (readyClient) => {
   assignSystemChannels(readyClient);
   await bot.initApplicationCommands();
-  console.log("Bot started");
   await registerSchedules(readyClient);
+  console.log("Bot started");
 });
 
 bot.on("interactionCreate", (interaction: Interaction) => {
@@ -40,6 +40,7 @@ bot.on("messageCreate", async (message: Message) => {
 
 function assignSystemChannels(readyClient: DiscordClient<true>) {
   const guild = readyClient.guilds.cache.first();
+  console.log(`Found guild: ${guild?.name}`);
   if (!guild) return;
   bot.systemChannels = guild.channels.cache.filter((channel): channel is TextChannel => {
     type PropertyChannelType = (typeof CHANNEL_IDS)[keyof typeof CHANNEL_IDS];

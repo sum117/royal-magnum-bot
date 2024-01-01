@@ -1,4 +1,4 @@
-import { bold, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, roleMention } from "discord.js";
+import { bold, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, roleMention, TextChannel } from "discord.js";
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
@@ -8,7 +8,7 @@ import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
 import Utils from "../utils";
-import { characterDetailsButtonIdPrefix } from "./character";
+import Character, { characterDetailsButtonIdPrefix } from "./character";
 import { bot } from "../main";
 
 export const buyStoreCharacterButtonIdPrefix = "buy-sheet";
@@ -19,9 +19,6 @@ export const cancelButtonId = "cancelButtonId";
 
 @Discord()
 export default class Store {
-  private announcementsChannel = bot.systemChannels.get(CHANNEL_IDS.announcementsChannel);
-  private storeChannel = bot.systemChannels.get(CHANNEL_IDS.characterStore);
-
   @Slash(COMMANDS.addStoreCharacter)
   public async addStoreCharacter(
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterPrice) price: number,
@@ -61,7 +58,7 @@ export default class Store {
       profession: "royal",
     });
 
-    const embed = await Utils.getCharacterPreviewEmbed(sheet);
+    const embed = await Character.getCharacterPreviewEmbed(sheet);
     embed.setAuthor({
       name: `Personagem Canônico à venda por  C$${price}`,
       iconURL: interaction.guild?.iconURL({ forceStatic: true, size: 128 }) ?? undefined,
@@ -70,18 +67,18 @@ export default class Store {
     embed.setDescription(
       `# Preview\n${backstoryPreview}\n\n*Inspecione o personagem utilizando o botão "Detalhes" abaixo. Para comprá-lo, clique no botão "Comprar".*\n\n**Atenção:** A compra é irreversível.`,
     );
-
-    await this.storeChannel?.send({
+    const storeChannel = bot.systemChannels.get(CHANNEL_IDS.characterStore);
+    await storeChannel?.send({
       embeds: [embed],
       components: [
-        Utils.getCharacterDetailsButton(sheet.userId, sheet.characterId).addComponents(
+        Character.getCharacterDetailsButton(sheet.userId, sheet.characterId).addComponents(
           new ButtonBuilder().setCustomId(getBuyStoreCharacterButtonId(sheet.characterId)).setLabel("Comprar").setStyle(ButtonStyle.Success),
         ),
       ],
     });
 
-    await this.announcementsChannel?.send({
-      content: `${interaction.user.toString()} adicionou um(a) personagem à loja ${this.storeChannel?.toString()}, ${roleMention(
+    await bot.systemChannels.get(CHANNEL_IDS.announcementsChannel)?.send({
+      content: `${interaction.user.toString()} adicionou um(a) personagem à loja ${storeChannel?.toString()}, ${roleMention(
         ROLE_IDS.storeCharacterAnnouncements,
       )} !\n\nNome: ${bold(sheet.name)}`,
       files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
@@ -92,7 +89,7 @@ export default class Store {
 
   @ButtonComponent({ id: new RegExp(`^${characterDetailsButtonIdPrefix}`) })
   public async characterDetailsButtonListener(buttonInteraction: ButtonInteraction) {
-    await Utils.handleCharacterDetailsButton(buttonInteraction, true);
+    await Character.handleCharacterDetailsButton(buttonInteraction, true);
   }
 
   @ButtonComponent({ id: new RegExp(`^${buyStoreCharacterButtonIdPrefix}`) })
@@ -134,7 +131,7 @@ export default class Store {
           }),
         );
 
-        await this.announcementsChannel?.send({
+        await bot.systemChannels.get(CHANNEL_IDS.announcementsChannel)?.send({
           content: `🎉 ${buttonInteraction.user.toString()} comprou um(a) personagem canônico(a) da loja: ${bold(sheet.name)}!`,
           files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
         });
