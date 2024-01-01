@@ -1,11 +1,13 @@
-import { BaseMessageOptions, Colors, EmbedBuilder, Events, Message } from "discord.js";
+import { BaseMessageOptions, bold, Colors, EmbedBuilder, Events, Message } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
-import { royalCharacterSchema } from "../schemas/characterSheetSchema";
+import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import Utils from "../utils";
+import { PROFESSION_CHANNELS } from "../data/constants";
+import Character from "../commands/character";
 
 @Discord()
 export default class CharacterEvents {
@@ -44,7 +46,7 @@ export default class CharacterEvents {
     }
     const embedMessage = await message.channel.send(payload);
     embedMessage.author.id = message.author.id;
-    await this.handleMoneyGain(message);
+    await this.handleActivityGains(character, message);
     await Database.insertMessage(embedMessage);
   }
 
@@ -101,17 +103,39 @@ export default class CharacterEvents {
     }
   }
 
-  private async handleMoneyGain(message: Message) {
-    const randomMoney = lodash.random(250, 500);
-    const user = await Database.getUser(message.author.id);
+  private async handleActivityGains(character: CharacterSheetType, message: Message<boolean>) {
+    const user = await Database.getUser(character.userId);
+
     const hasBeenThirtyMinutes =
       Duration.fromISO(user?.lastMessageAt ?? new Date().toISOString())
         .plus({ minutes: 30 })
         .toMillis() < Date.now();
-    if (hasBeenThirtyMinutes)
-      await Database.updateUser(message.author.id, {
-        money: user?.money + randomMoney,
-        lastMessageAt: new Date().toISOString(),
-      });
+    if (!hasBeenThirtyMinutes) return;
+
+    const randomMoney = lodash.random(250, 500);
+    await Database.updateUser(character.userId, {
+      money: user?.money + randomMoney,
+      lastMessageAt: new Date().toISOString(),
+    });
+
+    const databaseChannel = await Database.getChannel(message.channelId);
+    if (!databaseChannel) return;
+
+    const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.type].includes(character.profession);
+    if (!isInCorrectChannel) return;
+
+    const randomCharXp = lodash.random(50, 100);
+    const { willLevelUp } = Character.getCharacterLevelDetails(character);
+
+    if (willLevelUp(character.xp + randomCharXp)) {
+      const newLevel = character.level + 1;
+      const feedback = await message.channel.send(
+        `🎉 ${message.author.toString()}, o personagem ${bold(character.name)} subiu para o nível ${bold(newLevel.toString())}!`,
+      );
+      Utils.scheduleMessageToDelete(feedback);
+      await Database.updateSheet(character.userId, character.characterId, { xp: 0, level: newLevel });
+    } else {
+      await Database.updateSheet(character.userId, character.characterId, { xp: character.xp + randomCharXp });
+    }
   }
 }
