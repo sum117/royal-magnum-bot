@@ -7,7 +7,6 @@
   "main": "build/main.js",
   "scripts": {
     "build": "tsc",
-    "esbuild": "esbuild src/main.ts --bundle --platform=node --packages=external --outfile=build/main.js --format=esm --minify",
     "build:changelog": "npx @discordx/changelog --src src",
     "dev": "node --loader ts-node/esm/transpile-only src/main.ts",
     "start": "node --experimental-specifier-resolution=node build/main.js",
@@ -33,7 +32,6 @@
     "@types/luxon": "^3.3.7",
     "@types/node": "^20.10.5",
     "@types/node-cron": "^3.0.11",
-    "esbuild": "^0.19.11",
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.2",
