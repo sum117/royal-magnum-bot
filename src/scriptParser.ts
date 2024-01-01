@@ -96,7 +96,16 @@ export default class ScriptParser {
       }
     }
 
-    return script;
+    const chaptersWithChoices = script
+      .filter((item): item is Chapter => item.type === "chapter")
+      .map((chapter) => ({ name: chapter.name, choices: chapter.choices }));
+    return script.map((item) => {
+      if (item.type === "chapter") {
+        const previous = chaptersWithChoices.find((chapter) => chapter.name === item.name);
+        item.previousChapter = previous ? previous.name : item.previousChapter;
+      }
+      return item;
+    });
   }
 
   private parseDeclaration(): Declaration {

@@ -8,7 +8,7 @@
     happy_blush = "./sprites/nythra_happy_blush.png"
 )
 
-@chapter Begin -> Begin (
+@chapter Begin (
     @background "./backgrounds/bg_dark_shop.png"
     @character nythra->serious->center
 
