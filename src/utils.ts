@@ -1,12 +1,9 @@
 import axios from "axios";
-import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonInteraction, ButtonStyle, Colors, EmbedBuilder, Message } from "discord.js";
+import { Attachment, ButtonStyle, EmbedBuilder, Message } from "discord.js";
 import { readFile } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
 import yaml from "yaml";
-import { characterDetailsButtonIdPrefix, getCharacterDetailsButtonId } from "./commands/character";
-import Database from "./database";
-import { CharacterSheetType, royalCharacterSchema } from "./schemas/characterSheetSchema";
 import { Family, familySchema } from "./schemas/familySchema";
 
 type Entity = { title: string; slug: string };
@@ -56,46 +53,6 @@ export default class Utils {
   public static async fetchEntityNames() {
     const { entities } = await this.fetchRootYaml<RootYamlType>();
     return entities;
-  }
-
-  public static getCharacterDetailsButton(userId: string, characterId: string) {
-    return new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
-    );
-  }
-
-  public static async getCharacterPreviewEmbed(sheet: CharacterSheetType) {
-    const embed = new EmbedBuilder();
-    const royalSheet = royalCharacterSchema.safeParse(sheet);
-    if (royalSheet.success) {
-      const family = await Database.getFamily(royalSheet.data.familySlug);
-      embed.setTitle(`${royalSheet.data.royalTitle} ${royalSheet.data.name} de ${family?.title}`);
-    } else {
-      embed.setTitle(sheet.name);
-    }
-
-    embed.setImage(sheet.imageUrl);
-    embed.setColor(Colors.Blurple);
-    return embed;
-  }
-
-  public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
-    if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
-      await buttonInteraction.deferReply({ ephemeral: true });
-      const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
-
-      const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
-
-      const embed = new EmbedBuilder().setColor(Colors.Blurple);
-
-      const royalSheet = royalCharacterSchema.safeParse(sheet);
-      if (royalSheet.success) {
-        embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
-      } else {
-        embed.setDescription(`# História \n${sheet?.backstory}`);
-      }
-      await buttonInteraction.editReply({ embeds: [embed] });
-    }
   }
 
   private static async fetchRootYaml<T>() {

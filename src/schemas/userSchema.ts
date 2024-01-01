@@ -10,7 +10,7 @@ export const userSchema = z.object({
     .refine((value) => {
       if (!value) return true;
       const date = new Date(value);
-      return date instanceof Date && !isNaN(date.getTime());
+      return !isNaN(date.getTime());
     })
     .default(new Date().toISOString()),
 });

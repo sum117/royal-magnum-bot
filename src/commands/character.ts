@@ -1,18 +1,93 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
-import { bold, ChatInputCommandInteraction, Colors, EmbedBuilder, GuildMember } from "discord.js";
+import {
+  ActionRowBuilder,
+  bold,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  ChatInputCommandInteraction,
+  Colors,
+  EmbedBuilder,
+  GuildMember,
+} from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { PAGINATION_DEFAULT_OPTIONS, RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { CharacterSheet } from "../schemas/characterSheetSchema";
+import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
-import Utils from "../utils";
 
 export const characterDetailsButtonIdPrefix = "character-details";
 export const getCharacterDetailsButtonId = (userId: string, characterId: string) => `${characterDetailsButtonIdPrefix}-${userId}-${characterId}`;
 @Discord()
 export default class Character {
+  public static getCharacterDetailsButton(userId: string, characterId: string) {
+    return new ActionRowBuilder<ButtonBuilder>().setComponents(
+      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
+    );
+  }
+
+  public static async getCharacterPreviewEmbed(sheet: CharacterSheetType) {
+    const embed = new EmbedBuilder();
+    const royalSheet = royalCharacterSchema.safeParse(sheet);
+    if (royalSheet.success) {
+      const family = await Database.getFamily(royalSheet.data.familySlug);
+      embed.setTitle(`${royalSheet.data.royalTitle} ${royalSheet.data.name} de ${family?.title}`);
+    } else {
+      embed.setTitle(sheet.name);
+    }
+    const { progressBar } = Character.getCharacterLevelDetails(sheet);
+
+    embed.setImage(sheet.imageUrl);
+    embed.setColor(Colors.Blurple);
+    embed.addFields([
+      { name: "🏷️ Profissão", value: sheet.profession, inline: true },
+      { name: "📜 Nível", value: `${sheet.level}`, inline: true },
+      { name: "📖 Progresso de Nivelação", value: progressBar, inline: true },
+    ]);
+    return embed;
+  }
+
+  public static getCharacterLevelDetails({ level, xp }: { level: number; xp: number }) {
+    const MAX_LEVEL = 100;
+    const LEVEL_QUOTIENT = 1.3735;
+
+    const expRequiredForNextLevel = Math.floor(Math.pow(level, LEVEL_QUOTIENT));
+    const percentage = Math.floor((xp / expRequiredForNextLevel) * 100);
+
+    const filledBar = "🟩";
+    const emptyBar = "⬛";
+    const barLength = 10;
+    const barFill = Math.floor((percentage / 100) * barLength);
+    const barEmpty = barLength - barFill;
+
+    return {
+      progressBar: `${filledBar.repeat(barFill)}${emptyBar.repeat(barEmpty)} ${percentage}%`,
+      expRequiredForNextLevel,
+      willLevelUp: (xp: number) => xp >= expRequiredForNextLevel && level < MAX_LEVEL,
+    };
+  }
+
+  public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
+    if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
+      await buttonInteraction.deferReply({ ephemeral: true });
+      const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
+
+      const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
+
+      const embed = new EmbedBuilder().setColor(Colors.Blurple);
+
+      const royalSheet = royalCharacterSchema.safeParse(sheet);
+      if (royalSheet.success) {
+        embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
+      } else {
+        embed.setDescription(`# História \n${sheet?.backstory}`);
+      }
+      await buttonInteraction.editReply({ embeds: [embed] });
+    }
+  }
+
   @Slash(COMMANDS.characterList)
   public async characterList(@SlashOption(COMMAND_OPTIONS.characterList) user: GuildMember, interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
@@ -30,7 +105,7 @@ export default class Character {
     const generatePages = new PaginationResolver(async (page) => {
       const pages = [];
       for (const sheet of sheets) {
-        const embed = await Utils.getCharacterPreviewEmbed(sheet);
+        const embed = await Character.getCharacterPreviewEmbed(sheet);
         embed.setAuthor({
           name: `Fichas de ${user.displayName}`,
           iconURL: user.user.avatarURL({ forceStatic: true }) ?? undefined,
@@ -39,7 +114,7 @@ export default class Character {
         embed.setColor(randomColor ?? Colors.Blurple);
         pages.push({
           embeds: [embed],
-          components: [Utils.getCharacterDetailsButton(user.id, sheet.characterId)],
+          components: [Character.getCharacterDetailsButton(user.id, sheet.characterId)],
         });
       }
       return pages[page];
@@ -48,7 +123,7 @@ export default class Character {
     const pagination = new Pagination(interaction, generatePages, PAGINATION_DEFAULT_OPTIONS);
     const paginationMessage = await pagination.send();
 
-    paginationMessage.collector.on("collect", Utils.handleCharacterDetailsButton);
+    paginationMessage.collector.on("collect", Character.handleCharacterDetailsButton);
   }
 
   @Slash(COMMANDS.setCharacter)
