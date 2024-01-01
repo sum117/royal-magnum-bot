@@ -1,8 +1,8 @@
 import { PaginationType } from "@discordx/pagination";
 import { ButtonStyle } from "discord.js";
 import { Duration } from "luxon";
-import { Profession } from "../schemas/characterSheetSchema";
 import { ChannelType } from "../schemas/channelSchema";
+import { Profession } from "../schemas/characterSheetSchema";
 import { ResourceType } from "../schemas/resourceSchema";
 
 export const CHANNEL_IDS = {
@@ -15,7 +15,8 @@ export const CHANNEL_IDS = {
 
 export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
-};
+} as const;
+
 export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
   royal: ["royal"],
   blacksmith: ["blacksmith"],
@@ -26,7 +27,8 @@ export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
   basic: ["farmer", "hunter", "fisherman", "miner", "lumberjack", "sailor"],
   clergy: ["priest", "doctor", "librarian"],
   health: ["doctor"],
-};
+} as const;
+
 export const RESOURCES_EMOJIS: Record<ResourceType, string> = {
   wood: "🪵",
   stone: "🪨",
@@ -112,15 +114,17 @@ export const CHANNEL_TYPES_TRANSLATIONS: Record<ChannelType, string> = {
   clergy: "Clero",
   health: "Saúde",
 } as const;
+
 export const GENDER_TRANSLATIONS_MAP = {
   male: "Masculino",
   female: "Feminino",
-};
+} as const;
+
 export const CRON_EXPRESSIONS = {
   EveryFourHours: "0 */4 * * *",
-};
+} as const;
 
-export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png";
+export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png" as const;
 
 export const PAGINATION_DEFAULT_OPTIONS = {
   type: PaginationType.Button,
@@ -129,4 +133,4 @@ export const PAGINATION_DEFAULT_OPTIONS = {
   next: { style: ButtonStyle.Primary, label: "Próximo", emoji: { name: "➡️" } },
   start: { style: ButtonStyle.Primary, label: "Início", emoji: { name: "⏪" } },
   end: { style: ButtonStyle.Primary, label: "Fim", emoji: { name: "⏩" } },
-};
+} as const;

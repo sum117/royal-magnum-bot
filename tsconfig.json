@@ -10,7 +10,6 @@
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,
-
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
