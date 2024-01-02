@@ -1,15 +1,15 @@
 @declare nythra (
-    frown = "nythra_frown.png"
-    happy = "nythra_happy.png"
-    idle = "nythra_idle.png"
-    inhaling = "nythra_inhaling.png"
-    surprised = "nythra_surprised.png"
-    sad_blush = "nythra_sad_blush.png"
-    happy_blush = "nythra_happy_blush.png"
+    frown = nythra_frown.png
+    happy = nythra_happy.png
+    idle = nythra_idle.png
+    inhaling = nythra_inhaling.png
+    surprised = nythra_surprised.png
+    sad_blush = nythra_sad_blush.png
+    happy_blush = nythra_happy_blush.png
 )
 
 @chapter Begin (
-    @background "bg_dark_shop.png"
+    @background bg_dark_shop.png
     @character nythra->idle->center
 
     nythra "Bem-vindo à forja da Nythra."
