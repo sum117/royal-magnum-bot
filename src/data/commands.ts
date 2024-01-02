@@ -1,11 +1,16 @@
 import { ApplicationCommandOptionType, PermissionFlagsBits } from "discord.js";
 import { ApplicationCommandOptions, SlashOptionOptions } from "discordx";
+import { readdir } from "fs/promises";
+import lodash from "lodash";
+import path from "path";
 import Database from "../database";
+import Utils from "../utils";
 
 type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, string>>;
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS: CommandData = {
+  playVisualNovel: { name: "play-visual-novel", description: "Inicia uma visual novel" },
   createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua família." },
   spawnSheet: {
     name: "spawn-sheet",
@@ -45,6 +50,21 @@ export const COMMANDS: CommandData = {
 } as const;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
+  playVisualNovelName: {
+    name: "name",
+    description: "Nome da visual novel",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const visualNovels = await readdir(path.join(Utils.getProjectRootDir(), "assets"));
+      console.log(visualNovels);
+      await interaction.respond(
+        visualNovels
+          .filter((file) => file.endsWith(".rmb"))
+          .map((visualNovel) => ({ name: lodash.startCase(visualNovel.replace(".rmb", "")), value: visualNovel })),
+      );
+    },
+  },
   giveFamilyTokenUser: {
     name: "user",
     description: "Usuário para dar a ficha de família",

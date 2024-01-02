@@ -11,6 +11,7 @@ export const CHANNEL_IDS = {
   characterStore: "1189378489862848633",
   familiesChannel: "1188557191280595085",
   announcementsChannel: "1189379467009855569",
+  tutorialChannel: "1191551254908911676",
 } as const;
 
 export const ROLE_IDS = {
@@ -28,6 +29,8 @@ export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
   clergy: ["priest", "doctor", "librarian"],
   health: ["doctor"],
 } as const;
+
+export const NUMBER_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
 export const RESOURCES_EMOJIS: Record<ResourceType, string> = {
   wood: "🪵",

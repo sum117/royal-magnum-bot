@@ -1,8 +1,9 @@
 import axios from "axios";
-import { Attachment, ButtonStyle, EmbedBuilder, Message } from "discord.js";
+import { Attachment, EmbedBuilder, Message } from "discord.js";
 import { readFile } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
+import { fileURLToPath } from "url";
 import yaml from "yaml";
 import { Family, familySchema } from "./schemas/familySchema";
 
@@ -33,6 +34,14 @@ export default class Utils {
     if (!imageName) throw new Error("Não foi possível obter o nome da imagem");
     embed.setImage(`attachment://${imageName}`);
     return { imgurLink: imgurLink, name: imageName };
+  }
+
+  /**
+   * This utils file is located in the project root directory, so we can use it to get the project root directory.
+   * @returns {string} The project root directory
+   */
+  public static getProjectRootDir() {
+    return path.dirname(fileURLToPath(import.meta.url));
   }
 
   public static async fetchBaseFamilies() {

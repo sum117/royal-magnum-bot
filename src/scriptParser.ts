@@ -1,13 +1,15 @@
+import crypto from "crypto";
 interface Base {
   type: Type;
 }
-interface Declaration extends Base {
+export interface Declaration extends Base {
   type: "declare";
   characterName: string;
   sprites: Record<string, string>;
 }
 
-interface Chapter extends Base {
+export interface Chapter extends Base {
+  id: string;
   type: "chapter";
   name: string;
   backgrounds?: string[];
@@ -15,34 +17,43 @@ interface Chapter extends Base {
   dialogues: Dialogue[];
   choices?: Choice[];
   previousChapter?: string;
+  previousChapterId?: string;
   nextChapter?: string;
+  nextChapterId?: string;
 }
 
-interface Choice extends Base {
+export interface Choice extends Base {
+  parentChapterId: string;
+  targetChapterId: string;
   type: "choice";
   targetChapter: string;
   label: string;
 }
 
-interface Dialogue extends Base {
+export interface Dialogue extends Base {
   type: "dialogue";
   characterName: string;
   text: string;
 }
 
-interface Character extends Base {
+export type Sprite = {
+  name: string;
+  dialogueIndex: number;
+};
+
+export interface Character extends Base {
   type: "character";
   name: string;
-  sprite: {
-    name: string;
-    dialogueIndex: number;
-  };
+  sprite: Sprite;
   position: Position;
 }
 
-type Type = "declare" | "chapter" | "choice" | "dialogue" | "character";
-type Position = "left" | "center" | "right";
-type Script = (Declaration | Chapter)[];
+export type Type = "declare" | "chapter" | "choice" | "dialogue" | "character";
+export type Position = "left" | "center" | "right";
+export type Script = {
+  declarations: Declaration[];
+  chapters: Chapter[];
+};
 
 export default class ScriptParser {
   private currentIndex = 0;
@@ -53,7 +64,10 @@ export default class ScriptParser {
   }
 
   public parse(): Script {
-    const script: Script = [];
+    const script: Script = {
+      declarations: new Array<Declaration>(),
+      chapters: new Array<Chapter>(),
+    };
     let currentChapter: Chapter | undefined;
 
     while (this.currentIndex < this.tokens.length) {
@@ -61,20 +75,28 @@ export default class ScriptParser {
 
       switch (token) {
         case "@declare":
-          script.push(this.parseDeclaration());
+          if (!script.declarations) {
+            script.declarations = [];
+          }
+          script.declarations.push(this.parseDeclaration());
           break;
         case "@chapter":
+          if (!script.chapters) {
+            script.chapters = [];
+          }
           if (currentChapter) {
             const nextChapter = this.parseChapter();
             if (!currentChapter.choices) {
               currentChapter.nextChapter = currentChapter.nextChapter ?? nextChapter.name;
+              currentChapter.nextChapterId = currentChapter.nextChapterId ?? nextChapter.id;
             }
             nextChapter.previousChapter = currentChapter.name;
-            script.push(nextChapter);
+            nextChapter.previousChapterId = currentChapter.id;
+            script.chapters.push(nextChapter);
             currentChapter = nextChapter;
           } else {
             currentChapter = this.parseChapter();
-            script.push(currentChapter);
+            script.chapters.push(currentChapter);
           }
 
           const errors = {
@@ -96,16 +118,33 @@ export default class ScriptParser {
       }
     }
 
-    const chaptersWithChoices = script
-      .filter((item): item is Chapter => item.type === "chapter")
-      .map((chapter) => ({ name: chapter.name, choices: chapter.choices }));
-    return script.map((item) => {
-      if (item.type === "chapter") {
-        const previous = chaptersWithChoices.find((chapter) => chapter.name === item.name);
-        item.previousChapter = previous ? previous.name : item.previousChapter;
-      }
-      return item;
-    });
+    const chaptersWithChoices = script.chapters.map((chapter) => ({ id: chapter.id, name: chapter.name, choices: chapter.choices }));
+
+    const updateRefs = (chapter: Chapter) => {
+      const previous = chaptersWithChoices.find(({ choices }) => choices?.some((choice) => choice.targetChapter === chapter.name));
+      chapter.previousChapter = previous?.name ?? chapter.previousChapter;
+      chapter.previousChapterId = previous?.id ?? chapter.previousChapterId;
+      const next = chaptersWithChoices.find(({ name }) => name === chapter.nextChapter);
+      chapter.nextChapterId = next?.id ?? chapter.nextChapterId;
+      return chapter;
+    };
+
+    const updatedBackRefs = script.chapters.map(updateRefs);
+
+    const updateChoices = (chapter: Chapter) => {
+      chapter.choices?.forEach((choice) => {
+        const targetChapter = chaptersWithChoices.find(({ name }) => name === choice.targetChapter);
+        choice.targetChapterId = targetChapter?.id ?? choice.targetChapterId;
+      });
+      return chapter;
+    };
+
+    const updatedChoices = updatedBackRefs.map(updateChoices);
+
+    return {
+      declarations: script.declarations,
+      chapters: updatedChoices,
+    };
   }
 
   private parseDeclaration(): Declaration {
@@ -149,6 +188,7 @@ export default class ScriptParser {
     this.expectToken("(");
 
     const chapter: Chapter = {
+      id: crypto.randomBytes(3).toString("hex"),
       type: "chapter",
       name,
       nextChapter,
@@ -175,7 +215,9 @@ export default class ScriptParser {
           if (!chapter.choices) {
             chapter.choices = [];
           }
-          chapter.choices.push(this.parseChoice());
+          const choice = this.parseChoice();
+          choice.parentChapterId = chapter.id;
+          chapter.choices.push(choice);
           break;
         default:
           chapter.dialogues.push(this.parseDialogue());
@@ -247,3 +289,9 @@ export default class ScriptParser {
     return this.tokens[this.currentIndex++];
   }
 }
+
+// const file = await readFile(path.join(process.cwd(), "src", "assets", "tutorial.rmb"), "utf-8");
+// const scriptParser = new ScriptParser(file);
+// const script = scriptParser.parse();
+
+// await writeFile(path.join(process.cwd(), "src", "assets", "tutorial.json"), JSON.stringify(script));

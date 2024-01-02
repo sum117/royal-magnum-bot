@@ -1,78 +1,103 @@
-[
-  {
-    "type": "declare",
-    "characterName": "nythra",
-    "sprites": {
-      "frown": "\"./sprites/nythra_frown.png\"",
-      "happy": "\"./sprites/nythra_happy.png\"",
-      "idle": "\"./sprites/nythra_idle.png\"",
-      "inhaling": "\"./sprites/nythra_inhaling.png\"",
-      "surprised": "\"./sprites/nythra_surprised.png\"",
-      "sad_blush": "\"./sprites/nythra_sad_blush.png\"",
-      "happy_blush": "\"./sprites/nythra_happy_blush.png\""
+{
+  "declarations": [
+    {
+      "type": "declare",
+      "characterName": "nythra",
+      "sprites": {
+        "frown": "\"./sprites/nythra_frown.png\"",
+        "happy": "\"./sprites/nythra_happy.png\"",
+        "idle": "\"./sprites/nythra_idle.png\"",
+        "inhaling": "\"./sprites/nythra_inhaling.png\"",
+        "surprised": "\"./sprites/nythra_surprised.png\"",
+        "sad_blush": "\"./sprites/nythra_sad_blush.png\"",
+        "happy_blush": "\"./sprites/nythra_happy_blush.png\""
+      }
     }
-  },
-  {
-    "type": "chapter",
-    "name": "Begin",
-    "characters": [
-      { "name": "nythra", "type": "character", "sprite": { "name": "serious", "dialogueIndex": 0 }, "position": "center" },
-      { "name": "nythra", "type": "character", "sprite": { "name": "idle", "dialogueIndex": 1 }, "position": "left" },
-      { "name": "nythra", "type": "character", "sprite": { "name": "happy", "dialogueIndex": 3 }, "position": "center" }
-    ],
-    "dialogues": [
-      { "type": "dialogue", "text": "\"Bem-vindo à forja da Nythra.\"", "characterName": "nythra" },
-      {
-        "type": "dialogue",
-        "text": "\"Sou a Nythra, proprietária deste lugar. Como pode notar, não me destaco muito nos títulos, mas quando se trata de forjar espadas, sou imbatível.\"",
-        "characterName": "nythra"
-      },
-      { "type": "dialogue", "text": "\"Faço as melhores lâminas de Terryan, sem concorrência.\"", "characterName": "nythra" },
-      { "type": "dialogue", "text": "\"Então, alguma lâmina chamou sua atenção na loja, ou você está apenas de passagem?\"", "characterName": "nythra" }
-    ],
-    "backgrounds": ["\"./backgrounds/bg_dark_shop.png\""],
-    "choices": [
-      { "type": "choice", "label": "\"Espadas não são apenas para desbravar o interior. Elas têm outros usos, sabia?\"", "targetChapter": "PeopleQuestion" },
-      { "type": "choice", "label": "\"Na verdade, não estou procurando nada em especial...\"", "targetChapter": "NotReally" }
-    ]
-  },
-  {
-    "type": "chapter",
-    "name": "PeopleQuestion",
-    "nextChapter": "Ending",
-    "characters": [{ "name": "nythra", "type": "character", "sprite": { "name": "inhaling", "dialogueIndex": 1 }, "position": "center" }],
-    "dialogues": [
-      { "type": "dialogue", "text": "\"Interessante. Pode me contar mais sobre esses outros usos, ou é apenas curiosidade?\"", "characterName": "nythra" },
-      {
-        "type": "dialogue",
-        "text": "\"Às vezes, clientes estranhos aparecem aqui procurando algo 'grande o suficiente para derrubar um gigante'.\"",
-        "characterName": "nythra"
-      },
-      {
-        "type": "dialogue",
-        "text": "\"Não oferecemos esse tipo de produto aqui. Não seria bom para os negócios, nem para a minha reputação.\"",
-        "characterName": "nythra"
-      },
-      { "type": "dialogue", "text": "\"Você entende o que estou dizendo, não é?\"", "characterName": "nythra" }
-    ],
-    "previousChapter": "Begin"
-  },
-  {
-    "type": "chapter",
-    "name": "NotReally",
-    "nextChapter": "Ending",
-    "characters": [{ "name": "nythra", "type": "character", "sprite": { "name": "sad_blush", "dialogueIndex": 0 }, "position": "left" }],
-    "dialogues": [
-      { "type": "dialogue", "text": "\"Ah, sem problemas. Não é todo dia que alguém entra aqui sem um propósito definido.\"", "characterName": "nythra" },
-      { "type": "dialogue", "text": "\"Mas, se mudar de ideia e decidir que precisa de algo extraordinário, estarei aqui.\"", "characterName": "nythra" }
-    ],
-    "previousChapter": "PeopleQuestion"
-  },
-  {
-    "type": "chapter",
-    "name": "Ending",
-    "characters": [],
-    "dialogues": [{ "type": "dialogue", "text": "\"Ok, tchau!\"", "characterName": "nythra" }],
-    "previousChapter": "NotReally"
-  }
-]
+  ],
+  "chapters": [
+    {
+      "id": "5ff080",
+      "type": "chapter",
+      "name": "Begin",
+      "characters": [
+        { "name": "nythra", "type": "character", "sprite": { "name": "serious", "dialogueIndex": 0 }, "position": "center" },
+        { "name": "nythra", "type": "character", "sprite": { "name": "idle", "dialogueIndex": 1 }, "position": "left" },
+        { "name": "nythra", "type": "character", "sprite": { "name": "happy", "dialogueIndex": 3 }, "position": "center" }
+      ],
+      "dialogues": [
+        { "type": "dialogue", "text": "\"Bem-vindo à forja da Nythra!\"", "characterName": "nythra" },
+        {
+          "type": "dialogue",
+          "text": "\"Sou a Nythra, proprietária deste lugar. Como pode notar, não me destaco muito nos títulos, mas quando se trata de forjar espadas, sou imbatível.\"",
+          "characterName": "nythra"
+        },
+        { "type": "dialogue", "text": "\"Faço as melhores lâminas de Terryan, sem concorrência.\"", "characterName": "nythra" },
+        { "type": "dialogue", "text": "\"Então, alguma lâmina chamou sua atenção na loja, ou você está apenas de passagem?\"", "characterName": "nythra" }
+      ],
+      "backgrounds": ["\"./backgrounds/bg_dark_shop.png\""],
+      "choices": [
+        {
+          "type": "choice",
+          "label": "\"Espadas não são apenas para desbravar o interior. Elas têm outros usos, sabia?\"",
+          "targetChapter": "PeopleQuestion",
+          "parentChapterId": "5ff080",
+          "targetChapterId": "716002"
+        },
+        {
+          "type": "choice",
+          "label": "\"Na verdade, não estou procurando nada em especial...\"",
+          "targetChapter": "NotReally",
+          "parentChapterId": "5ff080",
+          "targetChapterId": "340e15"
+        }
+      ]
+    },
+    {
+      "id": "716002",
+      "type": "chapter",
+      "name": "PeopleQuestion",
+      "nextChapter": "Ending",
+      "characters": [{ "name": "nythra", "type": "character", "sprite": { "name": "inhaling", "dialogueIndex": 1 }, "position": "center" }],
+      "dialogues": [
+        { "type": "dialogue", "text": "\"Interessante. Pode me contar mais sobre esses outros usos, ou é apenas curiosidade?\"", "characterName": "nythra" },
+        {
+          "type": "dialogue",
+          "text": "\"Às vezes, clientes estranhos aparecem aqui procurando algo 'grande o suficiente para derrubar um gigante'.\"",
+          "characterName": "nythra"
+        },
+        {
+          "type": "dialogue",
+          "text": "\"Não oferecemos esse tipo de produto aqui. Não seria bom para os negócios, nem para a minha reputação.\"",
+          "characterName": "nythra"
+        },
+        { "type": "dialogue", "text": "\"Você entende o que estou dizendo, não é?\"", "characterName": "nythra" }
+      ],
+      "previousChapter": "Begin",
+      "previousChapterId": "5ff080",
+      "nextChapterId": "f2d74e"
+    },
+    {
+      "id": "340e15",
+      "type": "chapter",
+      "name": "NotReally",
+      "nextChapter": "Ending",
+      "characters": [{ "name": "nythra", "type": "character", "sprite": { "name": "sad_blush", "dialogueIndex": 0 }, "position": "left" }],
+      "dialogues": [
+        { "type": "dialogue", "text": "\"Ah, sem problemas. Não é todo dia que alguém entra aqui sem um propósito definido.\"", "characterName": "nythra" },
+        { "type": "dialogue", "text": "\"Mas, se mudar de ideia e decidir que precisa de algo extraordinário, estarei aqui.\"", "characterName": "nythra" }
+      ],
+      "previousChapter": "Begin",
+      "previousChapterId": "5ff080",
+      "nextChapterId": "f2d74e"
+    },
+    {
+      "id": "f2d74e",
+      "type": "chapter",
+      "name": "Ending",
+      "characters": [],
+      "dialogues": [{ "type": "dialogue", "text": "\"Ok, tchau!\"", "characterName": "nythra" }],
+      "previousChapter": "NotReally",
+      "previousChapterId": "340e15"
+    }
+  ]
+}

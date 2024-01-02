@@ -1,20 +1,20 @@
 @declare nythra (
-    frown = "./sprites/nythra_frown.png"
-    happy = "./sprites/nythra_happy.png"
-    idle = "./sprites/nythra_idle.png"
-    inhaling = "./sprites/nythra_inhaling.png"
-    surprised = "./sprites/nythra_surprised.png"
-    sad_blush = "./sprites/nythra_sad_blush.png"
-    happy_blush = "./sprites/nythra_happy_blush.png"
+    frown = "nythra_frown.png"
+    happy = "nythra_happy.png"
+    idle = "nythra_idle.png"
+    inhaling = "nythra_inhaling.png"
+    surprised = "nythra_surprised.png"
+    sad_blush = "nythra_sad_blush.png"
+    happy_blush = "nythra_happy_blush.png"
 )
 
 @chapter Begin (
-    @background "./backgrounds/bg_dark_shop.png"
-    @character nythra->serious->center
+    @background "bg_dark_shop.png"
+    @character nythra->idle->center
 
     nythra "Bem-vindo à forja da Nythra."
 
-    @character nythra->idle->left
+    @character nythra->happy->left
 
     nythra "Sou a Nythra, proprietária deste lugar. Como pode notar, não me destaco muito nos títulos, mas quando se trata de forjar espadas, sou imbatível."
     nythra "Faço as melhores lâminas de Terryan, sem concorrência."
