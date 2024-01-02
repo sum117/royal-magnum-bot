@@ -6,7 +6,7 @@ build_dir="build/assets"
 if [ -d "$src_dir" ]; then
     mkdir -p "$build_dir"
 
-    cp "$src_dir"/* "$build_dir"
+    cp -r "$src_dir"/* "$build_dir"
 
     echo "Assets moved successfully."
 else
