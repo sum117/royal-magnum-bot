@@ -9,7 +9,8 @@ import Utils from "../utils";
 type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, string>>;
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
-export const COMMANDS: CommandData = {
+export const COMMANDS = {
+  readingTime: { name: "reading-time", description: "Mostra o tempo de leitura de um texto" },
   playVisualNovel: { name: "play-visual-novel", description: "Inicia uma visual novel" },
   createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua família." },
   spawnSheet: {
@@ -47,7 +48,7 @@ export const COMMANDS: CommandData = {
     description: "Dá uma ficha de família a um usuário",
     defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   },
-} as const;
+} satisfies CommandData;
 
 export const COMMAND_OPTIONS: CommandOptionData = {
   playVisualNovelName: {
@@ -213,4 +214,4 @@ export const COMMAND_OPTIONS: CommandOptionData = {
     required: false,
     type: ApplicationCommandOptionType.Integer,
   },
-} as const;
+} satisfies CommandOptionData;

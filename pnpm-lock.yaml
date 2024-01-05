@@ -38,6 +38,9 @@ dependencies:
   quick.db:
     specifier: ^9.1.7
     version: 9.1.7
+  reading-time:
+    specifier: ^1.5.0
+    version: 1.5.0
   sharp:
     specifier: ^0.33.1
     version: 0.33.1
@@ -1148,6 +1151,10 @@ packages:
     dependencies:
       picomatch: 2.3.1
     dev: true
+
+  /reading-time@1.5.0:
+    resolution: {integrity: sha512-onYyVhBNr4CmAxFsKS7bz+uTLRakypIe4R+5A824vBSkQy/hB3fZepoVEf8OVAxzLvK+H/jm9TzpI3ETSm64Kg==}
+    dev: false
 
   /safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}

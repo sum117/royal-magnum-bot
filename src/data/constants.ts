@@ -14,6 +14,10 @@ export const CHANNEL_IDS = {
   tutorialChannel: "1191551254908911676",
 } as const;
 
+export const CATEGORY_IDS = {
+  contentCategory: "1189365484748013579",
+} as const;
+
 export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
 } as const;

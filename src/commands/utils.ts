@@ -1,8 +1,22 @@
-import { Attachment, ChatInputCommandInteraction, CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
+import {
+  Attachment,
+  bold,
+  Channel,
+  ChannelType,
+  ChatInputCommandInteraction,
+  Collection,
+  CommandInteraction,
+  EmbedBuilder,
+  GuildMember,
+  Message,
+} from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { imageGifUrl } from "../schemas/utils";
+import { CATEGORY_IDS } from "../data/constants";
+import readingTime from "reading-time";
+import { Duration } from "luxon";
 
 @Discord()
 export default class Utils {
@@ -59,5 +73,54 @@ export default class Utils {
     await interaction.deferReply({ ephemeral: true });
     const emoji = await interaction.guild?.emojis.create({ attachment: attachment.url, name: lodash.snakeCase(name) });
     await interaction.editReply(`Emoji ${emoji} adicionado com sucesso.`);
+  }
+
+  @Slash(COMMANDS.readingTime)
+  public async readingTime(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
+
+    let messageCol = new Collection<string, Message>();
+
+    const fetchMessages = async (channel: Channel, onlyPinned: boolean = false) => {
+      if (channel.isTextBased() && !channel.isThread()) {
+        return onlyPinned ? await channel.messages.fetchPinned() : await channel.messages.fetch({ limit: 100 });
+      }
+    };
+
+    if (!interaction.inCachedGuild()) {
+      return;
+    }
+
+    for (const [_channelId, channel] of interaction.guild.channels.cache) {
+      if (channel.type !== ChannelType.GuildCategory) {
+        continue;
+      }
+
+      if (channel.name.startsWith("RP |")) {
+        const apiMessageCols = await Promise.all(channel.children.cache.map((channel) => fetchMessages(channel, true)));
+        console.log(apiMessageCols);
+        apiMessageCols.forEach((col) => {
+          if (col) messageCol = messageCol.concat(col);
+        });
+      } else if (channel.id === CATEGORY_IDS.contentCategory) {
+        const apiMessageCols = await Promise.all(channel.children.cache.map((channel) => fetchMessages(channel)));
+        apiMessageCols.forEach((col) => {
+          if (col) messageCol = messageCol.concat(col);
+        });
+      }
+    }
+
+    const content = messageCol.map((message) => message.content).join("\n\n");
+
+    const readingMetadata = readingTime(content);
+
+    await interaction.editReply({
+      content: `O servidor possui aproximadamente ${bold(
+        Duration.fromMillis(Math.floor(readingMetadata.minutes) * 60 * 1000).toFormat(`hh 'horas e' mm 'minutos'`),
+      )} de leitura, considerando a velocidade de leitura de um adulto médio.\n Isso equivale a ${bold(readingMetadata.words.toString())} palavra(s) ou ${
+        content.length
+      } caractere(s).`,
+      files: [{ attachment: Buffer.from(content), name: "content.txt" }],
+    });
   }
 }
