@@ -122,16 +122,49 @@ export const CHANNEL_TYPES_TRANSLATIONS: Record<ChannelType, string> = {
   health: "Saúde",
 } as const;
 
+export const EQUIPMENT_STATS_TRANSLATIONS: Record<string, string> = {
+  attack: "Ataque",
+  defense: "Defesa",
+  health: "Vida",
+  speed: "Velocidade",
+  range: "Alcance",
+} as const;
+
+export const CONSUMABLE_STATS_TRANSLATIONS: Record<string, string> = {
+  hunger: "Fome",
+  thirst: "Sede",
+  health: "Vida",
+  stamina: "Energia",
+  duration: "Duração",
+};
 export const GENDER_TRANSLATIONS_MAP = {
   male: "Masculino",
   female: "Feminino",
 } as const;
 
+export const ITEM_STAT_RANGES = {
+  common: { min: 1, max: 5 },
+  uncommon: { min: 6, max: 10 },
+  rare: { min: 11, max: 15 },
+  epic: { min: 16, max: 20 },
+  legendary: { min: 21, max: 25 },
+} as const;
+
+export const RARITY_COLORS = {
+  common: "#ffffff",
+  uncommon: "#00ff00",
+  rare: "#0000ff",
+  epic: "#ff00ff",
+  legendary: "#ffff00",
+} as const;
+
+export const DISCORD_AUTOCOMPLETE_LIMIT = 25 as const;
 export const CRON_EXPRESSIONS = {
   EveryFourHours: "0 */4 * * *",
 } as const;
 
 export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png" as const;
+export const BASE_ITEM_IMAGE_URL = "https://i.imgur.com/YkGY5Mm.png" as const;
 
 export const PAGINATION_DEFAULT_OPTIONS = {
   type: PaginationType.Button,

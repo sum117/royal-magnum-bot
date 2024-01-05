@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { equipmentSlotsSchemaPartial } from "./equipmentSlotsSchema";
+import { inventoryItemSchema } from "./itemSchema";
 
 export const professionEnumSchema = z
   .enum([
@@ -31,19 +33,22 @@ export const professionEnumSchema = z
   ])
   .default("other");
 
-export const characterSheetSchema = z.object({
-  name: z.string().min(3).max(32),
-  backstory: z.string().min(1).max(2048),
-  appearance: z.string().min(1).max(1024),
-  characterId: z.string(),
-  isApproved: z.boolean().default(false),
-  isActive: z.boolean().default(false),
-  imageUrl: z.string(),
-  userId: z.string(),
-  xp: z.number().default(0),
-  level: z.number().default(1),
-  profession: professionEnumSchema,
-});
+export const characterSheetSchema = z
+  .object({
+    name: z.string().min(3).max(32),
+    backstory: z.string().min(1).max(2048),
+    appearance: z.string().min(1).max(1024),
+    characterId: z.string(),
+    isApproved: z.boolean().default(false),
+    isActive: z.boolean().default(false),
+    imageUrl: z.string(),
+    userId: z.string(),
+    xp: z.number().default(0),
+    level: z.number().default(1),
+    profession: professionEnumSchema,
+    inventory: z.array(inventoryItemSchema).default([]),
+  })
+  .merge(equipmentSlotsSchemaPartial);
 
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
 export const characterSheetSchemaInput = characterSheetSchema.omit({
