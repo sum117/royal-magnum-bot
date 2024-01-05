@@ -11,6 +11,9 @@ dependencies:
   '@discordx/pagination':
     specifier: ^3.5.0
     version: 3.5.0(discord.js@14.14.1)
+  '@img/sharp-linux-x64':
+    specifier: ^0.33.1
+    version: 0.33.1
   axios:
     specifier: ^1.6.2
     version: 1.6.3
@@ -339,7 +342,6 @@ packages:
     optionalDependencies:
       '@img/sharp-libvips-linux-x64': 1.0.0
     dev: false
-    optional: true
 
   /@img/sharp-linuxmusl-arm64@0.33.1:
     resolution: {integrity: sha512-D3lV6clkqIKUizNS8K6pkuCKNGmWoKlBGh5p0sLO2jQERzbakhu4bVX1Gz+RS4vTZBprKlWaf+/Rdp3ni2jLfA==}
