@@ -58,6 +58,7 @@ export default class Utils {
     return { imageKitLink, name: imageName };
   }
 
+  //TODO: Moving this file will cause the method getProjectRootDir() to stop working. Need to find a better way to do this.
   /**
    * This utils file is located in the project root directory, so we can use it to get the project root directory.
    * @returns {string} The project root directory
@@ -98,8 +99,7 @@ export default class Utils {
   }
 
   private static async fetchRootYaml<T>() {
-    const projectRoot = process.cwd();
-    const file = await readFile(path.join(projectRoot, "transformations.yaml"), "utf-8");
+    const file = await readFile(path.join(this.getProjectRootDir(), "assets", "transformations.yaml"), "utf-8");
     return yaml.parse(file) as T;
   }
 

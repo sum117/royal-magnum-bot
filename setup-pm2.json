@@ -1,7 +1,7 @@
 {
-    "apps": {
-        "name": "royal-magnum-bot",
-        "script": "node",
-        "args": "--experimental-specifier-resolution=node build/main.js"
-    }
+  "apps": {
+    "name": "royal-magnum-bot",
+    "script": "node",
+    "args": "--import=extensionless/register build/main.js"
+  }
 }
