@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   Attachment,
+  BaseMessageOptions,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -24,6 +25,7 @@ import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
 
 export const dismissButtonId = "dismiss";
+export const infoButtonId = "info";
 
 @Discord()
 export default class Channel {
@@ -55,27 +57,48 @@ export default class Channel {
     await this.generatePlaceholderMessage(channel, databaseChannelData, oldPlaceholderMessage);
   }
 
-  public static makePlaceholderMessage(channel: DatabaseChannel) {
+  public static makeInfoExpandMessage(channel: DatabaseChannel) {
     const embed = new EmbedBuilder();
     embed.setTitle(lodash.startCase(channel.name));
-    embed.setDescription(channel.description);
     embed.addFields(
       { name: "Tipo", value: CHANNEL_TYPES_TRANSLATIONS[channel.type], inline: true },
       { name: "Eficiência", value: `${channel.efficiency}%`, inline: true },
       { name: "Recurso", value: RESOURCES_TRANSLATIONS[channel.resourceType], inline: true },
       { name: "Nível", value: channel.level.toString(), inline: true },
     );
-    embed.setImage(channel.image);
     embed.setColor(lodash.sample(Object.values(Colors)) as ColorResolvable);
-    const dismissButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+
+    return { embeds: [embed] };
+  }
+
+  public static async makePlaceholderMessage(channel: TextChannel) {
+    const pinnedMessages = await channel.messages.fetchPinned();
+
+    const channelMetadata = pinnedMessages.first();
+    if (!channelMetadata || !channelMetadata.attachments.first()) return;
+
+    const actionsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(dismissButtonId).setLabel("Fechar").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId(infoButtonId).setLabel("Informações").setStyle(ButtonStyle.Primary),
     );
-    return { embeds: [embed], components: [dismissButton] };
+
+    return {
+      content: channelMetadata.content,
+      files: [channelMetadata.attachments.first()!],
+      components: [actionsRow],
+    } satisfies BaseMessageOptions;
   }
 
   private static async generatePlaceholderMessage(channel: TextChannel, databaseChannelData: DatabaseChannel, oldPlaceholderMessage?: Message) {
     if (oldPlaceholderMessage) await Utils.scheduleMessageToDelete(oldPlaceholderMessage, 0);
-    const newPlaceholderMessage = await channel.send(Channel.makePlaceholderMessage(databaseChannelData));
+
+    const placeholderMessageComponent = await Channel.makePlaceholderMessage(channel);
+    if (!placeholderMessageComponent) {
+      console.error(`Não foi possível gerar a mensagem de placeholder para o canal ${channel.id}.`);
+      return;
+    }
+
+    const newPlaceholderMessage = await channel.send(placeholderMessageComponent);
     await Database.updateChannel(databaseChannelData.id, { placeholderMessageId: newPlaceholderMessage.id });
   }
 
@@ -118,6 +141,18 @@ export default class Channel {
 
     await interaction.editReply({ content: "Canal criado com sucesso." });
     await Channel.manageChannelPlaceholder(channel);
+  }
+
+  @ButtonComponent({ id: infoButtonId })
+  public async infoButtonListener(interaction: ButtonInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const databaseChannelData = await Database.getChannel(interaction.channelId);
+    if (!databaseChannelData) {
+      await interaction.reply({ content: "Não foi possível encontrar o canal no banco de dados." });
+      return;
+    }
+
+    await interaction.editReply(Channel.makeInfoExpandMessage(databaseChannelData));
   }
 
   @ButtonComponent({ id: dismissButtonId })
