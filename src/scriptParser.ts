@@ -1,7 +1,9 @@
 import crypto from "crypto";
+
 interface Base {
   type: Type;
 }
+
 export interface Declaration extends Base {
   type: "declare";
   characterName: string;
