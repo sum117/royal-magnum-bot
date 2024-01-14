@@ -1,7 +1,6 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
 import {
   ActionRowBuilder,
-  bold,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -9,10 +8,11 @@ import {
   Colors,
   EmbedBuilder,
   GuildMember,
+  bold,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
+import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { PAGINATION_DEFAULT_OPTIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";

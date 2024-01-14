@@ -146,8 +146,7 @@ export class Item {
         message: "Você precisa fornecer um slot de mão para o item",
       },
     };
-
-    const error = Object.entries(errors).find(([, { condition }]) => condition);
+    const error = Object.entries(errors).find(([_, { condition }]) => condition);
     if (error) {
       await interaction.reply(error[1].message);
       return;
