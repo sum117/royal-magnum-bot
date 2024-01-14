@@ -1,49 +1,25 @@
 import { z } from "zod";
+import { professionEnumSchema } from "./enums";
+import { equipmentSlotsSchemaPartial } from "./equipmentSlotsSchema";
+import { inventoryItemSchema } from "./itemSchema";
 
-export const professionEnumSchema = z
-  .enum([
-    "royal",
-    "blacksmith",
-    "merchant",
-    "farmer",
-    "hunter",
-    "fisherman",
-    "miner",
-    "lumberjack",
-    "alchemist",
-    "cook",
-    "tailor",
-    "carpenter",
-    "librarian",
-    "musician",
-    "writer",
-    "priest",
-    "doctor",
-    "sailor",
-    "soldier",
-    "guard",
-    "servant",
-    "slave",
-    "knight",
-    "squire",
-    "courtier",
-    "other",
-  ])
-  .default("other");
 
-export const characterSheetSchema = z.object({
-  name: z.string().min(3).max(32),
-  backstory: z.string().min(1).max(2048),
-  appearance: z.string().min(1).max(1024),
-  characterId: z.string(),
-  isApproved: z.boolean().default(false),
-  isActive: z.boolean().default(false),
-  imageUrl: z.string(),
-  userId: z.string(),
-  xp: z.number().default(0),
-  level: z.number().default(1),
-  profession: professionEnumSchema,
-});
+export const characterSheetSchema = z
+  .object({
+    name: z.string().min(3).max(32),
+    backstory: z.string().min(1).max(2048),
+    appearance: z.string().min(1).max(1024),
+    characterId: z.string(),
+    isApproved: z.boolean().default(false),
+    isActive: z.boolean().default(false),
+    imageUrl: z.string(),
+    userId: z.string(),
+    xp: z.number().default(0),
+    level: z.number().default(1),
+    profession: professionEnumSchema,
+    inventory: z.array(inventoryItemSchema).default([]),
+  })
+  .merge(equipmentSlotsSchemaPartial);
 
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
 export const characterSheetSchemaInput = characterSheetSchema.omit({
@@ -83,7 +59,6 @@ export const storeCharacterSheetSchema = royalCharacterSchema.extend({
   price: z.number(),
   isStoreCharacter: z.literal(true),
 });
-export type Profession = z.infer<typeof professionEnumSchema>;
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;
 export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;

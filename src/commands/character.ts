@@ -1,7 +1,6 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
 import {
   ActionRowBuilder,
-  bold,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -9,14 +8,16 @@ import {
   Colors,
   EmbedBuilder,
   GuildMember,
+  bold,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { PAGINATION_DEFAULT_OPTIONS, RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "../data/constants";
+import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
+import { PAGINATION_DEFAULT_OPTIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
+import Utils from "../utils";
 
 export const characterDetailsButtonIdPrefix = "character-details";
 export const getCharacterDetailsButtonId = (userId: string, characterId: string) => `${characterDetailsButtonIdPrefix}-${userId}-${characterId}`;
@@ -151,14 +152,6 @@ export default class Character {
     }
 
     const resources = resourcesSchema.parse(family);
-    const resourcesString = Object.entries(resources)
-      .map(([key, value]) => {
-        type ResourceName = keyof typeof resources;
-        const emoji = RESOURCES_EMOJIS[key as ResourceName];
-        const translation = RESOURCES_TRANSLATIONS[key as ResourceName];
-        return `${emoji} ${bold(translation)}: ${value}`;
-      })
-      .join("\n");
 
     const playersInFamily = lodash.shuffle(await Database.getSheetsByFamily(familySlug));
 
@@ -174,7 +167,9 @@ export default class Character {
     embed.setThumbnail(family.image);
     embed.setColor(Colors.Blurple);
     embed.setDescription(
-      `# Descrição\n${family.description}\n# Recursos\n${resourcesString}\n# Jogadores\n${playersString} e mais ${bold(playerRest.toString())}.`,
+      `# Descrição\n${family.description}\n# Recursos\n${Utils.getResourcesString(resources)}\n# Jogadores\n${playersString} e mais ${bold(
+        playerRest.toString(),
+      )}.`,
     );
     embed.addFields([
       {

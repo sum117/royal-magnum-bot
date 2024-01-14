@@ -5,11 +5,22 @@ import lodash from "lodash";
 import path from "path";
 import Database from "../database";
 import Utils from "../utils";
+import { DISCORD_AUTOCOMPLETE_LIMIT, PROFESSIONS_TRANSLATIONS } from "./constants";
 
 type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, string>>;
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  makeItemRecipe: {
+    name: "make-item-recipe",
+    description: "Cria uma receita de item",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
+  makeItem: {
+    name: "make-item",
+    description: "Cria um item",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
   readingTime: { name: "reading-time", description: "Mostra o tempo de leitura de um texto" },
   playVisualNovel: { name: "play-visual-novel", description: "Inicia uma visual novel" },
   createChannel: { name: "create-channel", description: "Cria um canal no servidor ou na categoria da sua família." },
@@ -50,7 +61,7 @@ export const COMMANDS = {
   },
 } satisfies CommandData;
 
-export const COMMAND_OPTIONS: CommandOptionData = {
+export const COMMAND_OPTIONS = {
   playVisualNovelName: {
     name: "name",
     description: "Nome da visual novel",
@@ -213,5 +224,92 @@ export const COMMAND_OPTIONS: CommandOptionData = {
     description: "Eficiência do canal",
     required: false,
     type: ApplicationCommandOptionType.Integer,
+  },
+  makeItemType: {
+    name: "type",
+    description: "Tipo do item",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const options = [
+        { name: "Arma", value: "weapon" },
+        { name: "Armadura", value: "armor" },
+        { name: "Consumível", value: "consumable" },
+        { name: "Outro", value: "other" },
+      ];
+      await interaction.respond(options);
+    },
+  },
+  makeItemRarity: {
+    name: "rarity",
+    description: "Raridade do item",
+    required: false,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const options = [
+        { name: "Comum", value: "common" },
+        { name: "Incomum", value: "uncommon" },
+        { name: "Raro", value: "rare" },
+        { name: "Épico", value: "epic" },
+        { name: "Lendário", value: "legendary" },
+      ];
+      await interaction.respond(options);
+    },
+  },
+  makeItemSlot: {
+    name: "slot",
+    description: "Slot do item",
+    required: false,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const options = [
+        { name: "Cabeça", value: "head" },
+        { name: "Peito", value: "body" },
+        { name: "Pernas", value: "legs" },
+        { name: "Pés", value: "feet" },
+        { name: "Mão Esquerda", value: "leftHand" },
+        { name: "Mão Direita", value: "rightHand" },
+      ];
+      await interaction.respond(options);
+    },
+  },
+  makeItemRanged: {
+    name: "ranged",
+    description: "Se a arma é de longa distância",
+    required: false,
+    type: ApplicationCommandOptionType.Boolean,
+  },
+  makeItemRecipeLevel: {
+    name: "level",
+    description: "Nível da receita",
+    required: false,
+    type: ApplicationCommandOptionType.Integer,
+  },
+  makeItemRecipeProfession: {
+    name: "profession",
+    description: "Profissão da receita",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const options = Object.entries(PROFESSIONS_TRANSLATIONS)
+        .map(([profession, translation]) => ({ name: translation, value: profession }))
+        .filter(({ value }) => (interaction.options.getFocused() ? value.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) : true));
+      await interaction.respond(options);
+    },
+  },
+  makeItemRecipeItemId: {
+    name: "item-id",
+    description: "ID do item",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const items = await Database.getItems();
+      await interaction.respond(
+        items
+          .filter((item) => item.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()))
+          .map((item) => ({ name: item.name, value: item.id }))
+          .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
+      );
+    },
   },
 } satisfies CommandOptionData;

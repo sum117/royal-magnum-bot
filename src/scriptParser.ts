@@ -120,7 +120,11 @@ export default class ScriptParser {
       }
     }
 
-    const chaptersWithChoices = script.chapters.map((chapter) => ({ id: chapter.id, name: chapter.name, choices: chapter.choices }));
+    const chaptersWithChoices = script.chapters.map((chapter) => ({
+      id: chapter.id,
+      name: chapter.name,
+      choices: chapter.choices,
+    }));
 
     const updateRefs = (chapter: Chapter) => {
       const previous = chaptersWithChoices.find(({ choices }) => choices?.some((choice) => choice.targetChapter === chapter.name));

@@ -14,11 +14,11 @@ import {
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { DateTime } from "luxon";
-import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
+import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { CHANNEL_TYPES_TRANSLATIONS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import type { Channel as DatabaseChannel } from "../schemas/channelSchema";
-import { ChannelType } from "../schemas/channelSchema";
+import { ChannelType } from "../schemas/enums";
 import { ResourceType } from "../schemas/resourceSchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";

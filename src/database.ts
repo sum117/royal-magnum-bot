@@ -16,12 +16,12 @@ import {
 import { Family, FamilyInput, familySchema, FamilyUpdateInput } from "./schemas/familySchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
 import { UserOptional, userSchema } from "./schemas/userSchema";
+import { consumableItemSchema, equipmentItemSchema, Item, ItemRecipe, itemRecipeSchema, otherItemSchema } from "./schemas/itemSchema";
+import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 
 const db = new QuickDB();
 
 export default class Database {
-  private static PAGINATION_LIMIT = 10;
-
   public static async insertMessage(message: Message) {
     const messageToInsert = {
       id: message.id,
@@ -151,7 +151,7 @@ export default class Database {
     return Object.values(sheets)
       .filter((sheet) => sheet.name.toLowerCase().includes(name.toLowerCase()))
       .map((sheet) => characterTypeSchema.parse(sheet))
-      .slice(0, this.PAGINATION_LIMIT);
+      .slice(0, DISCORD_AUTOCOMPLETE_LIMIT);
   }
 
   public static async getSheetsByFamily(familySlug: string) {
@@ -196,7 +196,7 @@ export default class Database {
     if (!families) return [];
     return Object.values(families)
       .map((family) => familySchema.parse(family))
-      .slice(0, this.PAGINATION_LIMIT);
+      .slice(0, DISCORD_AUTOCOMPLETE_LIMIT);
   }
 
   public static async insertChannel(channel: ChannelInput) {
@@ -225,6 +225,53 @@ export default class Database {
 
   public static async deleteChannel(channelId: string) {
     await db.delete(`channels.${channelId}`);
+    return;
+  }
+
+  public static async insertItem<T extends Omit<Item, "id">>(item: T) {
+    const itemToInsert = { ...item, id: crypto.randomBytes(16).toString("hex") };
+    await db.set(`items.${itemToInsert.id}`, itemToInsert);
+    return equipmentItemSchema.or(consumableItemSchema).or(otherItemSchema).parse(itemToInsert);
+  }
+
+  public static async getItem(id: string) {
+    const item = await db.get<Item>(`items.${id}`);
+    if (!item) return null;
+    return equipmentItemSchema.or(consumableItemSchema).or(otherItemSchema).parse(item);
+  }
+
+  public static async getItems() {
+    const items = await db.get<Record<string, Item>>("items");
+    if (!items) return [];
+    return Object.values(items).map((item) => equipmentItemSchema.or(consumableItemSchema).or(otherItemSchema).parse(item));
+  }
+
+  public static async deleteItem(id: string) {
+    await db.delete(`items.${id}`);
+    return;
+  }
+
+  public static async updateItem(id: string, item: Item) {
+    const oldItem = await db.get<Item>(`items.${id}`);
+    if (!oldItem) return null;
+    const updatedItem = { ...oldItem, ...item };
+    await db.set(`items.${id}`, updatedItem);
+    return equipmentItemSchema.or(consumableItemSchema).or(otherItemSchema).parse(updatedItem);
+  }
+
+  public static async insertItemRecipe(recipe: ItemRecipe) {
+    await db.set(`recipes.${recipe.itemId}`, recipe);
+    return itemRecipeSchema.parse(recipe);
+  }
+
+  public static async getItemRecipe(itemId: string) {
+    const recipe = await db.get<ItemRecipe>(`recipes.${itemId}`);
+    if (!recipe) return null;
+    return itemRecipeSchema.parse(recipe);
+  }
+
+  public static async deleteItemRecipe(itemId: string) {
+    await db.delete(`recipes.${itemId}`);
     return;
   }
 }

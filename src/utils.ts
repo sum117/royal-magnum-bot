@@ -1,11 +1,15 @@
 import axios from "axios";
-import { Attachment, EmbedBuilder, Message } from "discord.js";
+import { Attachment, bold, ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { readFile } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
 import { fileURLToPath } from "url";
 import yaml from "yaml";
 import { Family, familySchema } from "./schemas/familySchema";
+import { createSheetModalId } from "./components/CreateSheetModal";
+import { Duration } from "luxon";
+import { RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "./data/constants";
+import { Resources } from "./schemas/resourceSchema";
 
 type Entity = { title: string; slug: string };
 type RootYamlType = { families: Array<Family>; entities: Array<Entity> };
@@ -17,6 +21,18 @@ export default class Utils {
       { headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` } },
     );
     return response.data.data.link as string;
+  }
+
+  public static async awaitModalSubmission(interaction: ButtonInteraction | ChatInputCommandInteraction, id = createSheetModalId) {
+    try {
+      return await interaction.awaitModalSubmit({
+        time: Duration.fromObject({ minutes: 60 }).as("milliseconds"),
+        filter: (modalInteraction) => modalInteraction.customId === id,
+      });
+    } catch (error) {
+      console.log(`${interaction.user.username} não enviou a ficha a tempo.`);
+      return null;
+    }
   }
 
   public static async scheduleMessageToDelete(message: Message, time?: number) {
@@ -40,7 +56,7 @@ export default class Utils {
    * This utils file is located in the project root directory, so we can use it to get the project root directory.
    * @returns {string} The project root directory
    */
-  public static getProjectRootDir() {
+  public static getProjectRootDir(): string {
     return path.dirname(fileURLToPath(import.meta.url));
   }
 
@@ -62,6 +78,17 @@ export default class Utils {
   public static async fetchEntityNames() {
     const { entities } = await this.fetchRootYaml<RootYamlType>();
     return entities;
+  }
+
+  public static getResourcesString(resources: Resources) {
+    return Object.entries(resources)
+      .map(([key, value]) => {
+        type ResourceName = keyof typeof resources;
+        const emoji = RESOURCES_EMOJIS[key as ResourceName];
+        const translation = RESOURCES_TRANSLATIONS[key as ResourceName];
+        return `${emoji} ${bold(translation)}: ${value}`;
+      })
+      .join("\n");
   }
 
   private static async fetchRootYaml<T>() {

@@ -15,7 +15,7 @@ import { readFile } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
 import sharp from "sharp";
-import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
+import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { NUMBER_EMOJIS } from "../data/constants";
 import ScriptParser, { Character, Choice, Dialogue } from "../scriptParser";
 import Utils from "../utils";

@@ -21,15 +21,16 @@ import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
-import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds, createSheetModalId } from "../components/CreateSheetModal";
+import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { characterTypeSchemaInput, Profession } from "../schemas/characterSheetSchema";
+import { bot } from "../main";
+import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
+import { Profession } from "../schemas/enums";
 import { Family } from "../schemas/familySchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
-import { bot } from "../main";
 
 export const createSheetButtonId = "createSheetButtonId";
 export const createRoyalSheetButtonId = "createRoyalSheetButtonId";
@@ -258,7 +259,7 @@ export default class Sheet {
     const entity = entitySelectMenuSubmit.values[0];
     await interaction.deleteReply();
     await entitySelectMenuSubmit.showModal(CreateFamilyModal);
-    const createFamilyModalSubmission = await this.awaitSubmission(interaction, createFamilyModalId);
+    const createFamilyModalSubmission = await Utils.awaitModalSubmission(interaction, createFamilyModalId);
     if (!createFamilyModalSubmission?.inCachedGuild()) return;
     await createFamilyModalSubmission.deferReply({ ephemeral: true });
 
@@ -316,7 +317,7 @@ export default class Sheet {
     const isRoyalSheet = profession === "royal";
     await interaction.showModal(CreateSheetModal(isRoyalSheet));
 
-    const modalSubmit = await this.awaitSubmission(interaction);
+    const modalSubmit = await Utils.awaitModalSubmission(interaction);
     if (!modalSubmit || !modalSubmit.inCachedGuild() || !modalSubmit.channel) return;
 
     await modalSubmit.deferReply({ ephemeral: true });
@@ -460,18 +461,6 @@ export default class Sheet {
         await interaction.editReply({ content: "Ficha reprovada com sucesso." });
         Utils.scheduleMessageToDelete(interaction.message, 1000);
         break;
-    }
-  }
-
-  private async awaitSubmission(interaction: ButtonInteraction, id = createSheetModalId) {
-    try {
-      return await interaction.awaitModalSubmit({
-        time: Duration.fromObject({ minutes: 60 }).as("milliseconds"),
-        filter: (modalInteraction) => modalInteraction.customId === id,
-      });
-    } catch (error) {
-      console.log(`${interaction.user.username} não enviou a ficha a tempo.`);
-      return null;
     }
   }
 
