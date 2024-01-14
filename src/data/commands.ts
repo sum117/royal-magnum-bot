@@ -288,7 +288,7 @@ export const COMMAND_OPTIONS = {
   makeItemRecipeProfession: {
     name: "profession",
     description: "Profissão da receita",
-    required: false,
+    required: true,
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
       const options = Object.entries(PROFESSIONS_TRANSLATIONS)

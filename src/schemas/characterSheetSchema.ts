@@ -1,37 +1,8 @@
 import { z } from "zod";
+import { professionEnumSchema } from "./enums";
 import { equipmentSlotsSchemaPartial } from "./equipmentSlotsSchema";
 import { inventoryItemSchema } from "./itemSchema";
 
-export const professionEnumSchema = z
-  .enum([
-    "royal",
-    "blacksmith",
-    "merchant",
-    "farmer",
-    "hunter",
-    "fisherman",
-    "miner",
-    "lumberjack",
-    "alchemist",
-    "cook",
-    "tailor",
-    "carpenter",
-    "librarian",
-    "musician",
-    "writer",
-    "priest",
-    "doctor",
-    "sailor",
-    "soldier",
-    "guard",
-    "servant",
-    "slave",
-    "knight",
-    "squire",
-    "courtier",
-    "other",
-  ])
-  .default("other");
 
 export const characterSheetSchema = z
   .object({
@@ -88,7 +59,6 @@ export const storeCharacterSheetSchema = royalCharacterSchema.extend({
   price: z.number(),
   isStoreCharacter: z.literal(true),
 });
-export type Profession = z.infer<typeof professionEnumSchema>;
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;
 export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;

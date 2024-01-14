@@ -1,11 +1,8 @@
 import { z } from "zod";
-import { resourcesSchema } from "./resourceSchema";
-import { equipmentSlotEnumSchema } from "./equipmentSlotsSchema";
 import { BASE_ITEM_IMAGE_URL } from "../data/constants";
-import { professionEnumSchema } from "./characterSheetSchema";
+import { equipmentSlotEnumSchema, itemRarityEnumSchema, itemTypeEnumSchema, professionEnumSchema } from "./enums";
+import { resourcesSchema } from "./resourceSchema";
 
-export const itemTypeEnumSchema = z.enum(["weapon", "armor", "consumable", "other"]);
-export const itemRarityEnumSchema = z.enum(["common", "uncommon", "rare", "epic", "legendary"]).default("common");
 export const itemSchema = z.object({
   itemType: itemTypeEnumSchema,
   name: z.string(),
@@ -59,6 +56,4 @@ export type InventoryItem = z.infer<typeof inventoryItemSchema>;
 export type EquipmentItem = z.infer<typeof equipmentItemSchema>;
 export type ConsumableItem = z.infer<typeof consumableItemSchema>;
 export type OtherItem = z.infer<typeof otherItemSchema>;
-export type ItemType = z.infer<typeof itemTypeEnumSchema>;
-export type ItemRarity = z.infer<typeof itemRarityEnumSchema>;
 export type Item = EquipmentItem | ConsumableItem | OtherItem;

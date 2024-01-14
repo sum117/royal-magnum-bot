@@ -1,16 +1,15 @@
-import { Discord, Slash, SlashOption } from "discordx";
-import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import type { Item as ItemSchema } from "../schemas/itemSchema";
-import { ConsumableItem, EquipmentItem, ItemRarity, ItemType, itemTypeEnumSchema } from "../schemas/itemSchema";
-import Utils from "../utils";
-import createFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
-import Database from "../database";
-import { CONSUMABLE_STATS_TRANSLATIONS, EQUIPMENT_STATS_TRANSLATIONS, ITEM_STAT_RANGES, RARITY_COLORS } from "../data/constants";
+import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { EquipmentSlotEnum, equipmentSlotEnumSchema } from "../schemas/equipmentSlotsSchema";
 import { DateTime } from "luxon";
-import { Profession } from "../schemas/characterSheetSchema";
+import createFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
+import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
+import { CONSUMABLE_STATS_TRANSLATIONS, EQUIPMENT_STATS_TRANSLATIONS, ITEM_STAT_RANGES, RARITY_COLORS } from "../data/constants";
+import Database from "../database";
+import { EquipmentSlotEnum, ItemRarity, ItemType, Profession, equipmentSlotEnumSchema, itemTypeEnumSchema } from "../schemas/enums";
+import type { Item as ItemSchema } from "../schemas/itemSchema";
+import { ConsumableItem, EquipmentItem } from "../schemas/itemSchema";
+import Utils from "../utils";
 
 @Discord()
 export class Item {
@@ -176,8 +175,8 @@ export class Item {
   @Slash(COMMANDS.makeItemRecipe)
   public async makeItemRecipe(
     @SlashOption(COMMAND_OPTIONS.makeItemRecipeProfession) profession: Profession,
-    @SlashOption(COMMAND_OPTIONS.makeItemRecipeLevel) level: number = 1,
     @SlashOption(COMMAND_OPTIONS.makeItemRecipeItemId) itemId: string,
+    @SlashOption(COMMAND_OPTIONS.makeItemRecipeLevel) level: number = 1,
     interaction: ChatInputCommandInteraction,
   ) {
     await interaction.deferReply({ ephemeral: true });

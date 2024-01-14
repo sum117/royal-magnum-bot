@@ -1,8 +1,7 @@
 import { PaginationType } from "@discordx/pagination";
 import { ButtonStyle } from "discord.js";
 import { Duration } from "luxon";
-import { ChannelType } from "../schemas/channelSchema";
-import { Profession } from "../schemas/characterSheetSchema";
+import { ChannelType, Profession } from "../schemas/enums";
 import { ResourceType } from "../schemas/resourceSchema";
 
 export const CHANNEL_IDS = {

@@ -25,11 +25,12 @@ import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldI
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { characterTypeSchemaInput, Profession } from "../schemas/characterSheetSchema";
+import { bot } from "../main";
+import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
+import { Profession } from "../schemas/enums";
 import { Family } from "../schemas/familySchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
-import { bot } from "../main";
 
 export const createSheetButtonId = "createSheetButtonId";
 export const createRoyalSheetButtonId = "createRoyalSheetButtonId";

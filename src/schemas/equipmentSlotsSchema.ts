@@ -10,8 +10,6 @@ export const equipmentSlotsSchema = z.object({
 });
 
 export const equipmentSlotsSchemaPartial = equipmentSlotsSchema.partial();
-export const equipmentSlotEnumSchema = z.enum(["head", "body", "legs", "feet", "rightHand", "leftHand"]);
 
 export type EquipmentSlot = z.infer<typeof equipmentSlotsSchema>;
 export type EquipmentPartial = z.infer<typeof equipmentSlotsSchemaPartial>;
-export type EquipmentSlotEnum = z.infer<typeof equipmentSlotEnumSchema>;
