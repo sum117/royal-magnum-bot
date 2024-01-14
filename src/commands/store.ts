@@ -7,9 +7,9 @@ import CreateSheetModal, { createRoyalSheetModalFieldIds } from "../components/C
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
+import { bot } from "../main";
 import Utils from "../utils";
 import Character, { characterDetailsButtonIdPrefix } from "./character";
-import { bot } from "../main";
 
 export const buyStoreCharacterButtonIdPrefix = "buy-sheet";
 export const getBuyStoreCharacterButtonId = (characterId: string) => `${buyStoreCharacterButtonIdPrefix}-${characterId}`;
@@ -51,6 +51,7 @@ export default class Store {
       backstory,
       appearance,
       transformation,
+      inventory: [],
       price,
       familySlug: family,
       imageUrl: imageURL,
