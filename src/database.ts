@@ -1,25 +1,31 @@
 import crypto from "crypto";
 import { Message } from "discord.js";
-import { QuickDB } from "quick.db";
+import { MySQLDriver, QuickDB } from "quick.db";
+import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 import { Channel, ChannelInput, ChannelPartial, channelSchema } from "./schemas/channelSchema";
 import {
   CharacterSheetPartial,
   CharacterSheetType,
   CharacterSheetTypeInput,
-  characterTypeSchema,
-  royalCharacterSchema,
   RoyalCharacterSheet,
   StoreCharacterSheet,
   StoreCharacterSheetInput,
+  characterTypeSchema,
+  royalCharacterSchema,
   storeCharacterSheetSchema,
 } from "./schemas/characterSheetSchema";
-import { Family, FamilyInput, familySchema, FamilyUpdateInput } from "./schemas/familySchema";
+import { Family, FamilyInput, FamilyUpdateInput, familySchema } from "./schemas/familySchema";
+import { Item, ItemRecipe, consumableItemSchema, equipmentItemSchema, itemRecipeSchema, otherItemSchema } from "./schemas/itemSchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
 import { UserOptional, userSchema } from "./schemas/userSchema";
-import { consumableItemSchema, equipmentItemSchema, Item, ItemRecipe, itemRecipeSchema, otherItemSchema } from "./schemas/itemSchema";
-import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 
-const db = new QuickDB();
+const mysqlDriver = new MySQLDriver({
+  uri: process.env.DATABASE_URI,
+});
+
+await mysqlDriver.connect();
+
+const db = new QuickDB({ driver: mysqlDriver });
 
 export default class Database {
   public static async insertMessage(message: Message) {

@@ -2,12 +2,12 @@ import { BaseMessageOptions, bold, Colors, EmbedBuilder, Events, Message } from 
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
+import Character from "../commands/character";
+import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import Utils from "../utils";
-import { PROFESSION_CHANNELS } from "../data/constants";
-import Character from "../commands/character";
 
 @Discord()
 export default class CharacterEvents {
@@ -41,8 +41,8 @@ export default class CharacterEvents {
     const attachment = message.attachments.first();
     const payload: BaseMessageOptions = { embeds: [embed] };
     if (attachment) {
-      const { imgurLink, name } = await Utils.handleAttachment(attachment, embed);
-      payload.files = [{ attachment: imgurLink, name }];
+      const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
+      payload.files = [{ attachment: imageKitLink, name }];
     }
     const embedMessage = await message.channel.send(payload);
     embedMessage.author.id = message.author.id;
@@ -90,8 +90,8 @@ export default class CharacterEvents {
           const originalAttachment = originalMessage.attachments.first();
           const attachment = newContentMessage.attachments.first();
           if (attachment) {
-            const { imgurLink, name } = await Utils.handleAttachment(attachment, embed);
-            await originalMessage.edit({ embeds: [embed], files: [{ attachment: imgurLink, name }] });
+            const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
+            await originalMessage.edit({ embeds: [embed], files: [{ attachment: imageKitLink, name }] });
           } else if (originalAttachment && !attachment) {
             embed.setImage(`attachment://${originalAttachment.name}`);
             await originalMessage.edit({ embeds: [embed], files: [originalAttachment] });

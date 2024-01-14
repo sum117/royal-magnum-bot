@@ -23,7 +23,7 @@ import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS } from "../data/constants";
+import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS, SERVER_BANNER_URL } from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
 import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
@@ -67,7 +67,7 @@ export default class Sheet {
       })
       .setTitle(`Criação de ficha de personagem  de ${interaction.guild.name}`)
       .setFooter({ text: "Clique no botão abaixo para começar a criação de ficha" })
-      .setThumbnail("https://i.imgur.com/9Fkj6f5.jpg");
+      .setThumbnail(SERVER_BANNER_URL);
 
     if (randomColor) embed.setColor(randomColor);
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -328,13 +328,13 @@ export default class Sheet {
       files: [attachment],
     });
 
-    const imgurLink = await this.collectAttachment(modalSubmit);
-    if (!imgurLink) {
+    const imageKitLink = await this.collectAttachment(modalSubmit);
+    if (!imageKitLink) {
       await modalSubmit.editReply("Não foi possível concluir a criação da ficha. Você não enviou um anexo válido a tempo.");
       return;
     }
 
-    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imgurLink);
+    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imageKitLink);
     const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
     await modalSubmit.editReply({
       content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.toString()}`,
@@ -464,7 +464,7 @@ export default class Sheet {
     }
   }
 
-  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, profession: Profession, imgurLink: string) {
+  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, profession: Profession, imageKitLink: string) {
     const fieldIds = profession === "royal" ? createRoyalSheetModalFieldIds : createSheetModalFieldIds;
     const [name, backstory, appearance, royalTitle, transformation] = fieldIds.map((customId) => modalSubmit.fields.getTextInputValue(customId));
     const sheetData =
@@ -475,11 +475,11 @@ export default class Sheet {
             backstory,
             appearance,
             transformation,
-            imageUrl: imgurLink,
+            imageUrl: imageKitLink,
             familySlug,
             profession: "royal",
           }
-        : { name, backstory, appearance, imageUrl: imgurLink, profession: "other" };
+        : { name, backstory, appearance, imageUrl: imageKitLink, profession: "other" };
 
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
@@ -488,7 +488,7 @@ export default class Sheet {
       })
       .setTitle(`Ficha de ${name}`)
       .setDescription(`# História \n${backstory}`)
-      .setImage(imgurLink)
+      .setImage(imageKitLink)
       .setColor(Colors.Blurple)
       .setTimestamp(DateTime.now().toJSDate())
       .addFields([{ name: "Aparência", value: appearance }]);
@@ -528,9 +528,9 @@ export default class Sheet {
             return;
           }
 
-          const imgurLink = await Utils.uploadToImgur(attachment.url);
+          const imageKitLink = await Utils.uploadToImageKit(attachment.url);
           Utils.scheduleMessageToDelete(message);
-          resolve(imgurLink);
+          resolve(imageKitLink);
         });
 
         attachmentCollector.on("end", () => {

@@ -2,37 +2,37 @@ families:
   - title: Aeternos
     slug: aeternos
     description: "Filhos do Arcanjo Maior Yos, moldados a partir das núvens com sangue celestial, de cor azul."
-    image: https://i.imgur.com/nZhPSLi.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/yor_f2KAx0m30.png
     entity: yos
 
   - title: Vespas Negras
     slug: vespas-negras
     description: "Trazidos ao plano pelo Demônio Superior Azhta. Andarilhos infernais com um senso de justiça impiedoso, mas legítimo."
-    image: https://i.imgur.com/NALNtyR.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/azhta_ZWcx2i2Jn.png
     entity: azhta
 
   - title: Soberanos
     slug: soberanos
     description: "Gerações das profundezas abissais da Deusa Ada, hominídeos de carne salobra que tornam o que tocam em líquido."
-    image: https://i.imgur.com/JpAvMbc.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/ada_nb786vT3w.png
     entity: ada
 
   - title: Consumadores
     slug: consumadores
     description: "Seguidores de Mirthir. Criaturas sem gênero com a força de vontade exalando para além da pele."
-    image: https://i.imgur.com/NHzRtzh.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/mirthir_JlKacbbQ4.png
     entity: mirthir
 
   - title: Lorentais
     slug: lorentais
     description: 'Crias da Entidade "Lorenta", provenientes do barro. Da terra úmida vieram, e para a terra úmida voltarão.'
-    image: https://i.imgur.com/0ZFwrss.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/lorenta_iMWc3Cpys.png
     entity: lorenta
 
   - title: Abelhas Reais
     slug: abelhas-reais
     description: "Vindos da Alta Colmeia Celeste, abençoados pela entidade Hibma. Suas armaduras tem tanta vida quanto os insetos na terra, e seus corpos são feitos de queratina pura."
-    image: https://i.imgur.com/ehRuBVj.png
+    image: https://ik.imagekit.io/ez2m5kovtw/static_assets/hibma_FKB7pyDmw.png
     entity: hibma
 
 entities:

@@ -1,26 +1,32 @@
-import axios from "axios";
 import { Attachment, bold, ButtonInteraction, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { readFile } from "fs/promises";
+import ImageKit from "imagekit";
 import lodash from "lodash";
+import { Duration } from "luxon";
 import path from "path";
 import { fileURLToPath } from "url";
 import yaml from "yaml";
-import { Family, familySchema } from "./schemas/familySchema";
 import { createSheetModalId } from "./components/CreateSheetModal";
-import { Duration } from "luxon";
 import { RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "./data/constants";
+import { Family, familySchema } from "./schemas/familySchema";
 import { Resources } from "./schemas/resourceSchema";
 
 type Entity = { title: string; slug: string };
 type RootYamlType = { families: Array<Family>; entities: Array<Entity> };
+
+const imageKit = new ImageKit({
+  publicKey: "public_yIN9ilRCsWfYXnA3cMDpm/wFRBw=",
+  urlEndpoint: "https://ik.imagekit.io/ez2m5kovtw",
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
+});
+
 export default class Utils {
-  public static async uploadToImgur(url: string) {
-    const response = await axios.post(
-      "https://api.imgur.com/3/image",
-      { image: url },
-      { headers: { Authorization: `Client-ID ${process.env.IMGUR_CLIENT_ID}` } },
-    );
-    return response.data.data.link as string;
+  public static async uploadToImageKit(url: string) {
+    const upload = await imageKit.upload({
+      file: url,
+      fileName: `${Date.now()}.png`,
+    });
+    return upload.url;
   }
 
   public static async awaitModalSubmission(interaction: ButtonInteraction | ChatInputCommandInteraction, id = createSheetModalId) {
@@ -45,11 +51,11 @@ export default class Utils {
   }
 
   public static async handleAttachment(attachment: Attachment, embed: EmbedBuilder) {
-    const imgurLink = await Utils.uploadToImgur(attachment.url);
-    const imageName = imgurLink.split("/").pop();
+    const imageKitLink = await Utils.uploadToImageKit(attachment.url);
+    const imageName = imageKitLink.split("/").pop();
     if (!imageName) throw new Error("Não foi possível obter o nome da imagem");
     embed.setImage(`attachment://${imageName}`);
-    return { imgurLink: imgurLink, name: imageName };
+    return { imageKitLink, name: imageName };
   }
 
   /**

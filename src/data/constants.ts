@@ -162,8 +162,9 @@ export const CRON_EXPRESSIONS = {
   EveryFourHours: "0 */4 * * *",
 } as const;
 
-export const ATTACHMENT_ICON_URL = "https://i.imgur.com/VL4nI3f.png" as const;
-export const BASE_ITEM_IMAGE_URL = "https://i.imgur.com/YkGY5Mm.png" as const;
+export const ATTACHMENT_ICON_URL = "https://ik.imagekit.io/ez2m5kovtw/static_assets/attachment_icon_U867pKdxq.png" as const;
+export const BASE_ITEM_IMAGE_URL = "https://ik.imagekit.io/ez2m5kovtw/static_assets/base_item_lVIZu2qyQ.png" as const;
+export const SERVER_BANNER_URL = "https://ik.imagekit.io/ez2m5kovtw/static_assets/Royal_Magnum_7diXjysJd.png" as const;
 
 export const PAGINATION_DEFAULT_OPTIONS = {
   type: PaginationType.Button,
