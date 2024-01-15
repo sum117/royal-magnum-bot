@@ -91,69 +91,32 @@ export default class Sheet {
 
   @ButtonComponent({ id: createRoyalSheetButtonId })
   public async createRoyalSheetButtonListener(interaction: ButtonInteraction) {
-    if (!interaction.inCachedGuild()) return;
-    const familiesChannel = interaction.guild.channels.cache.get(CHANNEL_IDS.familiesChannel);
-    if (!familiesChannel?.isTextBased()) return;
+    if (!interaction.inCachedGuild() || !this.validateFamiliesChannel(interaction)) {
+      return;
+    }
 
     await interaction.deferReply({ ephemeral: true, fetchReply: true });
 
     const user = await Database.getUser(interaction.user.id);
     if (user.royalTokens < 1) {
-      await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
-      return;
+      return await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
     }
 
-    const families = await Utils.fetchBaseFamilies();
-    const selectMenuOptions = new Array<{ label: string; value: string }>();
-    for (const family of families) {
-      await Database.setFamily(family.slug, family);
-      selectMenuOptions.push({ label: family.title, value: family.slug });
+    const selectedFamilySlug = await this.selectFamily(interaction);
+    if (!selectedFamilySlug) {
+      return await interaction.editReply({ content: "Você não selecionou uma família a tempo." });
     }
 
-    const selectMenus = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
-      new StringSelectMenuBuilder()
-        .setPlaceholder("Escolha sua família")
-        .setCustomId(familySelectMenuId)
-        .setMinValues(1)
-        .setMaxValues(1)
-        .setOptions(selectMenuOptions),
-    );
-
-    const message = await interaction.editReply({
-      content: "Selecione os campos a seguir para criar sua ficha:",
-      components: [selectMenus],
-    });
-    const familySelectMenuSubmit = await this.awaitSelectMenu(message, familySelectMenuId);
-    if (!familySelectMenuSubmit) {
-      await interaction.editReply({ content: "Você não selecionou uma família a tempo." });
-      return;
-    }
-    await familySelectMenuSubmit.reply({
-      content: `Você selecionou a família ${bold(familySelectMenuSubmit.values[0])}.`,
-      ephemeral: true,
-    });
-    const familySlug = familySelectMenuSubmit.values[0];
-    const family = await Database.getFamily(familySlug);
+    const family = await Database.getFamily(selectedFamilySlug);
     if (!family) {
-      await interaction.editReply({ content: "A família selecionada não existe." });
-      return;
+      return await interaction.editReply({ content: "A família selecionada não existe." });
     }
 
-    const secondMessage = await interaction.editReply({
-      content: "Selecione seu gênero agora:",
-      components: [this.getGenderSelectMenu()],
-    });
-    const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
-    if (!genderSelectMenuSubmit) {
-      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
-      return;
+    const gender = await this.selectGender(interaction);
+    if (!gender) {
+      return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
     }
-    await genderSelectMenuSubmit.reply({
-      content: "Gênero selecionado com sucesso.",
-      ephemeral: true,
-    });
 
-    const gender = genderSelectMenuSubmit.values[0] as "male" | "female";
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
         .setCustomId(getSpawnModalButtonId("royal", gender, family))
@@ -174,47 +137,15 @@ export default class Sheet {
   public async createSheetButtonListener(interaction: ButtonInteraction) {
     await interaction.deferReply({ ephemeral: true });
 
-    type ProfessionKey = keyof typeof PROFESSIONS_TRANSLATIONS;
-    const selectMenuOptions = new Array<{ label: string; value: string }>();
-    for (const profession of Object.keys(PROFESSIONS_TRANSLATIONS)) {
-      if (profession === "royal") continue;
-      selectMenuOptions.push({ label: PROFESSIONS_TRANSLATIONS[profession as ProfessionKey], value: profession });
+    const profession = await this.selectProfession(interaction);
+    if (!profession) {
+      return await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
     }
-    const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
-      new StringSelectMenuBuilder()
-        .setPlaceholder("Escolha sua profissão")
-        .setCustomId(professionSelectMenuId)
-        .setMinValues(1)
-        .setMaxValues(1)
-        .setOptions(selectMenuOptions),
-    );
-    const message = await interaction.editReply({
-      content: "Selecione uma profissão para criar sua ficha:",
-      components: [selectMenu],
-    });
-    const professionSelectMenu = await this.awaitSelectMenu(message, professionSelectMenuId);
-    if (!professionSelectMenu) {
-      await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
-      return;
-    }
-    const profession = professionSelectMenu.values[0] as ProfessionKey;
-    await professionSelectMenu.reply({
-      content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])}.`,
-      ephemeral: true,
-    });
 
-    const secondMessage = await interaction.editReply({
-      content: "Selecione seu gênero agora:",
-      components: [this.getGenderSelectMenu()],
-    });
-    const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
-    if (!genderSelectMenuSubmit) {
-      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
-      return;
+    const gender = await this.selectGender(interaction);
+    if (!gender) {
+      return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
     }
-    await genderSelectMenuSubmit.reply({ content: "Gênero selecionado com sucesso.", ephemeral: true });
-
-    const gender = genderSelectMenuSubmit.values[0] as "male" | "female";
 
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
@@ -233,6 +164,12 @@ export default class Sheet {
   @ButtonComponent({ id: familySheetButtonId })
   public async createFamilySheetButtonListener(interaction: ButtonInteraction) {
     await interaction.deferReply({ ephemeral: true });
+
+    const user = await Database.getUser(interaction.user.id);
+    if (user.familyTokens < 1) {
+      await interaction.editReply({ content: "Você não possui fichas de família suficientes para criar uma ficha de família." });
+      return;
+    }
 
     const entitiesSelectMenuOptions = (await Utils.fetchEntityNames()).map((entity) => ({
       label: entity.title,
@@ -262,12 +199,6 @@ export default class Sheet {
     const createFamilyModalSubmission = await Utils.awaitModalSubmission(interaction, createFamilyModalId);
     if (!createFamilyModalSubmission?.inCachedGuild()) return;
     await createFamilyModalSubmission.deferReply({ ephemeral: true });
-
-    const user = await Database.getUser(createFamilyModalSubmission.user.id);
-    if (user.familyTokens < 1) {
-      await createFamilyModalSubmission.editReply({ content: "Você não possui fichas de família suficientes para criar uma ficha de família." });
-      return;
-    }
 
     const [name, description, image] = createFamilyModalFieldIds.map((customId) => createFamilyModalSubmission.fields.getTextInputValue(customId));
     const slug = lodash.kebabCase(name);
@@ -370,6 +301,94 @@ export default class Sheet {
     }
   }
 
+  private async selectFamily(interaction: ButtonInteraction): Promise<string | null> {
+    const families = await Utils.fetchBaseFamilies();
+    const selectMenuOptions = families.map((family) => ({ label: family.title, value: family.slug }));
+
+    const selectMenus = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha sua família")
+        .setCustomId(familySelectMenuId)
+        .setMinValues(1)
+        .setMaxValues(1)
+        .setOptions(selectMenuOptions),
+    );
+
+    const message = await interaction.editReply({
+      content: "Selecione os campos a seguir para criar sua ficha:",
+      components: [selectMenus],
+    });
+
+    const familySelectMenuSubmit = await this.awaitSelectMenu(message, familySelectMenuId);
+    await familySelectMenuSubmit?.reply({
+      content: `Você selecionou a família ${bold(familySelectMenuSubmit.values[0])}.`,
+      ephemeral: true,
+    });
+    return familySelectMenuSubmit?.values[0] || null;
+  }
+
+  private validateFamiliesChannel(interaction: ButtonInteraction) {
+    const familiesChannel = interaction.guild?.channels.cache.get(CHANNEL_IDS.familiesChannel);
+    return Boolean(familiesChannel?.isTextBased());
+  }
+
+  private async selectGender(interaction: ButtonInteraction): Promise<"male" | "female" | null> {
+    const genderSelectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha seu gênero")
+        .setCustomId(genderSelectMenuId)
+        .addOptions([
+          { label: "Masculino", value: "male" },
+          { label: "Feminino", value: "female" },
+        ])
+        .setMaxValues(1)
+        .setMinValues(1),
+    );
+    const secondMessage = await interaction.editReply({
+      content: "Selecione seu gênero agora:",
+      components: [genderSelectMenu],
+    });
+
+    const genderSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, genderSelectMenuId);
+    await genderSelectMenuSubmit?.reply({
+      content: "Gênero selecionado com sucesso.",
+      ephemeral: true,
+    });
+
+    return genderSelectMenuSubmit ? (genderSelectMenuSubmit.values[0] as "male" | "female") : null;
+  }
+
+  private async selectProfession(interaction: ButtonInteraction) {
+    type ProfessionKey = keyof typeof PROFESSIONS_TRANSLATIONS;
+    const selectMenuOptions = Object.keys(PROFESSIONS_TRANSLATIONS)
+      .filter((profession) => profession !== "royal")
+      .map((profession) => ({
+        label: PROFESSIONS_TRANSLATIONS[profession as ProfessionKey],
+        value: profession,
+      }));
+
+    const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha sua profissão")
+        .setCustomId(professionSelectMenuId)
+        .setMinValues(1)
+        .setMaxValues(1)
+        .setOptions(selectMenuOptions),
+    );
+
+    const message = await interaction.editReply({
+      content: "Selecione uma profissão para criar sua ficha:",
+      components: [selectMenu],
+    });
+
+    const professionSelectMenu = await this.awaitSelectMenu(message, professionSelectMenuId);
+    await professionSelectMenu?.reply({
+      content: `Você selecionou a sua profissão com sucesso.`,
+    });
+
+    return professionSelectMenu ? (professionSelectMenu.values[0] as ProfessionKey) : null;
+  }
+
   private async giveToken(user: GuildMember, tokenType: "royalTokens" | "familyTokens", interaction: ChatInputCommandInteraction) {
     const messageMap = { royalTokens: "ficha real", familyTokens: "ficha de família" };
 
@@ -394,20 +413,6 @@ export default class Sheet {
       .setEmoji("❌");
 
     return new ActionRowBuilder<ButtonBuilder>().setComponents(approveButton, rejectButton);
-  }
-
-  private getGenderSelectMenu() {
-    return new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
-      new StringSelectMenuBuilder()
-        .setPlaceholder("Escolha seu gênero")
-        .setCustomId(genderSelectMenuId)
-        .addOptions([
-          { label: "Masculino", value: "male" },
-          { label: "Feminino", value: "female" },
-        ])
-        .setMaxValues(1)
-        .setMinValues(1),
-    );
   }
 
   private async awaitSelectMenu(message: Message, id = familySelectMenuId) {
