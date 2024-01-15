@@ -125,17 +125,32 @@ export default class Channel {
       return;
     }
 
-    const createdChannel = await Database.insertChannel({
-      description,
-      name: lodash.kebabCase(name),
-      image: imageUrl.data,
-      type,
-      efficiency,
-      id: channel.id,
-      resourceType,
-    });
-    if (!createdChannel) {
-      await interaction.editReply({ content: "Não foi possível criar o canal. Já há um canal registrado no banco de dados com esse ID." });
+    const channelExists = await Database.getChannel(channel.id);
+
+    let createdUpdatedChannel = null;
+    if (channelExists) {
+      createdUpdatedChannel = await Database.updateChannel(channel.id, {
+        name: lodash.kebabCase(name),
+        description,
+        image: imageUrl.data,
+        type,
+        efficiency,
+        resourceType,
+      });
+    } else {
+      createdUpdatedChannel = await Database.insertChannel({
+        description,
+        name: lodash.kebabCase(name),
+        image: imageUrl.data,
+        type,
+        efficiency,
+        id: channel.id,
+        resourceType,
+      });
+    }
+
+    if (!createdUpdatedChannel) {
+      await interaction.editReply({ content: "Não foi possível criar o canal." });
       return;
     }
 

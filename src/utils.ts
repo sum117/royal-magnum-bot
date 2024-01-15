@@ -103,7 +103,7 @@ export default class Utils {
     return yaml.parse(file) as T;
   }
 
-  private static parseContent(content: string) {
+  public static parseContent(content: string) {
     const lines = content.split("\n").filter((line) => line.trim() !== "");
     const isTitle = (line: string) => line.startsWith("#");
 
