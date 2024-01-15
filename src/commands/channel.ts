@@ -83,7 +83,7 @@ export default class Channel {
     );
 
     return {
-      content: lodash.truncate(channelMetadata.content, { length: 1800, omission: `\n(...) [Leia mais](${channelMetadata.url})` }),
+      content: lodash.truncate(channelMetadata.content, { length: 1800, omission: ` (...) [Leia mais](${channelMetadata.url})` }),
       files: [channelMetadata.attachments.first()!],
       components: [actionsRow],
     } satisfies BaseMessageOptions;
