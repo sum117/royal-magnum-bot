@@ -66,7 +66,7 @@ export default class Sheet {
         iconURL: interaction.guild.iconURL({ forceStatic: true, size: 128 }) ?? undefined,
       })
       .setTitle(`Criação de ficha de personagem  de ${interaction.guild.name}`)
-      .setFooter({ text: "Clique no botão abaixo para começar a criação de ficha" })
+      .setFooter({ text: "Clique em um dos botões abaixo para começar a criação de ficha" })
       .setThumbnail(SERVER_BANNER_URL);
 
     if (randomColor) embed.setColor(randomColor);
