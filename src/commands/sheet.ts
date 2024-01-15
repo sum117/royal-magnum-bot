@@ -383,6 +383,7 @@ export default class Sheet {
 
     const professionSelectMenu = await this.awaitSelectMenu(message, professionSelectMenuId);
     await professionSelectMenu?.reply({
+      ephemeral: true,
       content: `Você selecionou a sua profissão com sucesso.`,
     });
 
