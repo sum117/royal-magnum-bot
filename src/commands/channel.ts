@@ -50,7 +50,7 @@ export default class Channel {
       DateTime.fromJSDate(databaseChannelData?.lastActive ? new Date(databaseChannelData.lastActive) : new Date(oldPlaceholderMessage.createdAt))
         .diffNow()
         .as("hours") <= -4;
-    if (!hasBeenInactiveForFourHours) {
+    if (!hasBeenInactiveForFourHours || oldPlaceholderMessage.channel.lastMessageId === oldPlaceholderMessage.id) {
       return;
     }
 

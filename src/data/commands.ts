@@ -4,6 +4,8 @@ import { readdir } from "fs/promises";
 import lodash from "lodash";
 import path from "path";
 import Database from "../database";
+import { ChannelType, EquipmentSlotEnum, ItemRarity, ItemType } from "../schemas/enums";
+import { ResourceType } from "../schemas/resourceSchema";
 import Utils from "../utils";
 import { DISCORD_AUTOCOMPLETE_LIMIT, PROFESSIONS_TRANSLATIONS } from "./constants";
 
@@ -191,7 +193,7 @@ export const COMMAND_OPTIONS = {
     required: false,
     type: ApplicationCommandOptionType.String,
     autocomplete(interaction) {
-      const options = [
+      const options: Array<{ name: string; value: ChannelType }> = [
         { name: "Básico", value: "basic" },
         { name: "Mercado", value: "market" },
         { name: "Taberna", value: "tavern" },
@@ -199,6 +201,8 @@ export const COMMAND_OPTIONS = {
         { name: "Ferreiro", value: "blacksmith" },
         { name: "Quartel", value: "barracks" },
         { name: "Real", value: "royal" },
+        { name: "Clero", value: "clergy" },
+        { name: "Saúde", value: "health" },
       ];
       return interaction.respond(options);
     },
@@ -209,7 +213,7 @@ export const COMMAND_OPTIONS = {
     required: false,
     type: ApplicationCommandOptionType.String,
     autocomplete(interaction) {
-      const options = [
+      const options: Array<{ name: string; value: ResourceType }> = [
         { name: "Madeira", value: "wood" },
         { name: "Pedra", value: "stone" },
         { name: "Ferro", value: "iron" },
@@ -231,7 +235,7 @@ export const COMMAND_OPTIONS = {
     required: true,
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
-      const options = [
+      const options: Array<{ name: string; value: ItemType }> = [
         { name: "Arma", value: "weapon" },
         { name: "Armadura", value: "armor" },
         { name: "Consumível", value: "consumable" },
@@ -246,7 +250,7 @@ export const COMMAND_OPTIONS = {
     required: false,
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
-      const options = [
+      const options: Array<{ name: string; value: ItemRarity }> = [
         { name: "Comum", value: "common" },
         { name: "Incomum", value: "uncommon" },
         { name: "Raro", value: "rare" },
@@ -262,7 +266,7 @@ export const COMMAND_OPTIONS = {
     required: false,
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
-      const options = [
+      const options: Array<{ name: string; value: EquipmentSlotEnum }> = [
         { name: "Cabeça", value: "head" },
         { name: "Peito", value: "body" },
         { name: "Pernas", value: "legs" },
