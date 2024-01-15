@@ -3,10 +3,12 @@ import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
 import Character from "../commands/character";
+import NPC from "../commands/npc";
 import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
+import { NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
 
 @Discord()
@@ -16,12 +18,43 @@ export default class CharacterEvents {
   @On({ event: Events.MessageCreate })
   @Guard(isRoleplayingChannel)
   public async onCharacterMessage([message]: ArgsOf<"messageCreate">) {
-    if (message.author.bot) return;
-    if (this.isEditingMap.get(message.author.id)) return;
+    if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
 
-    const character = await Database.getActiveSheet(message.author.id);
-    if (!character) return;
+    const user = await Database.getUser(message.author.id);
 
+    let embed: EmbedBuilder;
+    if (user.currentNpcId) {
+      const npc = await Database.getNPC(user.currentNpcId);
+      if (!npc) return;
+      embed = await this.getNPCEmbed(message, npc);
+    } else {
+      const character = await Database.getActiveSheet(message.author.id);
+      if (!character) return;
+
+      embed = await this.getCharacterEmbed(message, character);
+      await this.handleActivityGains(character, message);
+    }
+
+    await Utils.scheduleMessageToDelete(message, 0);
+
+    const payload: BaseMessageOptions = { embeds: [embed] };
+    const attachment = message.attachments.first();
+    if (attachment) {
+      const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
+      payload.files = [{ attachment: imageKitLink, name }];
+    }
+    const embedMessage = await message.channel.send(payload);
+    embedMessage.author.id = message.author.id;
+    await Database.insertMessage(embedMessage);
+  }
+
+  private async getNPCEmbed(message: Message, npc: NPCType) {
+    const embed = EmbedBuilder.from(NPC.getNPCEmbed(npc).embeds[0]);
+    embed.setDescription(message.content);
+    return embed;
+  }
+
+  private async getCharacterEmbed(message: Message, character: CharacterSheetType) {
     const embed = new EmbedBuilder()
       .setTimestamp()
       .setThumbnail(character.imageUrl)
@@ -36,18 +69,7 @@ export default class CharacterEvents {
       embed.setAuthor({ name: family?.title ?? "Família não encontrada" });
     }
 
-    await Utils.scheduleMessageToDelete(message, 0);
-
-    const attachment = message.attachments.first();
-    const payload: BaseMessageOptions = { embeds: [embed] };
-    if (attachment) {
-      const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
-      payload.files = [{ attachment: imageKitLink, name }];
-    }
-    const embedMessage = await message.channel.send(payload);
-    embedMessage.author.id = message.author.id;
-    await this.handleActivityGains(character, message);
-    await Database.insertMessage(embedMessage);
+    return embed;
   }
 
   @On({ event: Events.MessageReactionAdd })
@@ -100,6 +122,20 @@ export default class CharacterEvents {
           this.isEditingMap.delete(newContentMessage.author.id);
           Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
+        break;
+      case "🗑️":
+        const dbMessageToDelete = await Database.getMessage(reaction.message.id);
+        if (!dbMessageToDelete) {
+          console.log("Mensagem não encontrada no banco de dados");
+          return;
+        }
+        if (dbMessageToDelete.authorId !== user.id) {
+          const feedback = await reaction.message.channel.send(`${user.toString()}, você não pode deletar a mensagem de outra pessoa.`);
+          Utils.scheduleMessageToDelete(feedback);
+          return;
+        }
+        await reaction.message.delete();
+        break;
     }
   }
 

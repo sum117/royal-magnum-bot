@@ -4,6 +4,7 @@ export const userSchema = z.object({
   money: z.number(),
   royalTokens: z.number().default(0),
   familyTokens: z.number().default(0),
+  currentNpcId: z.string().optional(),
   lastMessageAt: z
     .string()
     .optional()

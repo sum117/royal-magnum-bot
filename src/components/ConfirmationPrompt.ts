@@ -11,7 +11,7 @@ import {
   Message,
 } from "discord.js";
 import { Duration } from "luxon";
-import { cancelButtonId, confirmButtonId } from "../commands/store";
+import { cancelButtonId, confirmButtonId } from "../commands/royalStore";
 
 export interface ConfirmationPromptParams extends BaseMessageOptions {
   promptMessage: string;
@@ -44,15 +44,15 @@ export class ConfirmationPrompt implements BaseMessageOptions {
     if (interaction.deferred) {
       message = await interaction.editReply({ content: this.promptMessage, components: this.components });
     } else if (interaction.replied) {
-      message = await interaction.followUp({ content: this.promptMessage, components: this.components });
+      message = await interaction.followUp({ content: this.promptMessage, components: this.components, ephemeral: true });
     } else {
-      message = await interaction.reply({ content: this.promptMessage, components: this.components });
+      message = await interaction.reply({ content: this.promptMessage, components: this.components, ephemeral: true });
     }
     const collector = message.createMessageComponentCollector({
       time: Duration.fromObject({ minutes: 5 }).as("milliseconds"),
       filter: (i) => i.user.id === interaction.user.id && (i.customId === this.confirmButtonId || i.customId === this.cancelButtonId),
-      componentType: ComponentType.Button,
       max: 1,
+      componentType: ComponentType.Button,
     });
     this.collector = collector as InteractionCollector<ButtonInteraction>;
     return this as ConfirmationPrompt & { collector: InteractionCollector<ButtonInteraction> };

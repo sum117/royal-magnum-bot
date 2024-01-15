@@ -13,6 +13,20 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  deleteNPC: {
+    name: "delete-npc",
+    description: "Deleta um NPC",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
+  setNPC: {
+    name: "set-npc",
+    description: "Define um NPC como ativo",
+  },
+  createNPC: {
+    name: "create-npc",
+    description: "Cria um NPC",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
   makeItemRecipe: {
     name: "make-item-recipe",
     description: "Cria uma receita de item",
@@ -64,6 +78,21 @@ export const COMMANDS = {
 } satisfies CommandData;
 
 export const COMMAND_OPTIONS = {
+  npcId: {
+    name: "npc-id",
+    description: "ID do NPC",
+    required: false,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const npcs = await Database.getNPCs();
+      await interaction.respond(
+        npcs
+          .filter((npc) => npc.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) && npc.usersWithAccess.includes(interaction.user.id))
+          .map((npc) => ({ name: npc.name, value: npc.id }))
+          .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
+      );
+    },
+  },
   playVisualNovelName: {
     name: "name",
     description: "Nome da visual novel",

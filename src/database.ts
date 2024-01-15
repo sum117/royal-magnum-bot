@@ -17,6 +17,7 @@ import {
 import { Family, FamilyInput, FamilyUpdateInput, familySchema } from "./schemas/familySchema";
 import { Item, ItemRecipe, consumableItemSchema, equipmentItemSchema, itemRecipeSchema, otherItemSchema } from "./schemas/itemSchema";
 import { DatabaseMessage } from "./schemas/messageSchema";
+import { NPC, NPCInput, NPCInputPartial, npcSchema } from "./schemas/npc";
 import { UserOptional, userSchema } from "./schemas/userSchema";
 
 const mysqlDriver = new MySQLDriver({
@@ -48,7 +49,7 @@ export default class Database {
   public static async insertUser(userId: string) {
     const userToSet = { money: 0, royalTokens: 0, familyTokens: 0, lastMessageAt: new Date().toISOString() };
     await db.set(`users.${userId}`, userToSet);
-    return userToSet;
+    return userSchema.parse(userToSet);
   }
 
   public static async updateUser(userId: string, user: UserOptional) {
@@ -278,6 +279,36 @@ export default class Database {
 
   public static async deleteItemRecipe(itemId: string) {
     await db.delete(`recipes.${itemId}`);
+    return;
+  }
+
+  public static async getNPCs() {
+    const npcs = await db.get<Record<string, NPCInput>>("npcs");
+    if (!npcs) return [];
+    return Object.values(npcs).map((npc) => npcSchema.parse(npc));
+  }
+  public static async insertNPC(npc: NPCInput) {
+    const id = crypto.randomBytes(16).toString("hex");
+    await db.set(`npcs.${id}`, { ...npc, id });
+    return npcSchema.parse({ ...npc, id });
+  }
+
+  public static async getNPC(id: string) {
+    const npc = await db.get<NPC>(`npcs.${id}`);
+    if (!npc) return null;
+    return npcSchema.parse(npc);
+  }
+
+  public static async updateNPC(id: string, npc: NPCInputPartial) {
+    const oldNPC = await db.get<NPCInput>(`npcs.${id}`);
+    if (!oldNPC) return null;
+    const updatedNPC = { ...oldNPC, ...npc };
+    await db.set(`npcs.${id}`, updatedNPC);
+    return npcSchema.parse(updatedNPC);
+  }
+
+  public static async deleteNPC(id: string) {
+    await db.delete(`npcs.${id}`);
     return;
   }
 }

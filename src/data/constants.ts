@@ -8,6 +8,7 @@ export const CHANNEL_IDS = {
   sheetWaitingRoom: "1189003168273674281",
   approvedSheetRoom: "1189023345669316608",
   characterStore: "1189378489862848633",
+  generalStore: "1196400429878218833",
   familiesChannel: "1188557191280595085",
   announcementsChannel: "1189379467009855569",
   tutorialChannel: "1191551254908911676",
@@ -33,7 +34,7 @@ export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
   health: ["doctor", "courtier"],
 } as const;
 
-export const NUMBER_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+export const NUMBER_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"] as const;
 
 export const RESOURCES_EMOJIS: Record<ResourceType, string> = {
   wood: "🪵",
@@ -135,7 +136,7 @@ export const CONSUMABLE_STATS_TRANSLATIONS: Record<string, string> = {
   health: "Vida",
   stamina: "Energia",
   duration: "Duração",
-};
+} as const;
 export const GENDER_TRANSLATIONS_MAP = {
   male: "Masculino",
   female: "Feminino",
