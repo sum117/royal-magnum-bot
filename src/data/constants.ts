@@ -30,7 +30,7 @@ export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
   tavern: ["musician", "writer", "courtier"],
   basic: ["farmer", "hunter", "fisherman", "miner", "lumberjack", "sailor"],
   clergy: ["priest", "doctor", "librarian"],
-  health: ["doctor"],
+  health: ["doctor", "courtier"],
 } as const;
 
 export const NUMBER_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
