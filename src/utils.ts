@@ -12,7 +12,8 @@ import { Family, familySchema } from "./schemas/familySchema";
 import { Resources } from "./schemas/resourceSchema";
 
 type Entity = { title: string; slug: string };
-type RootYamlType = { families: Array<Family>; entities: Array<Entity> };
+type Origin = { channelId: string; id: string; name: string; organization?: string; description: string };
+type RootYamlType = { families: Array<Family>; entities: Array<Entity>; origins: Array<Origin> };
 
 const imageKit = new ImageKit({
   publicKey: "public_yIN9ilRCsWfYXnA3cMDpm/wFRBw=",
@@ -82,9 +83,14 @@ export default class Utils {
     return families.map((family) => familySchema.parse({ ...emptyFamilyObject, ...family }));
   }
 
-  public static async fetchEntityNames() {
+  public static async fetchEntities() {
     const { entities } = await this.fetchRootYaml<RootYamlType>();
     return entities;
+  }
+
+  public static async fetchOrigins() {
+    const { origins } = await this.fetchRootYaml<RootYamlType>();
+    return origins;
   }
 
   public static getResourcesString(resources: Resources) {
@@ -98,8 +104,8 @@ export default class Utils {
       .join("\n");
   }
 
-  private static async fetchRootYaml<T>() {
-    const file = await readFile(path.join(this.getProjectRootDir(), "assets", "transformations.yaml"), "utf-8");
+  private static async fetchRootYaml<T>(fileName = "static.yaml") {
+    const file = await readFile(path.join(this.getProjectRootDir(), "assets", fileName), "utf-8");
     return yaml.parse(file) as T;
   }
 

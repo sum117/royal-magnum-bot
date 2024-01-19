@@ -4,7 +4,7 @@ import lodash from "lodash";
 import { Duration } from "luxon";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
-import { PROFESSION_CHANNELS } from "../data/constants";
+import { PROFESSION_CHANNELS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
@@ -55,12 +55,9 @@ export default class CharacterEvents {
   }
 
   private async getCharacterEmbed(message: Message, character: CharacterSheetType) {
-    const embed = new EmbedBuilder()
-      .setTimestamp()
-      .setThumbnail(character.imageUrl)
-      .setColor(Colors.Blurple)
-      .setDescription(message.content)
-      .setTitle(character.name);
+    const embed = new EmbedBuilder().setTimestamp().setThumbnail(character.imageUrl).setColor(Colors.Blurple).setDescription(message.content);
+    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[character.profession][character.gender];
+    embed.setTitle(`${professionPronoun} ${character.name}`);
 
     const royalCharacter = royalCharacterSchema.safeParse(character);
     if (royalCharacter.success) {

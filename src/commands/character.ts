@@ -13,7 +13,7 @@ import {
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { PAGINATION_DEFAULT_OPTIONS } from "../data/constants";
+import { PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
@@ -42,8 +42,9 @@ export default class Character {
 
     embed.setImage(sheet.imageUrl);
     embed.setColor(Colors.Blurple);
+    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[sheet.profession][sheet.gender];
     embed.addFields([
-      { name: "🏷️ Profissão", value: sheet.profession, inline: true },
+      { name: "🏷️ Profissão", value: professionPronoun, inline: true },
       { name: "📜 Nível", value: `${sheet.level}`, inline: true },
       { name: "📖 Progresso de Nivelação", value: progressBar, inline: true },
     ]);

@@ -26,7 +26,7 @@ import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS, SERVER_BANNER_URL } from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
-import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
+import { characterTypeSchemaInput, Origin } from "../schemas/characterSheetSchema";
 import { Profession } from "../schemas/enums";
 import { Family } from "../schemas/familySchema";
 import { imageGifUrl } from "../schemas/utils";
@@ -39,8 +39,9 @@ export const professionSelectMenuId = "professionSelectMenuId";
 export const familySheetButtonId = "familySheetButtonId";
 export const genderSelectMenuId = "genderSelectMenuId";
 export const entitySelectMenuId = "entitySelectMenuId";
-export const getSpawnModalButtonId = (profession: Profession, gender: "male" | "female", family?: Family) =>
-  `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}_${gender}`;
+export const originSelectMenuId = "originSelectMenuId";
+export const getSpawnModalButtonId = (profession: Profession, gender: "male" | "female", origin: Origin, family?: Family) =>
+  `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}_${gender}_${origin}`;
 
 type HandleEvaluationButtonsParams<UpdateT> = {
   interaction: ButtonInteraction;
@@ -50,7 +51,7 @@ type HandleEvaluationButtonsParams<UpdateT> = {
   userId: string;
 };
 type EvaluateTuple = ["approve" | "reject", "character" | "family", string, string];
-type SpawnModalTuple = ["spawnModalButtonId", string, Profession];
+type SpawnModalTuple = ["spawnModalButtonId", string, Profession, "male" | "female", Origin];
 
 @Discord()
 export default class Sheet {
@@ -117,9 +118,11 @@ export default class Sheet {
       return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
     }
 
+    const origin = family.origin as Origin;
+
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
-        .setCustomId(getSpawnModalButtonId("royal", gender, family))
+        .setCustomId(getSpawnModalButtonId("royal", gender, origin, family))
         .setLabel(`Formulário dos(as) ${family.title}`)
         .setStyle(ButtonStyle.Success),
     );
@@ -147,9 +150,14 @@ export default class Sheet {
       return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
     }
 
+    const origin = await this.selectOrigin(interaction);
+    if (!origin) {
+      return await interaction.editReply({ content: "Você não selecionou uma origem a tempo." });
+    }
+
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
-        .setCustomId(getSpawnModalButtonId(profession as Profession, gender))
+        .setCustomId(getSpawnModalButtonId(profession as Profession, gender, origin))
         .setLabel("Formulário de personagem")
         .setStyle(ButtonStyle.Success),
     );
@@ -171,7 +179,7 @@ export default class Sheet {
       return;
     }
 
-    const entitiesSelectMenuOptions = (await Utils.fetchEntityNames()).map((entity) => ({
+    const entitiesSelectMenuOptions = (await Utils.fetchEntities()).map((entity) => ({
       label: entity.title,
       value: entity.slug,
     }));
@@ -193,7 +201,8 @@ export default class Sheet {
       await interaction.editReply({ content: "Você não selecionou uma entidade a tempo." });
       return;
     }
-    const entity = entitySelectMenuSubmit.values[0];
+    const entitySlug = entitySelectMenuSubmit.values[0];
+
     await interaction.deleteReply();
     await entitySelectMenuSubmit.showModal(CreateFamilyModal);
     const createFamilyModalSubmission = await Utils.awaitModalSubmission(interaction, createFamilyModalId);
@@ -217,7 +226,13 @@ export default class Sheet {
       return;
     }
 
-    const createdFamily = await Database.setFamily(slug, { slug, title: name, description, image, entity });
+    const familyData = (await Utils.fetchBaseFamilies()).find((family) => family.entity === entitySlug);
+    if (!familyData) {
+      await createFamilyModalSubmission.editReply({ content: "Essa entidade não existe." });
+      return;
+    }
+
+    const createdFamily = await Database.setFamily(slug, { slug, title: name, description, image, entity: entitySlug, origin: familyData?.origin });
     if (!createdFamily) {
       await createFamilyModalSubmission.editReply({ content: "Não foi possível criar a família." });
       return;
@@ -244,7 +259,7 @@ export default class Sheet {
 
   @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
-    const [, familySlug, profession] = interaction.customId.split("_") as SpawnModalTuple;
+    const [, familySlug, profession, gender, origin] = interaction.customId.split("_") as SpawnModalTuple;
     const isRoyalSheet = profession === "royal";
     await interaction.showModal(CreateSheetModal(isRoyalSheet));
 
@@ -265,7 +280,7 @@ export default class Sheet {
       return;
     }
 
-    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, imageKitLink);
+    const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, gender, origin, imageKitLink);
     const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
     await modalSubmit.editReply({
       content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.toString()}`,
@@ -356,6 +371,30 @@ export default class Sheet {
     });
 
     return genderSelectMenuSubmit ? (genderSelectMenuSubmit.values[0] as "male" | "female") : null;
+  }
+
+  private async selectOrigin(interaction: ButtonInteraction): Promise<Origin> {
+    const origins = await Utils.fetchOrigins();
+    const originsSelectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+      new StringSelectMenuBuilder()
+        .setPlaceholder("Escolha sua origem")
+        .setCustomId(originSelectMenuId)
+        .addOptions(origins.map((origin) => ({ label: origin.name, value: origin.id })))
+        .setMaxValues(1)
+        .setMinValues(1),
+    );
+
+    const secondMessage = await interaction.editReply({
+      content: "Selecione sua origem agora:",
+      components: [originsSelectMenu],
+    });
+
+    const originSelectMenuSubmit = await this.awaitSelectMenu(secondMessage, originSelectMenuId);
+    await originSelectMenuSubmit?.reply({
+      content: "Origem selecionada com sucesso.",
+      ephemeral: true,
+    });
+    return originSelectMenuSubmit ? (originSelectMenuSubmit.values[0] as Origin) : "none";
   }
 
   private async selectProfession(interaction: ButtonInteraction) {
@@ -470,7 +509,14 @@ export default class Sheet {
     }
   }
 
-  private async createSheetFromModal(modalSubmit: ModalSubmitInteraction, familySlug: string, profession: Profession, imageKitLink: string) {
+  private async createSheetFromModal(
+    modalSubmit: ModalSubmitInteraction,
+    familySlug: string,
+    profession: Profession,
+    gender: "male" | "female",
+    origin: Origin,
+    imageKitLink: string,
+  ) {
     const fieldIds = profession === "royal" ? createRoyalSheetModalFieldIds : createSheetModalFieldIds;
     const [name, backstory, appearance, royalTitle, transformation] = fieldIds.map((customId) => modalSubmit.fields.getTextInputValue(customId));
     const sheetData =
@@ -479,13 +525,15 @@ export default class Sheet {
             name,
             royalTitle,
             backstory,
+            gender,
             appearance,
             transformation,
             imageUrl: imageKitLink,
             familySlug,
+            origin,
             profession: "royal",
           }
-        : { name, backstory, appearance, imageUrl: imageKitLink, profession: "other" };
+        : { name, backstory, appearance, imageUrl: imageKitLink, gender, origin, profession: "other" };
 
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({

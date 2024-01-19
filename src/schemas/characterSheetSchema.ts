@@ -3,12 +3,32 @@ import { professionEnumSchema } from "./enums";
 import { equipmentSlotsSchemaPartial } from "./equipmentSlotsSchema";
 import { inventoryItemSchema } from "./itemSchema";
 
+export const originEnumSchema = z.enum([
+  "none",
+  "catarsia-survivor",
+  "coastsman",
+  "corsair",
+  "vagabond",
+  "orphan",
+  "deepwoken",
+  "peasant-saint",
+  "shadowbound",
+  "yor-devotee",
+  "terryan",
+  "swarm-warden",
+  "center-guardian",
+  "ethereal",
+  "pagan",
+  "hunter",
+]);
 
 export const characterSheetSchema = z
   .object({
     name: z.string().min(3).max(32),
     backstory: z.string().min(1).max(2048),
     appearance: z.string().min(1).max(1024),
+    origin: originEnumSchema.default("none"),
+    gender: z.enum(["male", "female"]),
     characterId: z.string(),
     isApproved: z.boolean().default(false),
     isActive: z.boolean().default(false),
@@ -72,3 +92,4 @@ export type CharacterSheetTypeInput = CharacterSheetInput | RoyalCharacterSheetI
 
 export type StoreCharacterSheet = z.infer<typeof storeCharacterSheetSchema>;
 export type StoreCharacterSheetInput = z.infer<typeof storeCharacterSheetSchemaInput>;
+export type Origin = z.infer<typeof originEnumSchema>;
