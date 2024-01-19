@@ -1,26 +1,7 @@
 import { z } from "zod";
-import { professionEnumSchema } from "./enums";
+import { originEnumSchema, professionEnumSchema } from "./enums";
 import { equipmentSlotsSchemaPartial } from "./equipmentSlotsSchema";
 import { inventoryItemSchema } from "./itemSchema";
-
-export const originEnumSchema = z.enum([
-  "none",
-  "catarsia-survivor",
-  "coastsman",
-  "corsair",
-  "vagabond",
-  "orphan",
-  "deepwoken",
-  "peasant-saint",
-  "shadowbound",
-  "yor-devotee",
-  "terryan",
-  "swarm-warden",
-  "center-guardian",
-  "ethereal",
-  "pagan",
-  "hunter",
-]);
 
 export const characterSheetSchema = z
   .object({
@@ -40,7 +21,6 @@ export const characterSheetSchema = z
     inventory: z.array(inventoryItemSchema).default([]),
   })
   .merge(equipmentSlotsSchemaPartial);
-
 export const characterSheetSchemaPartial = characterSheetSchema.partial();
 export const characterSheetSchemaInput = characterSheetSchema.omit({
   characterId: true,
@@ -71,14 +51,9 @@ export const royalCharacterSchemaInput = royalCharacterSchema.omit({
 export const characterTypeSchema = z.union([characterSheetSchema, royalCharacterSchema]);
 export const characterTypeSchemaInput = z.union([characterSheetSchemaInput, royalCharacterSchemaInput]);
 
-export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({
-  price: z.number(),
-  isStoreCharacter: z.literal(true),
-});
-export const storeCharacterSheetSchema = royalCharacterSchema.extend({
-  price: z.number(),
-  isStoreCharacter: z.literal(true),
-});
+export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
+export const storeCharacterSheetSchema = royalCharacterSchema.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
+
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;
 export type CharacterSheetPartial = z.infer<typeof characterSheetSchemaPartial>;
@@ -92,4 +67,3 @@ export type CharacterSheetTypeInput = CharacterSheetInput | RoyalCharacterSheetI
 
 export type StoreCharacterSheet = z.infer<typeof storeCharacterSheetSchema>;
 export type StoreCharacterSheetInput = z.infer<typeof storeCharacterSheetSchemaInput>;
-export type Origin = z.infer<typeof originEnumSchema>;

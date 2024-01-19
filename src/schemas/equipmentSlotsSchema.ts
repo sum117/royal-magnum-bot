@@ -8,7 +8,6 @@ export const equipmentSlotsSchema = z.object({
   rightHand: z.string(),
   leftHand: z.string(),
 });
-
 export const equipmentSlotsSchemaPartial = equipmentSlotsSchema.partial();
 
 export type EquipmentSlot = z.infer<typeof equipmentSlotsSchema>;

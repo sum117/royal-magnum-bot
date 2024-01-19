@@ -15,7 +15,6 @@ export const familySchema = z
     isApproved: z.boolean().default(false),
   })
   .merge(resourcesSchema);
-
 export const familyInput = familySchema.pick({
   title: true,
   description: true,
@@ -24,7 +23,6 @@ export const familyInput = familySchema.pick({
   entity: true,
   origin: true,
 });
-
 export const familyUpdateInput = familySchema.partial();
 
 export type FamilyUpdateInput = z.infer<typeof familyUpdateInput>;

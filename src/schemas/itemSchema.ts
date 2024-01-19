@@ -18,6 +18,7 @@ export const itemRecipeSchema = resourcesSchema.extend({
   profession: professionEnumSchema,
   level: z.number().default(1),
 });
+
 export const equipmentItemSchema = itemSchema.extend({
   itemType: z.literal("weapon").or(z.literal("armor")),
   slot: equipmentSlotEnumSchema,

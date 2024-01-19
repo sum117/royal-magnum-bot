@@ -26,7 +26,6 @@ export const channelSchema = z.object({
   resourceType: resourceEnumSchema,
   type: channelTypeEnumSchema,
 });
-
 export const channelInputSchema = channelSchema.omit({
   troops: true,
   lastActive: true,

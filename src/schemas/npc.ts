@@ -10,9 +10,9 @@ export const npcSchema = z.object({
   usersWithAccess: z.array(z.string()).default([]),
   price: z.number().default(0),
 });
-
 export const npcInputSchema = npcSchema.omit({ id: true });
 export const npcInputSchemaPartial = npcInputSchema.partial();
+
 export type NPC = z.infer<typeof npcSchema>;
 export type NPCInput = z.infer<typeof npcInputSchema>;
 export type NPCInputPartial = z.infer<typeof npcInputSchemaPartial>;
