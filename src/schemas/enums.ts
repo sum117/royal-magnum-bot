@@ -13,7 +13,7 @@ export const professionEnumSchema = z
     "alchemist",
     "cook",
     "tailor",
-    "carpenter",
+    "mercenary",
     "librarian",
     "musician",
     "writer",
