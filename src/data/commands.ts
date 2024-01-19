@@ -13,6 +13,10 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  help: {
+    name: "help",
+    description: "Mostra a lista de comandos",
+  },
   profile: {
     name: "profile",
     description: "Mostra o perfil de um usuário",
@@ -20,7 +24,6 @@ export const COMMANDS = {
   giveMoney: {
     name: "give-money",
     description: "Dá dinheiro a um usuário",
-    defaultMemberPermissions: [],
   },
   takeMoney: {
     name: "take-money",

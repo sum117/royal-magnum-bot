@@ -8,7 +8,9 @@ import {
   CommandInteraction,
   EmbedBuilder,
   GuildMember,
+  inlineCode,
   Message,
+  PermissionFlagsBits,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -121,5 +123,29 @@ export default class Utils {
       } caractere(s).`,
       files: [{ attachment: Buffer.from(content), name: "content.txt" }],
     });
+  }
+
+  @Slash(COMMANDS.help)
+  public async help(interaction: CommandInteraction) {
+    if (!interaction.inCachedGuild()) return;
+    await interaction.deferReply();
+    const commandDataToDisplay = Object.values(COMMANDS)
+      .filter((command) => {
+        const isAdmin = interaction.member?.permissions.has(PermissionFlagsBits.Administrator);
+        if (isAdmin) return true;
+        else return !("defaultMemberPermissions" in command);
+      })
+      .map((command) => {
+        return `- ${inlineCode("/" + command.name)}: ${command.description}`;
+      })
+      .join("\n");
+
+    const message = `# Comandos do Royal Magnum Bot\n*Esse comando só mostra os que você pode acessar!*\n\n${commandDataToDisplay}`;
+
+    const chunks = lodash.chunk(message.split(""), 2000);
+    for (const chunk of chunks) {
+      await interaction.channel?.send(chunk.join(""));
+    }
+    await interaction.deleteReply();
   }
 }
