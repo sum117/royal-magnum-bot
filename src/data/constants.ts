@@ -20,6 +20,7 @@ export const CATEGORY_IDS = {
 
 export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
+  member: "1197876266221715466",
 } as const;
 
 export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {

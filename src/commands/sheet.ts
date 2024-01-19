@@ -23,7 +23,7 @@ import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS, SERVER_BANNER_URL } from "../data/constants";
+import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS, ROLE_IDS, SERVER_BANNER_URL } from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
 import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
@@ -305,6 +305,8 @@ export default class Sheet {
 
   @ButtonComponent({ id: /^approve|reject_.*$/ })
   public async evaluateSheetButtonListener(interaction: ButtonInteraction) {
+    if (!interaction.inCachedGuild()) return;
+
     const [action, namespace, characterIdOrFamilySlug, userId] = interaction.customId.split("_") as EvaluateTuple;
 
     if (namespace === "character") {
@@ -320,6 +322,10 @@ export default class Sheet {
       const databaseDeleteFn = async () => await Database.deleteFamily(characterIdOrFamilySlug);
       await this.handleEvaluationButtons({ interaction, databaseUpdateFn, databaseDeleteFn, action, userId });
     }
+
+    const member = await interaction.guild.members.fetch(userId);
+    if (!member) return;
+    if (!member.roles.cache.get(ROLE_IDS.member)) member.roles.add(ROLE_IDS.member);
   }
 
   private async selectFamily(interaction: ButtonInteraction): Promise<string | null> {
