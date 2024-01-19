@@ -38,6 +38,8 @@ export default class User {
       embed.addFields({ name: "👤 Personagem Atual (Ou NPC)", value: currentCharacterOrNPC.name, inline: true });
       embed.setImage(characterSheet.success ? characterSheet.data.imageUrl : npc.success ? npc.data.image : null);
     }
+
+    return embed;
   }
 
   @Slash(COMMANDS.profile)
