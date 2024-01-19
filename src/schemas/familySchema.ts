@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { originEnumSchema } from "./enums";
 import { resourcesSchema } from "./resourceSchema";
 
 export const familySchema = z
   .object({
     title: z.string(),
     description: z.string(),
-    origin: z.string().default("none"),
+    origin: originEnumSchema.default("none"),
     slug: z.string(),
     image: z.string(),
     entity: z.string(),

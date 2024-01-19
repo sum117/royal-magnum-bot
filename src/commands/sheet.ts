@@ -40,9 +40,9 @@ export const familySheetButtonId = "familySheetButtonId";
 export const genderSelectMenuId = "genderSelectMenuId";
 export const entitySelectMenuId = "entitySelectMenuId";
 export const originSelectMenuId = "originSelectMenuId";
+
 export const getSpawnModalButtonId = (profession: Profession, gender: "male" | "female", origin: Origin, family?: Family) =>
   `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}_${gender}_${origin}`;
-
 type HandleEvaluationButtonsParams<UpdateT> = {
   interaction: ButtonInteraction;
   databaseUpdateFn: () => Promise<UpdateT>;
@@ -127,10 +127,13 @@ export default class Sheet {
         .setStyle(ButtonStyle.Success),
     );
 
+    const originData = await Utils.fetchOrigins();
+    const originName = originData.find((originData) => originData.id === origin)?.name;
+
     await interaction.editReply({
-      content: `Você selecionou a família ${bold(family.title)} e o gênero ${bold(
-        GENDER_TRANSLATIONS_MAP[gender],
-      )}. Pressione o botão abaixo para preencher o formulário de personagem.`,
+      content: `Você selecionou a família ${bold(family.title)}, o gênero ${bold(GENDER_TRANSLATIONS_MAP[gender])} e a origem ${
+        originName ?? "Desconhecida"
+      }. Pressione o botão abaixo para preencher o formulário de personagem.`,
       files: [new AttachmentBuilder(family.image).setName(`${family.slug}.png`)],
       components: [button],
     });
@@ -161,9 +164,12 @@ export default class Sheet {
         .setLabel("Formulário de personagem")
         .setStyle(ButtonStyle.Success),
     );
+
+    const originData = await Utils.fetchOrigins();
+    const originName = originData.find((originData) => originData.id === origin)?.name;
     await interaction.editReply({
-      content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])} e o gênero ${
-        GENDER_TRANSLATIONS_MAP[gender]
+      content: `Você selecionou a profissão ${bold(PROFESSIONS_TRANSLATIONS[profession])},o gênero ${GENDER_TRANSLATIONS_MAP[gender]} e a origem ${
+        originName ?? "Desconhecida"
       }. Pressione o botão abaixo para preencher o formulário de personagem.`,
       components: [button],
     });

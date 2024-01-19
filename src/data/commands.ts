@@ -180,6 +180,18 @@ export const COMMAND_OPTIONS = {
     required: true,
     type: ApplicationCommandOptionType.Integer,
   },
+  addStoreCharacterGender: {
+    name: "gender",
+    description: "Gênero da ficha",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      await interaction.respond([
+        { name: "Masculino", value: "male" },
+        { name: "Feminino", value: "female" },
+      ]);
+    },
+  },
   addStoreCharacterImageURL: {
     name: "image-url",
     description: "URL da imagem da ficha",

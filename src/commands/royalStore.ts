@@ -23,6 +23,7 @@ export default class Store {
   public async addStoreCharacter(
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterPrice) price: number,
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterFamily) family: string,
+    @SlashOption(COMMAND_OPTIONS.addStoreCharacterGender) gender: "male" | "female",
     @SlashOption(COMMAND_OPTIONS.addStoreCharacterImageURL) imageURL: string,
     interaction: CommandInteraction,
   ) {
@@ -45,6 +46,12 @@ export default class Store {
       modalSubmit.fields.getTextInputValue(fieldId),
     );
 
+    const familyData = await Database.getFamily(family);
+    if (!familyData) {
+      Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Família não encontrada." }));
+      return;
+    }
+
     const sheet = await Database.insertStoreSheet({
       name,
       royalTitle,
@@ -53,6 +60,8 @@ export default class Store {
       transformation,
       inventory: [],
       price,
+      gender,
+      origin: familyData?.origin ?? "none",
       familySlug: family,
       imageUrl: imageURL,
       isStoreCharacter: true,
