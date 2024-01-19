@@ -1,13 +1,13 @@
-import { BaseMessageOptions, bold, Colors, EmbedBuilder, Events, Message } from "discord.js";
+import { BaseMessageOptions, bold, EmbedBuilder, Events, Message } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
-import { PROFESSION_CHANNELS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
+import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
-import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
+import { CharacterSheetType } from "../schemas/characterSheetSchema";
 import { NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
 
@@ -31,7 +31,7 @@ export default class CharacterEvents {
       const character = await Database.getActiveSheet(message.author.id);
       if (!character) return;
 
-      embed = await this.getCharacterEmbed(message, character);
+      embed = await Character.getCharacterRPEmbed(message, character);
       await this.handleActivityGains(character, message);
     }
 
@@ -51,21 +51,6 @@ export default class CharacterEvents {
   private async getNPCEmbed(message: Message, npc: NPCType) {
     const embed = EmbedBuilder.from(NPC.getNPCEmbed(npc).embeds[0]);
     embed.setDescription(message.content);
-    return embed;
-  }
-
-  private async getCharacterEmbed(message: Message, character: CharacterSheetType) {
-    const embed = new EmbedBuilder().setTimestamp().setThumbnail(character.imageUrl).setColor(Colors.Blurple).setDescription(message.content);
-    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[character.profession][character.gender];
-    embed.setTitle(`${professionPronoun} ${character.name}`);
-
-    const royalCharacter = royalCharacterSchema.safeParse(character);
-    if (royalCharacter.success) {
-      const family = await Database.getFamily(royalCharacter.data.familySlug);
-      embed.setTitle(`${royalCharacter.data.royalTitle} ${royalCharacter.data.name}`);
-      embed.setAuthor({ name: family?.title ?? "Família não encontrada" });
-    }
-
     return embed;
   }
 

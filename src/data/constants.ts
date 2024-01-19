@@ -81,6 +81,13 @@ export const PROFESSIONS_TRANSLATIONS: Record<Profession, string> = {
   royal: "Nobre",
 } as const;
 
+export const ORGANIZATION_TRANSLATIONS: Record<string, string> = {
+  vagabonds: "Vagabundos",
+  hunters: "Caçadores de Dádivas",
+  pagans: "Pagãos",
+  resistance: "Resistência do Reino Central",
+} as const;
+
 export const PROFESSIONS_PRONOUNS_TRANSLATIONS: Record<Profession, { male: string; female: string }> = {
   royal: { male: "Principe", female: "Princesa" },
   other: { male: "Camponês", female: "Camponesa" },

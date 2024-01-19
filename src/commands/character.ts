@@ -8,12 +8,14 @@ import {
   Colors,
   EmbedBuilder,
   GuildMember,
+  Message,
   bold,
+  channelMention,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
+import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
@@ -27,6 +29,27 @@ export default class Character {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
     );
+  }
+
+  public static async getCharacterRPEmbed(message: Message, character: CharacterSheetType) {
+    const embed = new EmbedBuilder().setTimestamp().setThumbnail(character.imageUrl).setColor(Colors.Blurple).setDescription(message.content);
+    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[character.profession][character.gender];
+
+    embed.setTitle(`${professionPronoun} ${character.name}`);
+
+    const originData = (await Utils.fetchOrigins()).find((origin) => origin.id === character.origin);
+    if (originData) {
+      embed.setAuthor({ name: `${originData?.name}` });
+    }
+
+    const royalCharacter = royalCharacterSchema.safeParse(character);
+    if (royalCharacter.success) {
+      const family = await Database.getFamily(royalCharacter.data.familySlug);
+      embed.setTitle(`${royalCharacter.data.royalTitle} ${royalCharacter.data.name}`);
+      embed.setAuthor({ name: family?.title ?? "Família não encontrada" });
+    }
+
+    return embed;
   }
 
   public static async getCharacterPreviewEmbed(sheet: CharacterSheetType) {
@@ -43,6 +66,15 @@ export default class Character {
     embed.setImage(sheet.imageUrl);
     embed.setColor(Colors.Blurple);
     const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[sheet.profession][sheet.gender];
+
+    const originData = (await Utils.fetchOrigins()).find((origin) => origin.id === sheet.origin);
+    if (originData) {
+      embed.addFields([{ name: "🌎 Origem", value: `${channelMention(originData.channelId)}\n${bold(originData.name)}`, inline: true }]);
+      if (originData.organization) {
+        embed.addFields([{ name: "👥 Organização", value: ORGANIZATION_TRANSLATIONS[originData.organization], inline: true }]);
+      }
+    }
+
     embed.addFields([
       { name: "🏷️ Profissão", value: professionPronoun, inline: true },
       { name: "📜 Nível", value: `${sheet.level}`, inline: true },
