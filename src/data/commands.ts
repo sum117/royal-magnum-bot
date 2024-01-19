@@ -144,7 +144,6 @@ export const COMMAND_OPTIONS = {
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
       const visualNovels = await readdir(path.join(Utils.getProjectRootDir(), "assets"));
-      console.log(visualNovels);
       await interaction.respond(
         visualNovels
           .filter((file) => file.endsWith(".rmb"))

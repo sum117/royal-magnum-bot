@@ -12,11 +12,11 @@ import {
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { imageGifUrl } from "../schemas/utils";
-import { CATEGORY_IDS } from "../data/constants";
-import readingTime from "reading-time";
 import { Duration } from "luxon";
+import readingTime from "reading-time";
+import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
+import { CATEGORY_IDS } from "../data/constants";
+import { imageGifUrl } from "../schemas/utils";
 
 @Discord()
 export default class Utils {
@@ -98,7 +98,6 @@ export default class Utils {
 
       if (channel.name.startsWith("RP |")) {
         const apiMessageCols = await Promise.all(channel.children.cache.map((channel) => fetchMessages(channel, true)));
-        console.log(apiMessageCols);
         apiMessageCols.forEach((col) => {
           if (col) messageCol = messageCol.concat(col);
         });

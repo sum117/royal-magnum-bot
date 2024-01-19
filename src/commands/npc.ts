@@ -14,7 +14,7 @@ import lodash from "lodash";
 import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
 import { createNPCModal, createNPCModalFieldIds, createNPCModalId } from "../components/CreateNPCModal";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
-import { CHANNEL_IDS } from "../data/constants";
+import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
 import type { NPC as NPCType } from "../schemas/npc";
@@ -152,7 +152,6 @@ export default class NPC {
     const sentPrompt = await confirmationPrompt.send(buttonInteraction);
 
     sentPrompt.collector.on("collect", async (promptInteraction) => {
-      console.log(promptInteraction.customId, confirmationPrompt.confirmButtonId);
       await promptInteraction.deferReply({ ephemeral: true });
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
         await Database.updateUser(buttonInteraction.user.id, { money: user.money - npc.price });
@@ -163,6 +162,9 @@ export default class NPC {
             components: [],
           }),
         );
+        const member = await promptInteraction.guild?.members.fetch(buttonInteraction.user.id);
+        if (!member) return;
+        if (!member.roles.cache.get(ROLE_IDS.member)) member.roles.add(ROLE_IDS.member);
       } else {
         Utils.scheduleMessageToDelete(await promptInteraction.editReply({ content: "Compra cancelada." }));
       }
