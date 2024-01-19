@@ -23,7 +23,6 @@ import { UserOptional, userSchema } from "./schemas/userSchema";
 const mysqlDriver = new MySQLDriver({
   uri: process.env.DATABASE_URI,
 });
-
 await mysqlDriver.connect();
 
 const db = new QuickDB({ driver: mysqlDriver });
