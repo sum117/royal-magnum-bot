@@ -141,7 +141,7 @@ export default class NPC {
     }
 
     if (npc.usersWithAccess.includes(buttonInteraction.user.id)) {
-      await buttonInteraction.reply({ content: "Você já tem acesso a esse NPC", ephemeral: true });
+      await buttonInteraction.editReply({ content: "Você já tem acesso a esse NPC" });
       return;
     }
 
