@@ -13,6 +13,20 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  profile: {
+    name: "profile",
+    description: "Mostra o perfil de um usuário",
+  },
+  giveMoney: {
+    name: "give-money",
+    description: "Dá dinheiro a um usuário",
+    defaultMemberPermissions: [],
+  },
+  takeMoney: {
+    name: "take-money",
+    description: "Tira dinheiro de um usuário",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
   deleteNPC: {
     name: "delete-npc",
     description: "Deleta um NPC",
@@ -78,6 +92,36 @@ export const COMMANDS = {
 } satisfies CommandData;
 
 export const COMMAND_OPTIONS = {
+  profileUser: {
+    name: "user",
+    description: "Usuário para mostrar o perfil",
+    required: true,
+    type: ApplicationCommandOptionType.User,
+  },
+  giveMoneyUser: {
+    name: "user",
+    description: "Usuário para dar o dinheiro",
+    required: true,
+    type: ApplicationCommandOptionType.User,
+  },
+  giveMoneyAmount: {
+    name: "amount",
+    description: "Quantidade de dinheiro para dar",
+    required: true,
+    type: ApplicationCommandOptionType.Integer,
+  },
+  takeMoneyUser: {
+    name: "user",
+    description: "Usuário para tirar o dinheiro",
+    required: true,
+    type: ApplicationCommandOptionType.User,
+  },
+  takeMoneyAmount: {
+    name: "amount",
+    description: "Quantidade de dinheiro para tirar",
+    required: true,
+    type: ApplicationCommandOptionType.Integer,
+  },
   npcId: {
     name: "npc-id",
     description: "ID do NPC",
