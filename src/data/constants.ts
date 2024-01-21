@@ -12,6 +12,7 @@ export const CHANNEL_IDS = {
   familiesChannel: "1188557191280595085",
   announcementsChannel: "1189379467009855569",
   tutorialChannel: "1191551254908911676",
+  askRoleplayChannel: "1197482727105105921",
 } as const;
 
 export const CATEGORY_IDS = {
@@ -182,4 +183,12 @@ export const PAGINATION_DEFAULT_OPTIONS = {
   next: { style: ButtonStyle.Primary, label: "Próximo", emoji: { name: "➡️" } },
   start: { style: ButtonStyle.Primary, label: "Início", emoji: { name: "⏪" } },
   end: { style: ButtonStyle.Primary, label: "Fim", emoji: { name: "⏩" } },
+} as const;
+export const ROLEPLAY_TYPE_TRANSLATION_MAP = {
+  romance: "Romance",
+  adventure: "Aventura",
+  horror: "Terror",
+  comedy: "Comédia",
+  action: "Ação",
+  drama: "Drama",
 } as const;

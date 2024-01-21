@@ -13,6 +13,10 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  rpPing: {
+    name: "rp-ping",
+    description: "Pinga o servidor para um roleplay",
+  },
   help: {
     name: "help",
     description: "Mostra a lista de comandos",
