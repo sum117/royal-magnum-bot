@@ -154,6 +154,8 @@ export default class Utils {
 
   @Slash(COMMANDS.rpPing)
   public async rpPing(interaction: ChatInputCommandInteraction) {
+    if (!interaction.inCachedGuild()) return;
+
     const askRoleplayForm = new AskRoleplayForm(interaction);
 
     const result = await askRoleplayForm.send();
@@ -162,7 +164,9 @@ export default class Utils {
     const embed = await AskRoleplayForm.getEmbed({ ...result, user: interaction.user });
     if (!embed) return;
 
+    const targetUser = await interaction.guild.members.fetch(result.roleplayUser).catch(() => undefined);
     const message = await bot.systemChannels.get(CHANNEL_IDS.askRoleplayChannel)?.send({
+      content: targetUser?.toString(),
       embeds: [embed],
     });
 
@@ -171,7 +175,15 @@ export default class Utils {
       autoArchiveDuration: ThreadAutoArchiveDuration.OneHour,
     });
 
+    let notice = `${interaction.user.toString()},aqui está a sua thread para discutir seu futuro roleplay!`;
+
     await thread?.members.add(interaction.user.id);
-    await thread?.send(`${interaction.user.toString()},aqui está a sua thread para discutir seu futuro roleplay!`);
+
+    if (targetUser) {
+      await thread?.members.add(targetUser.id);
+      notice = `${targetUser.toString()}, ${interaction.user.toString()} está te chamando para um roleplay!`;
+    }
+
+    await thread?.send(notice);
   }
 }
