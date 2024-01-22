@@ -97,6 +97,11 @@ export default class AskRoleplayForm {
     roleplayChannel: "",
     roleplayUser: "",
   };
+
+  private userForm = {
+    characterPhrase: "",
+    starterDescription: "",
+  };
   private messages = {
     roleplayType: "Você selecionou o gênero de roleplay: ",
     roleplayChannel: "Você selecionou o canal de roleplay: ",
@@ -184,24 +189,29 @@ export default class AskRoleplayForm {
       }
     });
 
-    const buttonOpenFormInteraction = await message.awaitMessageComponent({
-      componentType: ComponentType.Button,
+    const openFormCollector = message.createMessageComponentCollector({
       time: this.timeout.as("milliseconds"),
       filter: (i) => i.user.id === this.interaction.user.id && i.customId === openFormButtonId,
+      componentType: ComponentType.Button,
     });
 
-    await buttonOpenFormInteraction.showModal(askRoleplayModal);
+    openFormCollector.on("collect", async (buttonOpenFormInteraction) => {
+      await buttonOpenFormInteraction.showModal(askRoleplayModal);
 
-    const modalSubmit = await Utils.awaitModalSubmission(buttonOpenFormInteraction, askRoleplayModalId);
-    if (!modalSubmit) return;
-    await modalSubmit.reply({ content: "RP Ping enviado com sucesso!", ephemeral: true });
+      const modalSubmit = await Utils.awaitModalSubmission(buttonOpenFormInteraction, askRoleplayModalId);
+      if (!modalSubmit) return;
+      await modalSubmit.reply({ content: "RP Ping enviado com sucesso!", ephemeral: true });
 
-    const characterPhrase = modalSubmit.fields.getTextInputValue(textInputIds.characterPhrase);
-    const starterDescription = modalSubmit.fields.getTextInputValue(textInputIds.starterDescription);
+      this.userForm.characterPhrase = modalSubmit.fields.getTextInputValue(textInputIds.characterPhrase);
+      this.userForm.starterDescription = modalSubmit.fields.getTextInputValue(textInputIds.starterDescription);
+
+      openFormCollector.stop();
+    });
+
+    await new Promise((resolve) => openFormCollector.on("end", resolve));
 
     return {
-      characterPhrase,
-      starterDescription,
+      ...this.userForm,
       ...this.userChoices,
     };
   }
