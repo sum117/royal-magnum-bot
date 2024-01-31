@@ -1,12 +1,13 @@
-import { ArgsOf, On, Once } from "discordx";
+import { ArgsOf, Discord, On, Once } from "discordx";
 import lodash from "lodash";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import { bot } from "../main";
 
+@Discord()
 export default class InviteEvents {
   private guildInvites: Map<string, { uses: number; maxUses: number | null }>;
 
-  constructor() {
+  private constructor() {
     this.guildInvites = new Map();
   }
 
