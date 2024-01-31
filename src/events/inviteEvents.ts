@@ -23,18 +23,16 @@ export default class InviteEvents {
   async inviteCreate([invite]: ArgsOf<"inviteCreate">) {
     this.guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
     const logChannel = bot.systemChannels.get(CHANNEL_IDS.logChannel);
+
     if (invite.maxUses && invite.maxUses <= 1) {
       await invite.delete();
-      const mentorChannel = bot.systemChannels.get(CHANNEL_IDS.questionsChannel);
-      if (!mentorChannel || !mentorChannel.isTextBased()) return;
-      await mentorChannel.send(`${invite.inviter?.toString()}, você não pode criar um convite de uso único neste servidor. Fizemos isso para impedir raids.`);
+      await logChannel?.send(`${invite.inviter?.toString()}, você não pode criar um convite de uso único neste servidor. Fizemos isso para impedir raids.`);
       return;
     }
 
-    if (!logChannel || !logChannel.isTextBased()) return;
     if (!invite.inviter) return;
 
-    await logChannel.send(`${invite.inviter.toString()} criou um convite com ${invite.maxUses ?? "uso único"} com o código \`${invite.code}\``);
+    await logChannel?.send(`${invite.inviter.toString()} criou um convite de código \`${invite.code}\``);
   }
 
   @On({ event: "inviteDelete" })
