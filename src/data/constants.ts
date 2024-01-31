@@ -13,6 +13,8 @@ export const CHANNEL_IDS = {
   announcementsChannel: "1189379467009855569",
   tutorialChannel: "1191551254908911676",
   askRoleplayChannel: "1197482727105105921",
+  logChannel: "1202334869825261588",
+  questionsChannel: "1189604243766788126",
 } as const;
 
 export const CATEGORY_IDS = {
@@ -22,6 +24,9 @@ export const CATEGORY_IDS = {
 export const ROLE_IDS = {
   storeCharacterAnnouncements: "1189380530999930990",
   member: "1197876266221715466",
+  admin: "1187880364723687485",
+  mentor: "1202336988800491613",
+  pupil: "1202330746329501706",
 } as const;
 
 export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
