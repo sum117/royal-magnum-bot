@@ -4,6 +4,13 @@ import { Client as DiscordClient, IntentsBitField, Partials } from "discord.js";
 import { Client } from "discordx";
 import "dotenv/config";
 import cron from "node-cron";
+import AchievementEmitter, {
+  AchievementEvents,
+  handleBuyCharacterAchievements,
+  handleCharacterCreate,
+  handleCharacterLevelUpAchievements,
+  handleCharacterMessageAchievements,
+} from "./achievements";
 import Channel from "./commands/channel";
 import { CHANNEL_IDS, CRON_EXPRESSIONS } from "./data/constants";
 import Database from "./database";
@@ -41,6 +48,13 @@ bot.on("interactionCreate", (interaction: Interaction) => {
 bot.on("messageCreate", async (message: Message) => {
   await bot.executeCommand(message);
 });
+
+export const achievements = new AchievementEmitter();
+
+achievements.on(AchievementEvents.onBuyCharacter, handleBuyCharacterAchievements);
+achievements.on(AchievementEvents.onCharacterLevelUp, handleCharacterLevelUpAchievements);
+achievements.on(AchievementEvents.onCharacterMessage, handleCharacterMessageAchievements);
+achievements.on(AchievementEvents.onCharacterCreate, handleCharacterCreate);
 
 async function seedStaticData() {
   const families = await Utils.fetchBaseFamilies();

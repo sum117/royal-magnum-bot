@@ -2,11 +2,13 @@ import { BaseMessageOptions, bold, EmbedBuilder, Events, Message } from "discord
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
+import { AchievementEvents } from "../achievements";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
 import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
+import { bot } from "../main";
 import { CharacterSheetType } from "../schemas/characterSheetSchema";
 import { NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
@@ -46,6 +48,7 @@ export default class CharacterEvents {
     const embedMessage = await message.channel.send(payload);
     embedMessage.author.id = message.author.id;
     await Database.insertMessage(embedMessage);
+    bot.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
   }
 
   private async getNPCEmbed(message: Message, npc: NPCType) {
@@ -151,7 +154,8 @@ export default class CharacterEvents {
         `🎉 ${message.author.toString()}, o personagem ${bold(character.name)} subiu para o nível ${bold(newLevel.toString())}!`,
       );
       Utils.scheduleMessageToDelete(feedback);
-      await Database.updateSheet(character.userId, character.characterId, { xp: 0, level: newLevel });
+      const updatedChar = await Database.updateSheet(character.userId, character.characterId, { xp: 0, level: newLevel });
+      bot.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });
     } else {
       await Database.updateSheet(character.userId, character.characterId, { xp: character.xp + randomCharXp });
     }

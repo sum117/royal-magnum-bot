@@ -48,11 +48,10 @@ export const royalCharacterSchemaInput = royalCharacterSchema.omit({
   xp: true,
 });
 
-export const characterTypeSchema = z.union([characterSheetSchema, royalCharacterSchema]);
-export const characterTypeSchemaInput = z.union([characterSheetSchemaInput, royalCharacterSchemaInput]);
-
 export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
 export const storeCharacterSheetSchema = royalCharacterSchema.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
+export const characterTypeSchema = z.union([characterSheetSchema, royalCharacterSchema, storeCharacterSheetSchema]);
+export const characterTypeSchemaInput = z.union([characterSheetSchemaInput, royalCharacterSchemaInput, storeCharacterSheetSchemaInput]);
 
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;
@@ -62,8 +61,8 @@ export type RoyalCharacterSheet = z.infer<typeof royalCharacterSchema>;
 export type RoyalCharacterSheetPartial = z.infer<typeof royalCharacterSchemaPartial>;
 export type RoyalCharacterSheetInput = z.infer<typeof royalCharacterSchemaInput>;
 
-export type CharacterSheetType = CharacterSheet | RoyalCharacterSheet;
-export type CharacterSheetTypeInput = CharacterSheetInput | RoyalCharacterSheetInput;
+export type CharacterSheetType = CharacterSheet | RoyalCharacterSheet | StoreCharacterSheet;
+export type CharacterSheetTypeInput = CharacterSheetInput | RoyalCharacterSheetInput | StoreCharacterSheetInput;
 
 export type StoreCharacterSheet = z.infer<typeof storeCharacterSheetSchema>;
 export type StoreCharacterSheetInput = z.infer<typeof storeCharacterSheetSchemaInput>;

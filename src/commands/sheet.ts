@@ -20,6 +20,7 @@ import {
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
+import { AchievementEvents } from "../achievements";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
@@ -33,7 +34,7 @@ import {
   SERVER_BANNER_URL,
 } from "../data/constants";
 import Database from "../database";
-import { bot } from "../main";
+import { achievements, bot } from "../main";
 import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
 import { Origin, Profession } from "../schemas/enums";
 import { Family } from "../schemas/familySchema";
@@ -318,7 +319,13 @@ export default class Sheet {
     const [action, namespace, characterIdOrFamilySlug, userId] = interaction.customId.split("_") as EvaluateTuple;
 
     if (namespace === "character") {
-      const databaseUpdateFn = async () => await Database.updateSheet(userId, characterIdOrFamilySlug, { isApproved: action === "approve" });
+      const databaseUpdateFn = async () => {
+        await Database.updateSheet(userId, characterIdOrFamilySlug, { isApproved: action === "approve" });
+        const character = await Database.getSheet(userId, characterIdOrFamilySlug);
+        const member = interaction.guild?.members.cache.get(userId);
+        if (!member || !character) return;
+        achievements.emit(AchievementEvents.onCharacterCreate, { user: member.user, character });
+      };
       const databaseDeleteFn = async () => await Database.deleteSheet(userId, characterIdOrFamilySlug);
       await this.handleEvaluationButtons({ interaction, databaseUpdateFn, databaseDeleteFn, action, userId });
     } else if (namespace === "family") {

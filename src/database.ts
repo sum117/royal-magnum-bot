@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Message } from "discord.js";
 import { MySQLDriver, QuickDB } from "quick.db";
+import { Achievement } from "./achievements";
 import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 import { Channel, ChannelInput, ChannelPartial, channelSchema } from "./schemas/channelSchema";
 import {
@@ -28,6 +29,19 @@ await mysqlDriver.connect();
 const db = new QuickDB({ driver: mysqlDriver });
 
 export default class Database {
+  public static async getAllUserStoreSheets(userId: string) {
+    return [...(await Database.getSheets(userId)), ...(await Database.getNPCs())].filter((sheet): sheet is CharacterSheetType => {
+      const storeCharacter = storeCharacterSheetSchema.safeParse(sheet);
+      if (storeCharacter.success) {
+        return true;
+      }
+      const npc = npcSchema.safeParse(sheet);
+      if (npc.success) {
+        return npc.data.usersWithAccess.includes(userId);
+      }
+      return false;
+    });
+  }
   public static async insertMessage(message: Message) {
     const messageToInsert = {
       id: message.id,
@@ -44,7 +58,12 @@ export default class Database {
     if (!user) return await this.insertUser(userId);
     return userSchema.parse(user);
   }
-
+  public static async assignAchievement(achievement: Achievement, userId: string) {
+    const userDatabase = await Database.getUser(userId);
+    if (userDatabase?.achievements.includes(achievement.id)) return false;
+    await Database.updateUser(userId, { achievements: [...userDatabase.achievements, achievement.id] });
+    return true;
+  }
   public static async insertUser(userId: string) {
     const userToSet = { money: 0, royalTokens: 0, familyTokens: 0, lastMessageAt: new Date().toISOString() };
     await db.set(`users.${userId}`, userToSet);
@@ -63,6 +82,12 @@ export default class Database {
     const message = await db.get<DatabaseMessage>(`messages.${messageId}`);
     if (!message) return null;
     return message;
+  }
+
+  public static async getAllUserMessages(userId: string) {
+    const messages = await db.get<Record<string, DatabaseMessage>>("messages");
+    if (!messages) return [];
+    return Object.values(messages).filter((message) => message.authorId === userId);
   }
 
   public static async insertSheet(userId: string, sheet: CharacterSheetTypeInput) {

@@ -2,6 +2,7 @@ import { bold, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction
 import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
+import { AchievementEvents } from "../achievements";
 import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
 import CreateSheetModal, { createRoyalSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
@@ -147,6 +148,7 @@ export default class Store {
         });
 
         Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
+        bot.emit(AchievementEvents.onBuyCharacter, { character: sheet, user: promptInteraction.user });
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({

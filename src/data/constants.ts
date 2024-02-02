@@ -15,6 +15,7 @@ export const CHANNEL_IDS = {
   askRoleplayChannel: "1197482727105105921",
   logChannel: "1202334869825261588",
   questionsChannel: "1189604243766788126",
+  achievementsChannel: "1203018935113613322",
 } as const;
 
 export const CATEGORY_IDS = {
