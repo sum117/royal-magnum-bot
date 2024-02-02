@@ -16,11 +16,22 @@ import Utils from "../utils";
 @Discord()
 export default class CharacterEvents {
   private isEditingMap = new Map<string, boolean>();
-
   @On({ event: Events.MessageCreate })
   @Guard(isRoleplayingChannel)
   public async onCharacterMessage([message]: ArgsOf<"messageCreate">) {
     if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
+
+    const isOutOfCharacter =
+      message.content.startsWith("((") ||
+      message.content.startsWith("[[") ||
+      message.content.startsWith("{{") ||
+      message.content.startsWith("\\\\") ||
+      message.content.startsWith("//") ||
+      message.content.startsWith("OOC");
+    if (isOutOfCharacter) {
+      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 5 }).as("milliseconds"));
+      return;
+    }
 
     const user = await Database.getUser(message.author.id);
 

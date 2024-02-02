@@ -92,10 +92,15 @@ export async function handleCharacterMessageAchievements(args: AchievementPayloa
   const origins = await Utils.fetchOrigins();
   const originData = origins.find((origin) => origin.id === userActiveSheet?.origin);
 
+  const hasSaid = (word: string) => Boolean(args.embedMessage.embeds[0].description?.includes(word));
   const messageAchievements = [
     new Achievement("Primeira Mensagem", "Você enviou sua primeira mensagem!", () => userMessages.length === 1),
     new Achievement("Mensageiro", "Você enviou 100 mensagens!", () => userMessages.length === 100),
     new Achievement("Comunicador", "Você enviou 500 mensagens com!", () => userMessages.length === 500),
+    new Achievement("Eu Não Tenho Medo Dele", "Você mencionou o nome proibido...", () => hasSaid("Marjorie")),
+    new Achievement("Mommy. Please. Mommy. Please.", "Algumas pessoas não conseguem resistir a um polvo bonito.", () => hasSaid("Ada")),
+    new Achievement("Aqui Não É O Lugar", "Tire esse nome da sua boca!", () => hasSaid("Lilith")),
+    new Achievement("Masoria", "Essa história já acabou. Não fale mais sobre isso.", () => hasSaid("Masoria")),
   ];
 
   if (originData && args.embedMessage.inGuild() && args.embedMessage.channel.parent?.type === ChannelType.GuildCategory) {
