@@ -559,8 +559,9 @@ export default class Sheet {
             familySlug,
             origin,
             profession,
+            type: "royal",
           }
-        : { name, backstory, appearance, imageUrl: imageKitLink, gender, origin, profession };
+        : { name, backstory, appearance, imageUrl: imageKitLink, gender, origin, profession, type: "character" };
 
     const origins = await Utils.fetchOrigins();
     const originData = origins.find((originData) => originData.id === origin);

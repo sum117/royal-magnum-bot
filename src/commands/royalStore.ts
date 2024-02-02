@@ -58,6 +58,7 @@ export default class Store {
       royalTitle,
       backstory,
       appearance,
+      type: "store",
       transformation,
       inventory: [],
       price,

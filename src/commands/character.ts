@@ -17,7 +17,7 @@ import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { CharacterSheet, CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
+import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
@@ -131,7 +131,7 @@ export default class Character {
       return;
     }
     const randomColor = lodash.sample(Object.values(Colors));
-    const formatSheetListString = (sheet: CharacterSheet, isCurrentPage: boolean) => {
+    const formatSheetListString = (sheet: CharacterSheetType, isCurrentPage: boolean) => {
       const isActive = sheet.isActive ? "✅" : "";
       return `${isActive} ${isCurrentPage ? bold(sheet.name) : sheet.name}`;
     };

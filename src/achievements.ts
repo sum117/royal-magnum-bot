@@ -114,7 +114,7 @@ export async function handleAchievements(achievements: Array<Achievement>, user:
   for (const achievement of achievements) {
     if (!achievement.check()) continue;
     if (await Database.assignAchievement(achievement, user.id)) {
-      const achievementMessage = `🎉 ${user.toString()} desbloqueou a conquista ${achievement.title}!\n\n>${achievement.description}`;
+      const achievementMessage = `🎉 ${user.toString()} desbloqueou a conquista ${achievement.title}!\n\n> ${achievement.description}`;
       await sendAchievementMessage(embedMessage, achievementMessage);
     }
   }

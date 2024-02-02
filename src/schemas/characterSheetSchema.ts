@@ -5,6 +5,7 @@ import { inventoryItemSchema } from "./itemSchema";
 
 export const characterSheetSchema = z
   .object({
+    type: z.literal("character").default("character"),
     name: z.string().min(3).max(32),
     backstory: z.string().min(1).max(2048),
     appearance: z.string().min(1).max(1024),
@@ -36,8 +37,8 @@ export const royalCharacterSchema = characterSheetSchema.extend({
   transformation: z.string().min(1).max(2048),
   royalTitle: z.string().min(1).max(32),
   profession: z.enum(["royal"]).default("royal"),
+  type: z.literal("royal").default("royal"),
 });
-
 export const royalCharacterSchemaPartial = royalCharacterSchema.partial();
 export const royalCharacterSchemaInput = royalCharacterSchema.omit({
   characterId: true,
@@ -48,10 +49,20 @@ export const royalCharacterSchemaInput = royalCharacterSchema.omit({
   xp: true,
 });
 
-export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
-export const storeCharacterSheetSchema = royalCharacterSchema.extend({ price: z.number(), isStoreCharacter: z.literal(true) });
-export const characterTypeSchema = z.union([characterSheetSchema, royalCharacterSchema, storeCharacterSheetSchema]);
-export const characterTypeSchemaInput = z.union([characterSheetSchemaInput, royalCharacterSchemaInput, storeCharacterSheetSchemaInput]);
+export const storeCharacterSheetSchemaInput = royalCharacterSchemaInput.extend({
+  price: z.number(),
+  isStoreCharacter: z.literal(true),
+  type: z.literal("store").default("store"),
+});
+export const storeCharacterSheetSchema = royalCharacterSchema.extend({
+  price: z.number(),
+  isStoreCharacter: z.literal(true),
+  type: z.literal("store").default("store"),
+});
+
+export const characterTypeSchema = z.discriminatedUnion("type", [characterSheetSchema, royalCharacterSchema, storeCharacterSheetSchema]);
+
+export const characterTypeSchemaInput = z.discriminatedUnion("type", [characterSheetSchemaInput, royalCharacterSchemaInput, storeCharacterSheetSchemaInput]);
 
 export type CharacterSheetInput = z.infer<typeof characterSheetSchemaInput>;
 export type CharacterSheet = z.infer<typeof characterSheetSchema>;

@@ -142,9 +142,9 @@ export default class Database {
   public static async updateSheet(userId: string, characterId: string, sheet: CharacterSheetPartial) {
     const oldSheet = await db.get<CharacterSheetType>(`sheets.${userId}.${characterId}`);
     if (!oldSheet) return null;
-    const updatedSheet = { ...oldSheet, ...sheet };
+    const updatedSheet = characterTypeSchema.parse({ ...oldSheet, ...sheet });
     await db.set<CharacterSheetType>(`sheets.${userId}.${characterId}`, updatedSheet);
-    return characterTypeSchema.parse(updatedSheet);
+    return updatedSheet;
   }
 
   public static async getActiveSheet(userId: string) {
@@ -191,8 +191,11 @@ export default class Database {
     return Object.values(sheets)
       .flatMap((userSheets) => Object.values(userSheets))
       .filter((sheet): sheet is RoyalCharacterSheet => {
-        const royalSheet = royalCharacterSchema.safeParse(sheet);
-        return royalSheet.success && royalSheet.data.familySlug === familySlug;
+        const royalSheet = characterTypeSchema.safeParse(sheet);
+        if (royalSheet.success) {
+          return royalSheet.data.type === "royal" && royalSheet.data.familySlug === familySlug;
+        }
+        return false;
       })
       .map((sheet) => royalCharacterSchema.parse(sheet))
       .slice(0, DISCORD_AUTOCOMPLETE_LIMIT);
