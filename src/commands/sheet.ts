@@ -23,7 +23,15 @@ import { DateTime, Duration } from "luxon";
 import CreateFamilyModal, { createFamilyModalFieldIds, createFamilyModalId } from "../components/CreateFamilyModal";
 import CreateSheetModal, { createRoyalSheetModalFieldIds, createSheetModalFieldIds } from "../components/CreateSheetModal";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { ATTACHMENT_ICON_URL, CHANNEL_IDS, GENDER_TRANSLATIONS_MAP, PROFESSIONS_TRANSLATIONS, ROLE_IDS, SERVER_BANNER_URL } from "../data/constants";
+import {
+  ATTACHMENT_ICON_URL,
+  CHANNEL_IDS,
+  GENDER_TRANSLATIONS_MAP,
+  PROFESSIONS_PRONOUNS_TRANSLATIONS,
+  PROFESSIONS_TRANSLATIONS,
+  ROLE_IDS,
+  SERVER_BANNER_URL,
+} from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
 import { characterTypeSchemaInput } from "../schemas/characterSheetSchema";
@@ -543,10 +551,12 @@ export default class Sheet {
             imageUrl: imageKitLink,
             familySlug,
             origin,
-            profession: "royal",
+            profession,
           }
-        : { name, backstory, appearance, imageUrl: imageKitLink, gender, origin, profession: "other" };
+        : { name, backstory, appearance, imageUrl: imageKitLink, gender, origin, profession };
 
+    const origins = await Utils.fetchOrigins();
+    const originData = origins.find((originData) => originData.id === origin);
     const sheetEmbed = new EmbedBuilder()
       .setAuthor({
         name: modalSubmit.user.username,
@@ -557,7 +567,12 @@ export default class Sheet {
       .setImage(imageKitLink)
       .setColor(Colors.Blurple)
       .setTimestamp(DateTime.now().toJSDate())
-      .addFields([{ name: "Aparência", value: appearance }]);
+      .addFields([
+        { name: "Aparência", value: appearance },
+        { name: "Profissão", value: PROFESSIONS_PRONOUNS_TRANSLATIONS[profession][gender] },
+        { name: "Origem", value: originData?.name ?? "Desconhecida" },
+        { name: "Gênero", value: GENDER_TRANSLATIONS_MAP[gender] },
+      ]);
 
     const savedSheet = await Database.insertSheet(modalSubmit.user.id, characterTypeSchemaInput.parse(sheetData));
 
