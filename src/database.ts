@@ -186,13 +186,16 @@ export default class Database {
   }
 
   public static async getSheetsByFamily(familySlug: string) {
-    const sheets = await db.get<Record<string, CharacterSheetType>>("sheets");
+    const sheets = await db.get<Record<string, Record<string, CharacterSheetType>>>("sheets");
     if (!sheets) return [];
-    return Object.values(sheets).filter((sheet): sheet is RoyalCharacterSheet => {
-      const royalSheet = royalCharacterSchema.safeParse(sheet);
-      if (royalSheet.success) return royalSheet.data.familySlug === familySlug;
-      return false;
-    });
+    return Object.values(sheets)
+      .flatMap((userSheets) => Object.values(userSheets))
+      .filter((sheet): sheet is RoyalCharacterSheet => {
+        const royalSheet = royalCharacterSchema.safeParse(sheet);
+        return royalSheet.success && royalSheet.data.familySlug === familySlug;
+      })
+      .map((sheet) => royalCharacterSchema.parse(sheet))
+      .slice(0, DISCORD_AUTOCOMPLETE_LIMIT);
   }
 
   public static async setFamily(slug: string, family: FamilyInput) {
