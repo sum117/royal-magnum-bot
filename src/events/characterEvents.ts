@@ -1,14 +1,14 @@
 import { BaseMessageOptions, bold, EmbedBuilder, Events, Message } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
-import { Duration } from "luxon";
+import { DateTime, Duration } from "luxon";
 import { AchievementEvents } from "../achievements";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
 import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
-import { bot } from "../main";
+import { achievements } from "../main";
 import { CharacterSheetType } from "../schemas/characterSheetSchema";
 import { NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
@@ -36,6 +36,7 @@ export default class CharacterEvents {
     const user = await Database.getUser(message.author.id);
 
     let embed: EmbedBuilder;
+    let hasGainedReward = false;
     if (user.currentNpcId) {
       const npc = await Database.getNPC(user.currentNpcId);
       if (!npc) return;
@@ -45,7 +46,7 @@ export default class CharacterEvents {
       if (!character) return;
 
       embed = await Character.getCharacterRPEmbed(message, character);
-      await this.handleActivityGains(character, message);
+      hasGainedReward = await this.handleActivityGains(character, message);
     }
 
     await Utils.scheduleMessageToDelete(message, 0);
@@ -59,7 +60,11 @@ export default class CharacterEvents {
     const embedMessage = await message.channel.send(payload);
     embedMessage.author.id = message.author.id;
     await Database.insertMessage(embedMessage);
-    bot.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
+    achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
+    if (hasGainedReward) {
+      await message.react("💰");
+      await message.react("📈");
+    }
   }
 
   private async getNPCEmbed(message: Message, npc: NPCType) {
@@ -138,20 +143,22 @@ export default class CharacterEvents {
   private async handleActivityGains(character: CharacterSheetType, message: Message<boolean>) {
     const user = await Database.getUser(character.userId);
 
-    const hasBeenThirtyMinutes =
-      Duration.fromISO(user?.lastMessageAt ?? new Date().toISOString())
-        .plus({ minutes: 30 })
-        .toMillis() < Date.now();
-    if (!hasBeenThirtyMinutes) return;
+    const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromISO(user?.lastMessageAt ?? "1970-01-01T00:00:00.000Z"), "minutes").minutes >= 1;
+    console.log("hasBeenThirtyMinutes", hasBeenThirtyMinutes);
+    console.log("user?.lastMessageAt", user?.lastMessageAt);
+    console.log("DateTime.now().toISO()", DateTime.now().toISO());
+    if (!hasBeenThirtyMinutes) return false;
 
     const randomMoney = lodash.random(250, 500);
-    await Database.updateUser(character.userId, {
-      money: user?.money + randomMoney,
-      lastMessageAt: new Date().toISOString(),
+    const updatedUser = await Database.updateUser(character.userId, {
+      money: user?.money ?? 0 + randomMoney,
+      lastMessageAt: DateTime.now().toISO(),
     });
 
+    console.log("updatedUser", updatedUser);
+
     const databaseChannel = await Database.getChannel(message.channelId);
-    if (!databaseChannel) return;
+    if (!databaseChannel) return false;
 
     const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.type].includes(character.profession);
     const randomCharXpMin = isInCorrectChannel ? 50 : 25;
@@ -166,9 +173,12 @@ export default class CharacterEvents {
       );
       Utils.scheduleMessageToDelete(feedback);
       const updatedChar = await Database.updateSheet(character.userId, character.characterId, { xp: 0, level: newLevel });
-      bot.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });
+      if (!updatedChar) return false;
+      achievements.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });
     } else {
       await Database.updateSheet(character.userId, character.characterId, { xp: character.xp + randomCharXp });
     }
+
+    return true;
   }
 }
