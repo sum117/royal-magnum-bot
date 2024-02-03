@@ -151,7 +151,7 @@ export default class CharacterEvents {
 
     const randomMoney = lodash.random(250, 500);
     const updatedUser = await Database.updateUser(character.userId, {
-      money: user?.money ?? 0 + randomMoney,
+      money: randomMoney + (user?.money ?? 0),
       lastMessageAt: DateTime.now().toISO(),
     });
 

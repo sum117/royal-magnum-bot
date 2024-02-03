@@ -109,7 +109,7 @@ export const PROFESSIONS_PRONOUNS_TRANSLATIONS: Record<Profession, { male: strin
   alchemist: { male: "Alquimista", female: "Alquimista" },
   cook: { male: "Cozinheiro", female: "Cozinheira" },
   tailor: { male: "Costureiro", female: "Costureira" },
-  mercenary: { male: "Carpinteiro", female: "Carpinteira" },
+  mercenary: { male: "Mercenário", female: "Mercenária" },
   librarian: { male: "Bibliotecário", female: "Bibliotecária" },
   musician: { male: "Músico", female: "Música" },
   writer: { male: "Escrivão", female: "Escrivã" },
