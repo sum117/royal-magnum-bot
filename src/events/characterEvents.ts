@@ -144,18 +144,13 @@ export default class CharacterEvents {
     const user = await Database.getUser(character.userId);
 
     const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromISO(user?.lastMessageAt ?? "1970-01-01T00:00:00.000Z"), "minutes").minutes >= 30;
-    console.log("hasBeenThirtyMinutes", hasBeenThirtyMinutes);
-    console.log("user?.lastMessageAt", user?.lastMessageAt);
-    console.log("DateTime.now().toISO()", DateTime.now().toISO());
     if (!hasBeenThirtyMinutes) return false;
 
     const randomMoney = lodash.random(250, 500);
-    const updatedUser = await Database.updateUser(character.userId, {
+    await Database.updateUser(character.userId, {
       money: randomMoney + (user?.money ?? 0),
       lastMessageAt: DateTime.now().toISO(),
     });
-
-    console.log("updatedUser", updatedUser);
 
     const databaseChannel = await Database.getChannel(message.channelId);
     if (!databaseChannel) return false;
