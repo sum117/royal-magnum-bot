@@ -34,6 +34,7 @@ export const bot = new Client({
 });
 
 bot.once("ready", async (readyClient) => {
+  bot.timeOuts = new Map();
   assignSystemChannels(readyClient);
   await seedStaticData();
   await bot.initApplicationCommands();

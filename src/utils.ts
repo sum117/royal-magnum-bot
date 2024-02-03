@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import yaml from "yaml";
 import { createSheetModalId } from "./components/CreateSheetModal";
 import { RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "./data/constants";
+import { bot } from "./main";
 import { Family, familySchema } from "./schemas/familySchema";
 import { Resources } from "./schemas/resourceSchema";
 
@@ -43,12 +44,13 @@ export default class Utils {
   }
 
   public static async scheduleMessageToDelete(message: Message, time?: number) {
-    await new Promise((resolve) => setTimeout(resolve, time ?? 10000));
-    try {
-      await message.delete();
-    } catch (error) {
-      console.log(`Não foi possível deletar a mensagem ${message.id}`);
-    }
+    bot.timeOuts.set(
+      message.id,
+      setTimeout(() => {
+        message.delete().catch((error) => console.error("Failed to delete message", error));
+        bot.timeOuts.delete(message.id);
+      }, time),
+    );
   }
 
   public static async handleAttachment(attachment: Attachment, embed: EmbedBuilder) {

@@ -22,7 +22,6 @@ export default class CharacterEvents {
     if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
 
     const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
-
     if (isOutOfCharacter) {
       await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 5 }).as("milliseconds"));
       return;
