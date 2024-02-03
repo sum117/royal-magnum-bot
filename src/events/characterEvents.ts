@@ -21,13 +21,8 @@ export default class CharacterEvents {
   public async onCharacterMessage([message]: ArgsOf<"messageCreate">) {
     if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
 
-    const isOutOfCharacter =
-      message.content.startsWith("((") ||
-      message.content.startsWith("[[") ||
-      message.content.startsWith("{{") ||
-      message.content.startsWith("\\\\") ||
-      message.content.startsWith("//") ||
-      message.content.startsWith("OOC");
+    const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
+
     if (isOutOfCharacter) {
       await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 5 }).as("milliseconds"));
       return;
@@ -62,8 +57,8 @@ export default class CharacterEvents {
     await Database.insertMessage(embedMessage);
     achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
     if (hasGainedReward) {
-      await message.react("💰");
-      await message.react("📈");
+      await embedMessage.react("💰");
+      await embedMessage.react("📈");
     }
   }
 
