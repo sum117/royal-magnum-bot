@@ -13,6 +13,11 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  setCharacterProfession: {
+    name: "set-profession",
+    description: "Define a profissão de um personagem",
+    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
+  },
   rpPing: {
     name: "rp-ping",
     description: "Pinga o servidor para um roleplay",
@@ -77,7 +82,6 @@ export const COMMANDS = {
   giveRoyalToken: {
     name: "give-royal-token",
     description: "Dá uma ficha real a um usuário",
-    defaultMemberPermissions: [PermissionFlagsBits.Administrator],
   },
   changePicture: {
     name: "change-picture",
@@ -99,6 +103,24 @@ export const COMMANDS = {
 } satisfies CommandData;
 
 export const COMMAND_OPTIONS = {
+  setProfessionUser: {
+    name: "user",
+    description: "Usuário para definir a profissão",
+    required: true,
+    type: ApplicationCommandOptionType.User,
+  },
+  setProfessionProfession: {
+    name: "profession",
+    description: "Profissão para definir",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const options = Object.entries(PROFESSIONS_TRANSLATIONS)
+        .map(([profession, translation]) => ({ name: translation, value: profession }))
+        .filter(({ value }) => (interaction.options.getFocused() ? value.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) : true));
+      await interaction.respond(options);
+    },
+  },
   profileUser: {
     name: "user",
     description: "Usuário para mostrar o perfil",

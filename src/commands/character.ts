@@ -213,4 +213,21 @@ export default class Character {
     ]);
     await interaction.editReply({ embeds: [embed] });
   }
+
+  @Slash(COMMANDS.setCharacterProfession)
+  public async setProfession(
+    @SlashOption(COMMAND_OPTIONS.setProfessionUser) user: GuildMember,
+    @SlashOption(COMMAND_OPTIONS.setProfessionProfession) profession: keyof typeof PROFESSIONS_PRONOUNS_TRANSLATIONS,
+    interaction: ChatInputCommandInteraction,
+  ) {
+    await interaction.deferReply({ ephemeral: true });
+
+    const sheet = await Database.getActiveSheet(user.id);
+    if (!sheet?.profession || sheet.profession === "royal") return;
+    sheet.profession = profession;
+
+    await Database.updateSheet(user.id, sheet.characterId, sheet);
+
+    await interaction.editReply({ content: `Profissão de ${user.displayName} alterada para ${profession}.` });
+  }
 }
