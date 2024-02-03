@@ -8,7 +8,7 @@ import CreateSheetModal, { createRoyalSheetModalFieldIds } from "../components/C
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
-import { bot } from "../main";
+import { achievements, bot } from "../main";
 import Utils from "../utils";
 import Character, { characterDetailsButtonIdPrefix } from "./character";
 
@@ -149,7 +149,7 @@ export default class Store {
         });
 
         Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
-        bot.emit(AchievementEvents.onBuyCharacter, { character: sheet, user: promptInteraction.user });
+        achievements.emit(AchievementEvents.onBuyCharacter, { character: sheet, user: promptInteraction.user });
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({

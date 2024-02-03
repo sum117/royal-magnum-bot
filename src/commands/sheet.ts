@@ -91,7 +91,22 @@ export default class Sheet {
 
   @Slash(COMMANDS.giveRoyalToken)
   public async giveRoyalToken(@SlashOption(COMMAND_OPTIONS.giveRoyalTokenUser) user: GuildMember, interaction: ChatInputCommandInteraction) {
+    if (!interaction.inCachedGuild()) return;
+
+    await interaction.deferReply({ ephemeral: true });
+
+    if (interaction.member?.permissions.has(PermissionFlagsBits.Administrator)) {
+      await this.giveToken(user, "royalTokens", interaction);
+      return;
+    }
+
+    const databaseUser = await Database.getUser(interaction.user.id);
+    if (databaseUser.royalTokens < 1) {
+      await interaction.editReply({ content: "Você não possui fichas reais suficientes para dar a outra pessoa." });
+      return;
+    }
     await this.giveToken(user, "royalTokens", interaction);
+    await Database.updateUser(interaction.user.id, { royalTokens: databaseUser.royalTokens - 1 });
   }
 
   @Slash(COMMANDS.giveFamilyToken)
