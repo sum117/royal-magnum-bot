@@ -143,7 +143,7 @@ export default class CharacterEvents {
   private async handleActivityGains(character: CharacterSheetType, message: Message<boolean>) {
     const user = await Database.getUser(character.userId);
 
-    const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromISO(user?.lastMessageAt ?? "1970-01-01T00:00:00.000Z"), "minutes").minutes >= 1;
+    const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromISO(user?.lastMessageAt ?? "1970-01-01T00:00:00.000Z"), "minutes").minutes >= 30;
     console.log("hasBeenThirtyMinutes", hasBeenThirtyMinutes);
     console.log("user?.lastMessageAt", user?.lastMessageAt);
     console.log("DateTime.now().toISO()", DateTime.now().toISO());
