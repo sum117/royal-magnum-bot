@@ -117,7 +117,8 @@ export const COMMAND_OPTIONS = {
     autocomplete: async (interaction) => {
       const options = Object.entries(PROFESSIONS_TRANSLATIONS)
         .map(([profession, translation]) => ({ name: translation, value: profession }))
-        .filter(({ value }) => (interaction.options.getFocused() ? value.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) : true));
+        .filter(({ value }) => (interaction.options.getFocused() ? value.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) : true))
+        .slice(0, DISCORD_AUTOCOMPLETE_LIMIT);
       await interaction.respond(options);
     },
   },
