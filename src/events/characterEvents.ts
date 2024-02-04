@@ -1,16 +1,16 @@
-import { BaseMessageOptions, bold, EmbedBuilder, Events, Message } from "discord.js";
+import { BaseMessageOptions, bold, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
 import { AchievementEvents } from "../achievements";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
-import { PROFESSION_CHANNELS } from "../data/constants";
+import { DISCORD_MESSAGE_CONTENT_LIMIT, PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { achievements } from "../main";
 import { CharacterSheetType } from "../schemas/characterSheetSchema";
-import { NPC as NPCType } from "../schemas/npc";
+import { npcSchema, NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
 
 @Discord()
@@ -31,14 +31,16 @@ export default class CharacterEvents {
 
     let embed: EmbedBuilder;
     let hasGainedReward = false;
+    let characterOrNPC: CharacterSheetType | NPCType | undefined;
     if (user.currentNpcId) {
       const npc = await Database.getNPC(user.currentNpcId);
       if (!npc) return;
       embed = await this.getNPCEmbed(message, npc);
+      characterOrNPC = npc;
     } else {
       const character = await Database.getActiveSheet(message.author.id);
       if (!character) return;
-
+      characterOrNPC = character;
       embed = await Character.getCharacterRPEmbed(message, character);
       hasGainedReward = await this.handleActivityGains(character, message);
     }
@@ -51,14 +53,67 @@ export default class CharacterEvents {
       const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
       payload.files = [{ attachment: imageKitLink, name }];
     }
-    const embedMessage = await message.channel.send(payload);
-    embedMessage.author.id = message.author.id;
-    await Database.insertMessage(embedMessage);
-    achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
-    if (hasGainedReward) {
-      await embedMessage.react("💰");
-      await embedMessage.react("📈");
+
+    if (user.doesNotUseEmbed) {
+      const { webhook, characterParsed, npcParsed } = await this.getWebhook(message.channel as TextChannel, characterOrNPC);
+      if (message.content.length >= DISCORD_MESSAGE_CONTENT_LIMIT) {
+        const chunks = lodash.chunk(message.content, DISCORD_MESSAGE_CONTENT_LIMIT);
+        for (const chunk of chunks) {
+          const webhookMessage = await webhook.send({
+            content: chunk.join(""),
+            files: chunks.indexOf(chunk) === chunks.length - 1 ? payload.files : undefined,
+            username: characterOrNPC.name,
+            avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+          });
+          webhookMessage.author.id = message.author.id;
+          await Database.insertMessage(webhookMessage);
+          achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage: webhookMessage, user: message.author });
+          if (hasGainedReward) {
+            await webhookMessage.react("💰");
+            await webhookMessage.react("📈");
+          }
+        }
+      } else {
+        const webhookMessage = await webhook.send({
+          content: message.content,
+          files: payload.files,
+          username: characterOrNPC.name,
+          avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+        });
+        webhookMessage.author.id = message.author.id;
+        await Database.insertMessage(webhookMessage);
+        achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage: webhookMessage, user: message.author });
+        if (hasGainedReward) {
+          await webhookMessage.react("💰");
+          await webhookMessage.react("📈");
+        }
+      }
+    } else {
+      const embedMessage = await message.channel.send(payload);
+      embedMessage.author.id = message.author.id;
+      await Database.insertMessage(embedMessage);
+      achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
+      if (hasGainedReward) {
+        await embedMessage.react("💰");
+        await embedMessage.react("📈");
+      }
     }
+  }
+
+  private async getWebhook(channel: TextChannel, characterOrNPC: CharacterSheetType | NPCType) {
+    const webhooks = await channel.fetchWebhooks();
+    const existingWebhook = webhooks.find((webhook) => webhook.name === characterOrNPC.name);
+    const npcParsed = npcSchema.safeParse(characterOrNPC);
+    const characterParsed = npcSchema.safeParse(characterOrNPC);
+    if (!existingWebhook) {
+      const createdWebhook = await channel.createWebhook({
+        name: characterOrNPC.name,
+        avatar: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+        reason: `${characterOrNPC.name} is posting a message without embed.`,
+      });
+      return { webhook: createdWebhook, npcParsed, characterParsed };
+    }
+    return { webhook: existingWebhook, npcParsed, characterParsed };
   }
 
   private async getNPCEmbed(message: Message, npc: NPCType) {
@@ -152,7 +207,8 @@ export default class CharacterEvents {
     const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.type].includes(character.profession);
     const randomCharXpMin = isInCorrectChannel ? 50 : 25;
     const randomCharXpMax = isInCorrectChannel ? 100 : 50;
-    const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax);
+    const balanceFactor = 10;
+    const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax) / balanceFactor;
     const { willLevelUp } = Character.getCharacterLevelDetails(character);
 
     if (willLevelUp(character.xp + randomCharXp)) {
@@ -165,7 +221,7 @@ export default class CharacterEvents {
       if (!updatedChar) return false;
       achievements.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });
     } else {
-      await Database.updateSheet(character.userId, character.characterId, { xp: character.xp + randomCharXp });
+      await Database.updateSheet(character.userId, character.characterId, { xp: randomCharXp + character.xp });
     }
 
     return true;

@@ -88,6 +88,7 @@ export const PROFESSIONS_TRANSLATIONS: Record<Profession, string> = {
   courtier: "Cortesã(o)",
   royal: "Nobre",
 } as const;
+export const DISCORD_MESSAGE_CONTENT_LIMIT = 2000;
 
 export const ORGANIZATION_TRANSLATIONS: Record<string, string> = {
   vagabonds: "Vagabundos",

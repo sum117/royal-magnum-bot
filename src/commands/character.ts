@@ -95,7 +95,6 @@ export default class Character {
     const barLength = 10;
     const barFill = Math.floor((percentage / 100) * barLength);
     const barEmpty = barLength - barFill;
-
     return {
       progressBar: `${filledBar.repeat(barFill)}${emptyBar.repeat(barEmpty)} ${percentage}%`,
       expRequiredForNextLevel,
@@ -120,6 +119,14 @@ export default class Character {
       }
       await buttonInteraction.editReply({ embeds: [embed] });
     }
+  }
+
+  @Slash(COMMANDS.setNoEmbedRoleplay)
+  public async setNoEmbedRoleplay(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const user = await Database.getUser(interaction.user.id);
+    await Database.updateUser(interaction.user.id, { doesNotUseEmbed: !user.doesNotUseEmbed });
+    await interaction.editReply({ content: `Modo de roleplay sem embed ${user.doesNotUseEmbed ? "ativado" : "desativado"}.` });
   }
 
   @Slash(COMMANDS.characterList)

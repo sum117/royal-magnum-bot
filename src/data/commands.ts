@@ -13,6 +13,10 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  setNoEmbedRoleplay: {
+    name: "set-no-embed-roleplay",
+    description: "Define seu tipo de roleplay como sem embed",
+  },
   setCharacterProfession: {
     name: "set-profession",
     description: "Define a profissão de um personagem",
