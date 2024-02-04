@@ -205,10 +205,9 @@ export default class CharacterEvents {
     if (!databaseChannel) return false;
 
     const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.type].includes(character.profession);
-    const randomCharXpMin = isInCorrectChannel ? 50 : 25;
-    const randomCharXpMax = isInCorrectChannel ? 100 : 50;
-    const balanceFactor = 10;
-    const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax) / balanceFactor;
+    const randomCharXpMin = isInCorrectChannel ? 5 : 2.5;
+    const randomCharXpMax = isInCorrectChannel ? 10 : 5;
+    const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax);
     const { willLevelUp } = Character.getCharacterLevelDetails(character);
 
     if (willLevelUp(character.xp + randomCharXp)) {
