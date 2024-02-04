@@ -46,7 +46,6 @@ export default class Database {
     const messageToInsert = {
       id: message.id,
       channelId: message.channelId,
-      content: message.embeds[0]?.description,
       authorId: message.author.id,
     };
     await db.set(`messages.${message.id}`, messageToInsert);

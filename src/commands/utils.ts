@@ -12,6 +12,7 @@ import {
   Message,
   PermissionFlagsBits,
   ThreadAutoArchiveDuration,
+  userMention,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -166,7 +167,7 @@ export default class Utils {
 
     const targetUser = await interaction.guild.members.fetch(result.roleplayUser).catch(() => undefined);
     const message = await bot.systemChannels.get(CHANNEL_IDS.askRoleplayChannel)?.send({
-      content: targetUser ? targetUser.toString() : undefined,
+      content: targetUser?.user.id ? userMention(targetUser.user.id) : undefined,
       embeds: [embed],
     });
 
