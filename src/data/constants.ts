@@ -28,6 +28,7 @@ export const ROLE_IDS = {
   admin: "1187880364723687485",
   mentor: "1202336988800491613",
   pupil: "1202330746329501706",
+  roleplayPing: "1202330702390239242",
 } as const;
 
 export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {

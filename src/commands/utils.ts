@@ -11,8 +11,8 @@ import {
   inlineCode,
   Message,
   PermissionFlagsBits,
+  roleMention,
   ThreadAutoArchiveDuration,
-  userMention,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -20,7 +20,7 @@ import { Duration } from "luxon";
 import readingTime from "reading-time";
 import AskRoleplayForm from "../components/AskRoleplayForm";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { CATEGORY_IDS, CHANNEL_IDS } from "../data/constants";
+import { CATEGORY_IDS, CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import { bot } from "../main";
 import { imageGifUrl } from "../schemas/utils";
 
@@ -165,9 +165,9 @@ export default class Utils {
     const embed = await AskRoleplayForm.getEmbed({ ...result, user: interaction.user });
     if (!embed) return;
 
-    const targetUser = await interaction.guild.members.fetch(result.roleplayUser).catch(() => undefined);
+    const targetUser = result.roleplayUser ? await interaction.guild?.members.fetch(result.roleplayUser) : undefined;
     const message = await bot.systemChannels.get(CHANNEL_IDS.askRoleplayChannel)?.send({
-      content: targetUser?.user.id ? userMention(targetUser.user.id) : undefined,
+      content: targetUser ? targetUser.toString() : roleMention(ROLE_IDS.roleplayPing),
       embeds: [embed],
     });
 
