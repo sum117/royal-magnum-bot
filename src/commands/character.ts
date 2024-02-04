@@ -19,7 +19,7 @@ import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
+import { CharacterSheetType, royalCharacterSchema, storeCharacterSheetSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
@@ -114,7 +114,10 @@ export default class Character {
       const embed = new EmbedBuilder().setColor(Colors.Blurple);
 
       const royalSheet = royalCharacterSchema.safeParse(sheet);
-      if (royalSheet.success) {
+      const storeSheet = storeCharacterSheetSchema.safeParse(sheet);
+      if (isStoreSheet && storeSheet.success) {
+        embed.setDescription(`# História \n${storeSheet.data.backstory}\n# Dádiva / Transformação \n${storeSheet.data.transformation}`);
+      } else if (royalSheet.success) {
         embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
       } else {
         embed.setDescription(`# História \n${sheet?.backstory}`);
