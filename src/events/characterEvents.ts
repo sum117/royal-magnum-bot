@@ -23,7 +23,7 @@ export default class CharacterEvents {
 
     const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
     if (isOutOfCharacter) {
-      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 5 }).as("milliseconds"));
+      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 1 }).as("milliseconds"));
       return;
     }
 
