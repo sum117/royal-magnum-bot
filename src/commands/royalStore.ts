@@ -9,6 +9,7 @@ import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
 import { achievements, bot } from "../main";
+import { royalCharacterSchema } from "../schemas/characterSheetSchema";
 import Utils from "../utils";
 import Character, { characterDetailsButtonIdPrefix } from "./character";
 
@@ -134,7 +135,14 @@ export default class Store {
       await promptInteraction.deferUpdate();
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
         await Database.updateUser(buttonInteraction.user.id, { money: user.money - sheet.price });
-        await Database.insertSheet(buttonInteraction.user.id, sheet);
+
+        // I'm so sorry for this, I'm just too lazy to make something else.
+        const sheetToInsert: Record<string, unknown> = { ...sheet };
+        sheetToInsert.type = "royal";
+        delete sheetToInsert.price;
+        delete sheetToInsert.isStoreCharacter;
+
+        await Database.insertSheet(buttonInteraction.user.id, royalCharacterSchema.parse(sheetToInsert));
         await Database.deleteStoreSheet(sheet.characterId);
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
