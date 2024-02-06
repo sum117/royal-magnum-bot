@@ -1,4 +1,4 @@
-import { BaseMessageOptions, bold, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
+import { AttachmentBuilder, BaseMessageOptions, bold, EmbedBuilder, Events, Message, TextChannel } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
@@ -153,28 +153,35 @@ export default class CharacterEvents {
         collector.on("end", async (collectedMessages) => {
           const newContentMessage = collectedMessages.first();
           if (!newContentMessage) return;
-          const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id);
-          if (!originalMessage || !originalMessage.embeds.length) return;
+          const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id).catch(() => null);
+          if (!originalMessage || !originalMessage.embeds.length) {
+            if (this.isEditingMap.get(user.id)) this.isEditingMap.delete(user.id);
+            return;
+          }
 
           const embed = EmbedBuilder.from(originalMessage.embeds[0]);
           embed.setDescription(newContentMessage.content);
 
-          const originalAttachment = originalMessage.attachments.first();
+          const originalAttachment = originalMessage.embeds[0].image?.url;
           const attachment = newContentMessage.attachments.first();
           if (attachment) {
             const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
             await originalMessage.edit({ embeds: [embed], files: [{ attachment: imageKitLink, name }] });
           } else if (originalAttachment && !attachment) {
-            embed.setImage(`attachment://${originalAttachment.name}`);
-            await originalMessage.edit({ embeds: [embed], files: [originalAttachment] });
+            const attachmentName = originalAttachment.split("/").pop()?.split("?").shift();
+            if (!attachmentName) return;
+            embed.setImage(`attachment://${attachmentName}`);
+            await originalMessage.edit({ embeds: [embed], files: [new AttachmentBuilder(originalAttachment).setName(attachmentName)] });
+          } else {
+            await originalMessage.edit({ embeds: [embed] });
           }
-          await originalMessage.edit({ embeds: [embed] });
           this.isEditingMap.delete(newContentMessage.author.id);
           Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
         break;
       case "🗑️":
         const dbMessageToDelete = await Database.getMessage(reaction.message.id);
+        if (dbMessageToDelete) this.isEditingMap.delete(dbMessageToDelete.authorId);
         if (!dbMessageToDelete) {
           console.log("Mensagem não encontrada no banco de dados");
           return;
