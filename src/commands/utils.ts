@@ -196,6 +196,13 @@ export default class Utils {
     @SimpleCommandOption({ name: "regex", type: SimpleCommandOptionType.String }) regex: string | null,
     command: SimpleCommandMessage,
   ) {
+    if (!command.message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+      await command.message.reply("Você não tem permissão para usar esse comando.");
+      return;
+    }
+    if (!user && !regex && !to) {
+      await command.sendUsageSyntax();
+    }
     const fetchOptions: Record<string, string | number> = { limit: amount };
     if (to) {
       fetchOptions.after = to;
