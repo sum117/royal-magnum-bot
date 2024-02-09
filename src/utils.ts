@@ -44,13 +44,13 @@ export default class Utils {
   }
 
   public static async scheduleMessageToDelete(message: Message, time?: number) {
-    bot.timeOuts.set(
-      message.id,
-      setTimeout(() => {
-        message.delete().catch((error) => console.error("Failed to delete message", error));
-        bot.timeOuts.delete(message.id);
-      }, time),
-    );
+    bot.messageQueue.enqueue({
+      id: message.id,
+      execute: async () => {
+        const messageDelete = message.delete.bind(message);
+        lodash.delay(() => messageDelete, time || 15_000);
+      },
+    });
   }
 
   public static async handleAttachment(attachment: Attachment, embed: EmbedBuilder) {
