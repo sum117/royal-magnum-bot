@@ -212,16 +212,10 @@ export default class Utils {
     }
     const messages = await command.message.channel.messages.fetch(fetchOptions);
     const messagesToDelete = messages.filter((message) => {
-      if (user) {
-        return message.author.id === user.id;
-      }
-      if (DateTime.fromISO(message.createdAt.toISOString()).diffNow("days").days > BULK_DELETE_THRESHOLD_DAYS) {
-        return true;
-      }
-      if (regex) {
-        return new RegExp(regex).test(message.content);
-      }
-      return true;
+      const isSameUser = user ? message.author.id === user.id : true;
+      const isOld = DateTime.fromISO(message.createdAt.toISOString()).diffNow("days").days > BULK_DELETE_THRESHOLD_DAYS;
+      const isMatchingRegex = regex ? new RegExp(regex).test(message.content) : true;
+      return isSameUser && isOld && isMatchingRegex;
     });
 
     if (command.message.channel.type === ChannelType.GuildText) {
