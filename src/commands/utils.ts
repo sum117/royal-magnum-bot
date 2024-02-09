@@ -14,7 +14,7 @@ import {
   roleMention,
   ThreadAutoArchiveDuration,
 } from "discord.js";
-import { Discord, Slash, SlashOption } from "discordx";
+import { Discord, SimpleCommand, SimpleCommandMessage, SimpleCommandOption, SimpleCommandOptionType, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
 import { Duration } from "luxon";
 import readingTime from "reading-time";
@@ -186,5 +186,33 @@ export default class Utils {
     }
 
     await thread?.send(notice);
+  }
+
+  @SimpleCommand({ name: "clear" })
+  public async delete(
+    @SimpleCommandOption({ name: "user", type: SimpleCommandOptionType.User }) user: GuildMember | null,
+    @SimpleCommandOption({ name: "amount", type: SimpleCommandOptionType.Number }) amount: number = 100,
+    @SimpleCommandOption({ name: "to", type: SimpleCommandOptionType.String }) to: string | null,
+    @SimpleCommandOption({ name: "regex", type: SimpleCommandOptionType.String }) regex: string | null,
+    command: SimpleCommandMessage,
+  ) {
+    const fetchOptions: Record<string, string | number> = { limit: 100 };
+    if (to) {
+      fetchOptions.after = to;
+    }
+    const messages = command.message.channel.messages.fetch(fetchOptions);
+    const messagesToDelete = (await messages).filter((message) => {
+      if (user) {
+        return message.author.id === user.id;
+      }
+      if (regex) {
+        return new RegExp(regex).test(message.content);
+      }
+      return true;
+    });
+
+    if (command.message.channel.type === ChannelType.GuildText) {
+      await command.message.channel.bulkDelete(messagesToDelete);
+    }
   }
 }
