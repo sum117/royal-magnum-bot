@@ -19,18 +19,19 @@ import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { CharacterSheetType, royalCharacterSchema, storeCharacterSheetSchema } from "../schemas/characterSheetSchema";
+import { CharacterSheetType, characterTypeSchema, royalCharacterSchema, storeCharacterSheetSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
 export const characterDetailsButtonIdPrefix = "character-details";
-export const getCharacterDetailsButtonId = (userId: string, characterId: string) => `${characterDetailsButtonIdPrefix}-${userId}-${characterId}`;
+export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false) =>
+  `${characterDetailsButtonIdPrefix}-${userId}-${characterId}-${preview ? "true" : "false"}`;
 @Discord()
 export default class Character {
-  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string) {
+  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string, preview?: boolean) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
-        .setCustomId(getCharacterDetailsButtonId(userId, characterId))
+        .setCustomId(getCharacterDetailsButtonId(userId, characterId, preview))
         .setLabel(label ?? "Detalhes")
         .setStyle(ButtonStyle.Primary),
     );
@@ -110,7 +111,7 @@ export default class Character {
   public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
     if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
       await buttonInteraction.deferReply({ ephemeral: true });
-      const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
+      const [userId, characterId, preview] = buttonInteraction.customId.split("-").slice(2);
 
       const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
 
@@ -118,6 +119,7 @@ export default class Character {
 
       const royalSheet = royalCharacterSchema.safeParse(sheet);
       const storeSheet = storeCharacterSheetSchema.safeParse(sheet);
+      const regularSheetParse = characterTypeSchema.safeParse(sheet);
       if (isStoreSheet && storeSheet.success) {
         embed.setDescription(`# História \n${storeSheet.data.backstory}\n# Dádiva / Transformação \n${storeSheet.data.transformation}`);
       } else if (royalSheet.success) {
@@ -125,7 +127,12 @@ export default class Character {
       } else {
         embed.setDescription(`# História \n${sheet?.backstory}`);
       }
-      await buttonInteraction.editReply({ embeds: [embed] });
+      const messageOptions = { embeds: [embed] };
+      if (preview === "true" && regularSheetParse.success) {
+        const previewEmbed = await Character.getCharacterPreviewEmbed(regularSheetParse.data);
+        messageOptions.embeds = [previewEmbed];
+      }
+      await buttonInteraction.editReply(messageOptions);
     }
   }
 
