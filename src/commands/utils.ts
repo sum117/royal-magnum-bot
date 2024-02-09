@@ -16,7 +16,7 @@ import {
 } from "discord.js";
 import { Discord, SimpleCommand, SimpleCommandMessage, SimpleCommandOption, SimpleCommandOptionType, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
-import { Duration } from "luxon";
+import { DateTime, Duration } from "luxon";
 import readingTime from "reading-time";
 import AskRoleplayForm from "../components/AskRoleplayForm";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
@@ -203,14 +203,20 @@ export default class Utils {
     if (!user && !regex && !to) {
       await command.sendUsageSyntax();
     }
-    const fetchOptions: Record<string, string | number> = { limit: amount };
+    const FETCH_LIMIT_MAX = 100;
+    const FETCH_LIMIT_MIN = 1;
+    const BULK_DELETE_THRESHOLD_DAYS = 14;
+    const fetchOptions: Record<string, string | number> = { limit: amount < FETCH_LIMIT_MAX && amount >= FETCH_LIMIT_MIN ? amount : FETCH_LIMIT_MAX };
     if (to) {
       fetchOptions.after = to;
     }
-    const messages = command.message.channel.messages.fetch(fetchOptions);
-    const messagesToDelete = (await messages).filter((message) => {
+    const messages = await command.message.channel.messages.fetch(fetchOptions);
+    const messagesToDelete = messages.filter((message) => {
       if (user) {
         return message.author.id === user.id;
+      }
+      if (DateTime.fromISO(message.createdAt.toISOString()).diffNow("days").days > BULK_DELETE_THRESHOLD_DAYS) {
+        return true;
       }
       if (regex) {
         return new RegExp(regex).test(message.content);
