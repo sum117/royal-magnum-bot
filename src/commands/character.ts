@@ -27,9 +27,12 @@ export const characterDetailsButtonIdPrefix = "character-details";
 export const getCharacterDetailsButtonId = (userId: string, characterId: string) => `${characterDetailsButtonIdPrefix}-${userId}-${characterId}`;
 @Discord()
 export default class Character {
-  public static getCharacterDetailsButton(userId: string, characterId: string) {
+  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(getCharacterDetailsButtonId(userId, characterId))
+        .setLabel(label ?? "Detalhes")
+        .setStyle(ButtonStyle.Primary),
     );
   }
 

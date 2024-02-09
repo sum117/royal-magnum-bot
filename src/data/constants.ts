@@ -16,6 +16,7 @@ export const CHANNEL_IDS = {
   logChannel: "1202334869825261588",
   questionsChannel: "1189604243766788126",
   achievementsChannel: "1203018935113613322",
+  imageGenerationChannel: "1205507505040654377",
 } as const;
 
 export const CATEGORY_IDS = {
