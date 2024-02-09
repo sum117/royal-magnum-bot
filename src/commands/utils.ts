@@ -196,7 +196,7 @@ export default class Utils {
     @SimpleCommandOption({ name: "regex", type: SimpleCommandOptionType.String }) regex: string | null,
     command: SimpleCommandMessage,
   ) {
-    const fetchOptions: Record<string, string | number> = { limit: 100 };
+    const fetchOptions: Record<string, string | number> = { limit: amount };
     if (to) {
       fetchOptions.after = to;
     }
