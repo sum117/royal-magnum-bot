@@ -102,7 +102,7 @@ export default class Store {
 
   @ButtonComponent({ id: new RegExp(`^${characterDetailsButtonIdPrefix}`) })
   public async characterDetailsButtonListener(buttonInteraction: ButtonInteraction) {
-    await Character.handleCharacterDetailsButton(buttonInteraction, true);
+    await Character.handleCharacterDetailsButton(buttonInteraction, buttonInteraction.customId.endsWith("store"));
   }
 
   @ButtonComponent({ id: new RegExp(`^${buyStoreCharacterButtonIdPrefix}`) })

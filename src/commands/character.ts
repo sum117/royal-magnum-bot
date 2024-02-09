@@ -23,15 +23,15 @@ import { CharacterSheetType, characterTypeSchema, royalCharacterSchema, storeCha
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
-export const characterDetailsButtonIdPrefix = "character-details";
-export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false) =>
-  `${characterDetailsButtonIdPrefix}-${userId}-${characterId}-${preview ? "true" : "false"}`;
+export const characterDetailsButtonIdPrefix = "character_details";
+export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false, isStoreSheet = true) =>
+  `${characterDetailsButtonIdPrefix}-${userId}-${characterId}-${preview ? "true" : "false"}-${isStoreSheet ? "store" : "user"}`;
 @Discord()
 export default class Character {
-  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string, preview?: boolean) {
+  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string, preview?: boolean, isStoreSheet = true) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
       new ButtonBuilder()
-        .setCustomId(getCharacterDetailsButtonId(userId, characterId, preview))
+        .setCustomId(getCharacterDetailsButtonId(userId, characterId, preview, isStoreSheet))
         .setLabel(label ?? "Detalhes")
         .setStyle(ButtonStyle.Primary),
     );
@@ -111,7 +111,7 @@ export default class Character {
   public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
     if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
       await buttonInteraction.deferReply({ ephemeral: true });
-      const [userId, characterId, preview] = buttonInteraction.customId.split("-").slice(2);
+      const [userId, characterId, preview] = buttonInteraction.customId.split("-").slice(1);
 
       const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
 
