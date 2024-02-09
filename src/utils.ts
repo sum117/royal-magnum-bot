@@ -48,7 +48,7 @@ export default class Utils {
       id: message.id,
       execute: async () => {
         const messageDelete = message.delete.bind(message);
-        lodash.delay(() => messageDelete, time || 15_000);
+        lodash.delay(messageDelete, time ?? 15_000);
       },
     });
   }

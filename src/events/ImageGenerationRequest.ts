@@ -120,9 +120,12 @@ export default class onImageGenerationRequest {
               await Database.updateUser(message.author.id, { money: user.money - imageGenerationCost });
             }
             await message.channel.send({
-              content: `{user}, aqui está a imagem gerada com base no prompt {prompt}.\n{cost}`
+              content: `{user}, aqui está a imagem gerada com base no prompt {prompt}\n💰{cost}`
                 .replace("{prompt}", codeBlock(input.join(",")))
-                .replace("{cost}", isNitro ? "Por ser um usuário Nitro, você não foi cobrado." : `Você foi cobrado ${imageGenerationCost} pontos de atividade.`)
+                .replace(
+                  "{cost}",
+                  isNitro ? "Por ser um usuário Nitro, você não foi cobrado." : `Você foi cobrado C$${imageGenerationCost} pontos de atividade.`,
+                )
                 .replace("{user}", message.author.toString()),
               files: [attachment],
             });
