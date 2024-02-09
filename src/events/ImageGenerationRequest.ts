@@ -18,7 +18,7 @@ export default class onImageGenerationRequest {
   }
   @On({ event: "messageCreate" })
   async main([message]: ArgsOf<"messageCreate">) {
-    if (message.channel.id !== CHANNEL_IDS.imageGenerationChannel || message.author.bot) return;
+    if (message.channel.id !== CHANNEL_IDS.imageGenerationChannel || message.author.bot || !message.content.startsWith("generate")) return;
     const member = await message.member?.fetch(true);
     if (!member) return;
     const isNitro = member.premiumSinceTimestamp !== null;
@@ -27,8 +27,12 @@ export default class onImageGenerationRequest {
       await message.reply("Você não tem permissão para usar este canal.").then(Utils.scheduleMessageToDelete);
       return;
     }
-
     const user = await Database.getUser(message.author.id);
+    if (!user) {
+      await message.reply("Você não está registrado no nosso sistema.").then(Utils.scheduleMessageToDelete);
+      return;
+    }
+
     const imageGenerationCost = 200;
     if (!isNitro && user?.money < imageGenerationCost) {
       await message
@@ -59,6 +63,7 @@ export default class onImageGenerationRequest {
         async function generateImage() {
           try {
             const input = message.content.trim().split(",");
+            input.shift();
             const seed = lodash.random(1000000000, 9999999999);
             const isLarge = input.includes("large");
             if (isLarge) input.splice(input.indexOf("large"), 1);
@@ -111,11 +116,13 @@ export default class onImageGenerationRequest {
               return;
             }
             const attachment = new AttachmentBuilder(image).setName(`${input.join(",").slice(0, 80)} s-${seed}.png`);
-
+            if (!isNitro) {
+              await Database.updateUser(message.author.id, { money: user.money - imageGenerationCost });
+            }
             await message.channel.send({
-              content: `{user}, aqui está a imagem gerada com base no prompt {prompt}. C\${cost} foi removido da sua conta:`
+              content: `{user}, aqui está a imagem gerada com base no prompt {prompt}.\n{cost}`
                 .replace("{prompt}", codeBlock(input.join(",")))
-                .replace("{cost}", imageGenerationCost.toString())
+                .replace("{cost}", isNitro ? "Por ser um usuário Nitro, você não foi cobrado." : `Você foi cobrado ${imageGenerationCost} pontos de atividade.`)
                 .replace("{user}", message.author.toString()),
               files: [attachment],
             });
