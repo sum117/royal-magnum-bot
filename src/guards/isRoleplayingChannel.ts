@@ -7,7 +7,8 @@ export const isRoleplayingChannel: GuardFunction<ArgsOf<"messageCreate" | "messa
   };
 
   if (argument instanceof MessageReaction) {
-    const message = await argument.message.fetch();
+    const message = await argument.message.fetch().catch(() => null);
+    if (!message) return;
     if (isRPChannel(message)) {
       await next();
     }

@@ -11,6 +11,7 @@ import {
   inlineCode,
   Message,
   PermissionFlagsBits,
+  roleMention,
   ThreadAutoArchiveDuration,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
@@ -19,7 +20,7 @@ import { Duration } from "luxon";
 import readingTime from "reading-time";
 import AskRoleplayForm from "../components/AskRoleplayForm";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { CATEGORY_IDS, CHANNEL_IDS } from "../data/constants";
+import { CATEGORY_IDS, CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import { bot } from "../main";
 import { imageGifUrl } from "../schemas/utils";
 
@@ -164,9 +165,9 @@ export default class Utils {
     const embed = await AskRoleplayForm.getEmbed({ ...result, user: interaction.user });
     if (!embed) return;
 
-    const targetUser = await interaction.guild.members.fetch(result.roleplayUser).catch(() => undefined);
+    const targetUser = result.roleplayUser ? await interaction.guild?.members.fetch(result.roleplayUser) : undefined;
     const message = await bot.systemChannels.get(CHANNEL_IDS.askRoleplayChannel)?.send({
-      content: targetUser ? targetUser.toString() : undefined,
+      content: targetUser ? targetUser.toString() : roleMention(ROLE_IDS.roleplayPing),
       embeds: [embed],
     });
 
@@ -186,4 +187,39 @@ export default class Utils {
 
     await thread?.send(notice);
   }
+  // TODO: Doesn't work. Will remake.
+  // @SimpleCommand({ name: "clear" })
+  // public async delete(
+  //   @SimpleCommandOption({ name: "user", type: SimpleCommandOptionType.User }) user: GuildMember | null,
+  //   @SimpleCommandOption({ name: "amount", type: SimpleCommandOptionType.Number }) amount: number = 100,
+  //   @SimpleCommandOption({ name: "to", type: SimpleCommandOptionType.String }) to: string | null,
+  //   @SimpleCommandOption({ name: "regex", type: SimpleCommandOptionType.String }) regex: string | null,
+  //   command: SimpleCommandMessage,
+  // ) {
+  //   if (!command.message.member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+  //     await command.message.reply("Você não tem permissão para usar esse comando.");
+  //     return;
+  //   }
+  //   if (!user && !regex && !to) {
+  //     await command.sendUsageSyntax();
+  //   }
+  //   const FETCH_LIMIT_MAX = 100;
+  //   const FETCH_LIMIT_MIN = 1;
+  //   const BULK_DELETE_THRESHOLD_DAYS = 14;
+  //   const fetchOptions: Record<string, string | number> = { limit: amount < FETCH_LIMIT_MAX && amount >= FETCH_LIMIT_MIN ? amount : FETCH_LIMIT_MAX };
+  //   if (to) {
+  //     fetchOptions.after = to;
+  //   }
+  //   const messages = await command.message.channel.messages.fetch(fetchOptions);
+  //   const messagesToDelete = messages.filter((message) => {
+  //     const isSameUser = user ? message.author.id === user.id : true;
+  //     const isOld = DateTime.fromISO(message.createdAt.toISOString()).diffNow("days").days > BULK_DELETE_THRESHOLD_DAYS;
+  //     const isMatchingRegex = regex ? new RegExp(regex).test(message.content) : true;
+  //     return isSameUser && isOld && isMatchingRegex;
+  //   });
+
+  //   if (command.message.channel.type === ChannelType.GuildText) {
+  //     await command.message.channel.bulkDelete(messagesToDelete);
+  //   }
+  // }
 }

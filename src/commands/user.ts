@@ -1,4 +1,4 @@
-import type { ColorResolvable, User as DiscordUser, GuildMember } from "discord.js";
+import type { BaseMessageOptions, ColorResolvable, User as DiscordUser, GuildMember } from "discord.js";
 import { ChatInputCommandInteraction, Colors, EmbedBuilder, PermissionFlagsBits, bold } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -7,6 +7,7 @@ import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import Database from "../database";
 import { characterTypeSchema } from "../schemas/characterSheetSchema";
 import { npcSchema } from "../schemas/npc";
+import Character from "./character";
 
 @Discord()
 export default class User {
@@ -47,12 +48,17 @@ export default class User {
     await interaction.deferReply();
 
     const embed = await User.getUserProfileEmbed(user.user);
+    const userSheet = await Database.getActiveSheet(user.user.id);
+
     if (!embed) {
       await interaction.editReply(`Não encontrei o perfil de ${user.displayName}`);
       return;
     }
-
-    await interaction.editReply({ embeds: [embed] });
+    const messageOptions: BaseMessageOptions = { embeds: [embed] };
+    if (userSheet) {
+      messageOptions.components = [Character.getCharacterDetailsButton(user.user.id, userSheet.characterId, "Ver Personagem Ativo", true, false)];
+    }
+    await interaction.editReply(messageOptions);
   }
 
   @Slash(COMMANDS.giveMoney)
@@ -69,7 +75,7 @@ export default class User {
     const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
     if (!isAdmin) {
       const agent = await Database.getUser(interaction.member.user.id);
-      if (!agent || agent.money < amount) {
+      if (!agent || agent.money < amount || amount < 0) {
         await interaction.editReply(`Você não tem C$${amount} para dar.`);
         return;
       }

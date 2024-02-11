@@ -3,25 +3,20 @@ import lodash from "lodash";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import { bot } from "../main";
 
+const guildInvites = new Map<string, { uses: number; maxUses: number | null }>();
 @Discord()
 export default class InviteEvents {
-  private guildInvites: Map<string, { uses: number; maxUses: number | null }>;
-
-  private constructor() {
-    this.guildInvites = new Map();
-  }
-
   @Once({ event: "ready" })
   async fetchInvites([client]: ArgsOf<"ready">) {
     const guild = client.guilds.cache.first();
     if (!guild) return;
     const invites = await guild.invites.fetch({ cache: true });
-    invites.each((invite) => this.guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null }));
+    invites.each((invite) => guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null }));
   }
 
   @On({ event: "inviteCreate" })
   async inviteCreate([invite]: ArgsOf<"inviteCreate">) {
-    this.guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
+    guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
     const logChannel = bot.systemChannels.get(CHANNEL_IDS.logChannel);
 
     if (invite.maxUses && invite.maxUses <= 1) {
@@ -37,14 +32,14 @@ export default class InviteEvents {
 
   @On({ event: "inviteDelete" })
   async inviteDelete([invite]: ArgsOf<"inviteDelete">) {
-    this.guildInvites.delete(invite.code);
+    guildInvites.delete(invite.code);
   }
 
   @On({ event: "guildMemberAdd" })
   async guildMemberAdd([member]: ArgsOf<"guildMemberAdd">) {
     const invites = await member.guild.invites.fetch();
     const invite = invites.find((guildInvite) => {
-      const cachedInvite = this.guildInvites.get(guildInvite.code);
+      const cachedInvite = guildInvites.get(guildInvite.code);
       if (!cachedInvite || typeof cachedInvite.uses !== "number" || !guildInvite.uses) return false;
       return cachedInvite.uses < guildInvite.uses;
     });
@@ -53,7 +48,7 @@ export default class InviteEvents {
     const logChannel = member.guild.channels.cache.get(CHANNEL_IDS.logChannel);
     if (!logChannel || !logChannel.isTextBased()) return;
 
-    this.guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
+    guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
 
     await logChannel.send(`${member.user.toString()} entrou no servidor usando o convite de ${invite.inviter?.toString()} com o código \`${invite.code}\``);
 

@@ -1,0 +1,40 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+  GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Git
+        run: |
+          git config user.email "${GIT_EMAIL}"
+          git config user.name "${GIT_USERNAME}"
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 21
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build TypeScript
+        run: pnpm build
+      - name: Create build branch and push
+        run: |
+          git checkout --orphan build
+          git reset --hard
+          git add build
+          git commit -m "Build commit"
+          git branch -M build
+          git push origin build --force

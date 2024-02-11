@@ -217,6 +217,8 @@ export default class Sheet {
       label: entity.title,
       value: entity.slug,
     }));
+    entitiesSelectMenuOptions.push({ label: "Nenhuma", value: "none" });
+
     const selectMenuComponent = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
       new StringSelectMenuBuilder()
         .setCustomId(entitySelectMenuId)
@@ -261,7 +263,7 @@ export default class Sheet {
     }
 
     const familyData = (await Utils.fetchBaseFamilies()).find((family) => family.entity === entitySlug);
-    if (!familyData) {
+    if (!familyData && entitySlug !== "none") {
       await createFamilyModalSubmission.editReply({ content: "Essa entidade não existe." });
       return;
     }

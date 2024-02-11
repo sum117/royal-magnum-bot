@@ -14,6 +14,7 @@ import AchievementEmitter, {
 import Channel from "./commands/channel";
 import { CHANNEL_IDS, CRON_EXPRESSIONS } from "./data/constants";
 import Database from "./database";
+import { Queue } from "./queue";
 import Utils from "./utils";
 
 export const bot = new Client({
@@ -34,7 +35,7 @@ export const bot = new Client({
 });
 
 bot.once("ready", async (readyClient) => {
-  bot.timeOuts = new Map();
+  bot.messageQueue = new Queue();
   assignSystemChannels(readyClient);
   await seedStaticData();
   await bot.initApplicationCommands();

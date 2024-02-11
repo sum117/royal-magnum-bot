@@ -16,6 +16,7 @@ export const CHANNEL_IDS = {
   logChannel: "1202334869825261588",
   questionsChannel: "1189604243766788126",
   achievementsChannel: "1203018935113613322",
+  imageGenerationChannel: "1205507505040654377",
 } as const;
 
 export const CATEGORY_IDS = {
@@ -28,6 +29,7 @@ export const ROLE_IDS = {
   admin: "1187880364723687485",
   mentor: "1202336988800491613",
   pupil: "1202330746329501706",
+  roleplayPing: "1202330702390239242",
 } as const;
 
 export const PROFESSION_CHANNELS: Record<ChannelType, Profession[]> = {
@@ -88,6 +90,7 @@ export const PROFESSIONS_TRANSLATIONS: Record<Profession, string> = {
   courtier: "Cortesã(o)",
   royal: "Nobre",
 } as const;
+export const DISCORD_MESSAGE_CONTENT_LIMIT = 2000;
 
 export const ORGANIZATION_TRANSLATIONS: Record<string, string> = {
   vagabonds: "Vagabundos",

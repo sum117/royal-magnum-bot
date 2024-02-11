@@ -2,6 +2,7 @@ import { Pagination, PaginationResolver } from "@discordx/pagination";
 import { Character as PrismaCharacter } from "@prisma/client";
 import {
   ActionRowBuilder,
+  Attachment,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -15,19 +16,24 @@ import {
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
+import { ConfirmationPrompt } from "../components/ConfirmationPrompt";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
-export const characterDetailsButtonIdPrefix = "character-details";
-export const getCharacterDetailsButtonId = (userId: string, characterId: string) => `${characterDetailsButtonIdPrefix}-${userId}-${characterId}`;
+export const characterDetailsButtonIdPrefix = "character_details";
+export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false, isStoreSheet = true) =>
+  `${characterDetailsButtonIdPrefix}-${userId}-${characterId}-${preview ? "true" : "false"}-${isStoreSheet ? "store" : "user"}`;
 @Discord()
 export default class Character {
-  public static getCharacterDetailsButton(userId: string, characterId: string) {
+  public static getCharacterDetailsButton(userId: string, characterId: string, label?: string, preview?: boolean, isStoreSheet = true) {
     return new ActionRowBuilder<ButtonBuilder>().setComponents(
-      new ButtonBuilder().setCustomId(getCharacterDetailsButtonId(userId, characterId)).setLabel("Detalhes").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId(getCharacterDetailsButtonId(userId, characterId, preview, isStoreSheet))
+        .setLabel(label ?? "Detalhes")
+        .setStyle(ButtonStyle.Primary),
     );
   }
 
@@ -93,7 +99,6 @@ export default class Character {
     const barLength = 10;
     const barFill = Math.floor((percentage / 100) * barLength);
     const barEmpty = barLength - barFill;
-
     return {
       progressBar: `${filledBar.repeat(barFill)}${emptyBar.repeat(barEmpty)} ${percentage}%`,
       expRequiredForNextLevel,
@@ -104,7 +109,7 @@ export default class Character {
   public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
     if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
       await buttonInteraction.deferReply({ ephemeral: true });
-      const [userId, characterId] = buttonInteraction.customId.split("-").slice(2);
+      const [userId, characterId, preview] = buttonInteraction.customId.split("-").slice(1);
 
       const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
 
@@ -115,8 +120,21 @@ export default class Character {
       } else {
         embed.setDescription(`# História \n${sheet?.backstory}`);
       }
-      await buttonInteraction.editReply({ embeds: [embed] });
+      const messageOptions = { embeds: [embed] };
+      if (preview === "true" && regularSheetParse.success) {
+        const previewEmbed = await Character.getCharacterPreviewEmbed(regularSheetParse.data);
+        messageOptions.embeds = [previewEmbed];
+      }
+      await buttonInteraction.editReply(messageOptions);
     }
+  }
+
+  @Slash(COMMANDS.setNoEmbedRoleplay)
+  public async setNoEmbedRoleplay(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const user = await Database.getUser(interaction.user.id);
+    await Database.updateUser(interaction.user.id, { doesNotUseEmbed: !user.doesNotUseEmbed });
+    await interaction.editReply({ content: `Modo de roleplay sem embed ${user.doesNotUseEmbed ? "ativado" : "desativado"}.` });
   }
 
   @Slash(COMMANDS.characterList)
@@ -170,6 +188,55 @@ export default class Character {
       content: `${bold(sheet.name)} definida como personagem ativo(a).`,
       files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
     });
+  }
+
+  @Slash(COMMANDS.deleteCharacter)
+  public async deleteCharacter(@SlashOption(COMMAND_OPTIONS.deleteCharacterCharacter) characterId: string, interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ ephemeral: true });
+    const sheet = await Database.getSheet(interaction.user.id, characterId);
+    if (!sheet) {
+      await interaction.editReply({ content: "Ficha não encontrada no seu nome de usuário." });
+      return;
+    }
+
+    const confirmationPrompt = new ConfirmationPrompt({ promptMessage: `Tem certeza que deseja deletar ${bold(sheet.name)}?` });
+    const sentPrompt = await confirmationPrompt.send(interaction);
+    sentPrompt.collector.on("collect", async (promptInteraction) => {
+      await promptInteraction.deferUpdate();
+      if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
+        await Database.deleteSheet(interaction.user.id, characterId);
+        await promptInteraction.editReply({ content: `Ficha ${bold(sheet.name)} deletada.` });
+
+        const lostTokenTreshold = 20;
+        if (sheet.level <= lostTokenTreshold && sheet.type === "royal") {
+          const user = await Database.getUser(interaction.user.id);
+          await Database.updateUser(interaction.user.id, { royalTokens: 1 + user.royalTokens });
+          await promptInteraction.followUp({ content: `Você recebeu 1 token real de volta por deletar ${bold(sheet.name)}.` });
+        }
+      } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
+        await promptInteraction.editReply({ content: "Operação cancelada." });
+      }
+    });
+
+    await new Promise((resolve) => sentPrompt.collector.on("end", resolve));
+    await interaction.editReply({ content: "Fim da interação." });
+  }
+
+  @Slash(COMMANDS.changeCharacterAvatar)
+  public async changeCharacterAvatar(
+    @SlashOption(COMMAND_OPTIONS.changeCharacterAvatarCharacter) characterId: string,
+    @SlashOption(COMMAND_OPTIONS.changeCharacterAvatarAttachment) attachment: Attachment,
+    interaction: ChatInputCommandInteraction,
+  ) {
+    await interaction.deferReply({ ephemeral: true });
+    const sheet = await Database.getSheet(interaction.user.id, characterId);
+    if (!sheet) {
+      await interaction.editReply({ content: "Ficha não encontrada no seu nome de usuário." });
+      return;
+    }
+    const imageUrl = await Utils.uploadToImageKit(attachment.url);
+    await Database.updateSheet(interaction.user.id, characterId, { imageUrl });
+    await interaction.editReply({ content: `Avatar de ${bold(sheet.name)} alterado.` });
   }
 
   @Slash(COMMANDS.showFamilyDetails)

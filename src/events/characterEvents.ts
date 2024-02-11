@@ -1,27 +1,28 @@
 import { Character as PrismaCharacter, NPC as PrismaNPC } from "@prisma/client";
-import { BaseMessageOptions, EmbedBuilder, Events, Message, bold } from "discord.js";
+import { AttachmentBuilder, BaseMessageOptions, EmbedBuilder, Events, Message, TextChannel, bold } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
 import { AchievementEvents } from "../achievements";
 import Character from "../commands/character";
 import NPC from "../commands/npc";
-import { PROFESSION_CHANNELS } from "../data/constants";
+import { DISCORD_MESSAGE_CONTENT_LIMIT, PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { achievements } from "../main";
 import Utils from "../utils";
+
+const isEditingMap = new Map<string, boolean>();
 @Discord()
 export default class CharacterEvents {
-  private isEditingMap = new Map<string, boolean>();
   @On({ event: Events.MessageCreate })
   @Guard(isRoleplayingChannel)
   public async onCharacterMessage([message]: ArgsOf<"messageCreate">) {
-    if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
+    if (message.author.bot || isEditingMap.get(message.author.id)) return;
 
     const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
     if (isOutOfCharacter) {
-      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 5 }).as("milliseconds"));
+      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 1 }).as("milliseconds"));
       return;
     }
 
@@ -30,14 +31,16 @@ export default class CharacterEvents {
 
     let embed: EmbedBuilder;
     let hasGainedReward = false;
+    let characterOrNPC: CharacterSheetType | NPCType | undefined;
     if (user.currentNpcId) {
       const npc = await Database.getNPC(user.currentNpcId);
       if (!npc) return;
       embed = await this.getNPCEmbed(message, npc);
+      characterOrNPC = npc;
     } else {
       const character = await Database.getActiveSheet(message.author.id);
       if (!character) return;
-
+      characterOrNPC = character;
       embed = await Character.getCharacterRPEmbed(message, character);
       hasGainedReward = await this.handleActivityGains(character, message);
     }
@@ -50,14 +53,67 @@ export default class CharacterEvents {
       const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
       payload.files = [{ attachment: imageKitLink, name }];
     }
-    const embedMessage = await message.channel.send(payload);
-    embedMessage.author.id = message.author.id;
-    await Database.insertMessage(embedMessage);
-    achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
-    if (hasGainedReward) {
-      await embedMessage.react("💰");
-      await embedMessage.react("📈");
+
+    if (user.doesNotUseEmbed) {
+      const { webhook, characterParsed, npcParsed } = await this.getWebhook(message.channel as TextChannel, characterOrNPC);
+      if (message.content.length >= DISCORD_MESSAGE_CONTENT_LIMIT) {
+        const chunks = lodash.chunk(message.content, DISCORD_MESSAGE_CONTENT_LIMIT);
+        for (const chunk of chunks) {
+          const webhookMessage = await webhook.send({
+            content: chunk.join(""),
+            files: chunks.indexOf(chunk) === chunks.length - 1 ? payload.files : undefined,
+            username: characterOrNPC.name,
+            avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+          });
+          webhookMessage.author.id = message.author.id;
+          await Database.insertMessage(webhookMessage);
+          achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage: webhookMessage, user: message.author });
+          if (hasGainedReward) {
+            await webhookMessage.react("💰");
+            await webhookMessage.react("📈");
+          }
+        }
+      } else {
+        const webhookMessage = await webhook.send({
+          content: message.content,
+          files: payload.files,
+          username: characterOrNPC.name,
+          avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+        });
+        webhookMessage.author.id = message.author.id;
+        await Database.insertMessage(webhookMessage);
+        achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage: webhookMessage, user: message.author });
+        if (hasGainedReward) {
+          await webhookMessage.react("💰");
+          await webhookMessage.react("📈");
+        }
+      }
+    } else {
+      const embedMessage = await message.channel.send(payload);
+      embedMessage.author.id = message.author.id;
+      await Database.insertMessage(embedMessage);
+      achievements.emit(AchievementEvents.onCharacterMessage, { embedMessage, user: message.author });
+      if (hasGainedReward) {
+        await embedMessage.react("💰");
+        await embedMessage.react("📈");
+      }
     }
+  }
+
+  private async getWebhook(channel: TextChannel, characterOrNPC: CharacterSheetType | NPCType) {
+    const webhooks = await channel.fetchWebhooks();
+    const existingWebhook = webhooks.find((webhook) => webhook.name === characterOrNPC.name);
+    const npcParsed = npcSchema.safeParse(characterOrNPC);
+    const characterParsed = npcSchema.safeParse(characterOrNPC);
+    if (!existingWebhook) {
+      const createdWebhook = await channel.createWebhook({
+        name: characterOrNPC.name,
+        avatar: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+        reason: `${characterOrNPC.name} is posting a message without embed.`,
+      });
+      return { webhook: createdWebhook, npcParsed, characterParsed };
+    }
+    return { webhook: existingWebhook, npcParsed, characterParsed };
   }
 
   private async getNPCEmbed(message: Message, npc: PrismaNPC) {
@@ -81,7 +137,7 @@ export default class CharacterEvents {
           Utils.scheduleMessageToDelete(feedback);
           return;
         }
-        this.isEditingMap.set(user.id, true);
+        isEditingMap.set(user.id, true);
 
         const feedback = await reaction.message.channel.send(
           `${user.toString()}, você tem 30 minutos para editar sua mensagem. Qualquer mensagem enviada por você nesse canal será considerada a mensagem final.`,
@@ -97,28 +153,41 @@ export default class CharacterEvents {
         collector.on("end", async (collectedMessages) => {
           const newContentMessage = collectedMessages.first();
           if (!newContentMessage) return;
-          const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id);
-          if (!originalMessage || !originalMessage.embeds.length) return;
-
+          const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id).catch(() => null);
+          if (!originalMessage || !originalMessage.embeds.length) {
+            if (isEditingMap.get(user.id)) isEditingMap.delete(user.id);
+            return;
+          }
+          const databaseUser = await Database.getUser(user.id);
+          if (databaseUser.doesNotUseEmbed) {
+            await originalMessage.edit(newContentMessage.content);
+            isEditingMap.delete(user.id);
+            Utils.scheduleMessageToDelete(newContentMessage, 0);
+            return;
+          }
           const embed = EmbedBuilder.from(originalMessage.embeds[0]);
           embed.setDescription(newContentMessage.content);
 
-          const originalAttachment = originalMessage.attachments.first();
+          const originalAttachment = originalMessage.embeds[0].image?.url;
           const attachment = newContentMessage.attachments.first();
           if (attachment) {
             const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
             await originalMessage.edit({ embeds: [embed], files: [{ attachment: imageKitLink, name }] });
           } else if (originalAttachment && !attachment) {
-            embed.setImage(`attachment://${originalAttachment.name}`);
-            await originalMessage.edit({ embeds: [embed], files: [originalAttachment] });
+            const attachmentName = originalAttachment.split("/").pop()?.split("?").shift();
+            if (!attachmentName) return;
+            embed.setImage(`attachment://${attachmentName}`);
+            await originalMessage.edit({ embeds: [embed], files: [new AttachmentBuilder(originalAttachment).setName(attachmentName)] });
+          } else {
+            await originalMessage.edit({ embeds: [embed] });
           }
-          await originalMessage.edit({ embeds: [embed] });
-          this.isEditingMap.delete(newContentMessage.author.id);
+          isEditingMap.delete(newContentMessage.author.id);
           Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
         break;
       case "🗑️":
         const dbMessageToDelete = await Database.getMessage(reaction.message.id);
+        if (dbMessageToDelete) isEditingMap.delete(dbMessageToDelete.authorId);
         if (!dbMessageToDelete) {
           console.log("Mensagem não encontrada no banco de dados");
           return;

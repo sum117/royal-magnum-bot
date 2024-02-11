@@ -13,6 +13,18 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  changeCharacterAvatar: {
+    name: "change-character-avatar",
+    description: "Muda o avatar de um personagem",
+  },
+  deleteCharacter: {
+    name: "delete-character",
+    description: "Deleta um personagem",
+  },
+  setNoEmbedRoleplay: {
+    name: "set-no-embed-roleplay",
+    description: "Define seu tipo de roleplay como sem embed",
+  },
   setCharacterProfession: {
     name: "set-profession",
     description: "Define a profissão de um personagem",
@@ -103,6 +115,32 @@ export const COMMANDS = {
 } satisfies CommandData;
 
 export const COMMAND_OPTIONS = {
+  changeCharacterAvatarCharacter: {
+    name: "character",
+    description: "Personagem para mudar o avatar",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const userSheets = await Database.getUserSheetsByName(interaction.user.id, interaction.options.getFocused());
+      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.id })));
+    },
+  },
+  changeCharacterAvatarAttachment: {
+    name: "anexo",
+    description: "anexo do avatar",
+    required: true,
+    type: ApplicationCommandOptionType.Attachment,
+  },
+  deleteCharacterCharacter: {
+    name: "character",
+    description: "Personagem para deletar",
+    required: true,
+    type: ApplicationCommandOptionType.String,
+    autocomplete: async (interaction) => {
+      const userSheets = await Database.getUserSheetsByName(interaction.user.id, interaction.options.getFocused());
+      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.id })));
+    },
+  },
   setProfessionUser: {
     name: "user",
     description: "Usuário para definir a profissão",
