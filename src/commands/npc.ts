@@ -85,7 +85,7 @@ export default class NPC {
     }
 
     if (!npcId) {
-      await Database.updateUser(interaction.user.id, { currentNpcId: undefined });
+      await Database.updateUser(interaction.user.id, { currentNpcId: null });
       await interaction.editReply({ content: "Você não está mais utilizando nenhum NPC" });
       return;
     }
