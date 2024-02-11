@@ -51,7 +51,7 @@ export const entitySelectMenuId = "entitySelectMenuId";
 export const originSelectMenuId = "originSelectMenuId";
 
 export const getSpawnModalButtonId = (profession: Profession, gender: "male" | "female", origin: Origin, family?: Family) =>
-  `spawnModalButtonId_${family?.slug ?? "unknown"}_${profession}_${gender}_${origin}`;
+  `spawnModalButtonId:${family?.slug ?? "unknown"}:${profession}:${gender}:${origin}`;
 type HandleEvaluationButtonsParams<UpdateT> = {
   interaction: ButtonInteraction;
   databaseUpdateFn: () => Promise<UpdateT>;
@@ -295,7 +295,7 @@ export default class Sheet {
 
   @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
-    const [, familySlug, profession, gender, origin] = interaction.customId.split("_") as SpawnModalTuple;
+    const [, familySlug, profession, gender, origin] = interaction.customId.split(":") as SpawnModalTuple;
     const isRoyalSheet = profession === "royal";
     await interaction.showModal(CreateSheetModal(isRoyalSheet));
 

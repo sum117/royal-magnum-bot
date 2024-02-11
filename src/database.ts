@@ -71,7 +71,27 @@ export default class Database {
   }
 
   public static async insertSheet(userId: string, sheet: Prisma.CharacterUncheckedCreateInput) {
-    const createdSheet = await prisma.character.create({ data: { userId, ...sheet } });
+    const createdSheet = await prisma.character.create({
+      data: {
+        appearance: sheet.appearance,
+        backstory: sheet.backstory,
+        gender: sheet.gender,
+        imageUrl: sheet.imageUrl,
+        name: sheet.name,
+        familySlug: sheet.familySlug,
+        isActive: sheet.isActive,
+        level: sheet.level,
+        origin: sheet.origin,
+        isApproved: sheet.isApproved,
+        price: sheet.price,
+        profession: sheet.profession,
+        royalTitle: sheet.royalTitle,
+        transformation: sheet.transformation,
+        type: sheet.type,
+        xp: sheet.xp,
+        user: { connect: { id: userId } },
+      },
+    });
     return createdSheet;
   }
 
@@ -79,7 +99,6 @@ export default class Database {
     const createdSheet = await prisma.character.create({
       data: {
         ...sheet,
-        userId: "store",
         profession: "royal",
       },
     });
