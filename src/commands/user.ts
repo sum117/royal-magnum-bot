@@ -75,7 +75,7 @@ export default class User {
     const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
     if (!isAdmin) {
       const agent = await Database.getUser(interaction.member.user.id);
-      if (!agent || agent.money < amount) {
+      if (!agent || (agent.money < amount && amount > 0)) {
         await interaction.editReply(`Você não tem C$${amount} para dar.`);
         return;
       }
