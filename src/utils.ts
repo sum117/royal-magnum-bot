@@ -8,7 +8,6 @@ import { fileURLToPath } from "url";
 import yaml from "yaml";
 import { createSheetModalId } from "./components/CreateSheetModal";
 import { RESOURCES_EMOJIS, RESOURCES_TRANSLATIONS } from "./data/constants";
-import { bot } from "./main";
 import { Family, familySchema } from "./schemas/familySchema";
 import { Resources } from "./schemas/resourceSchema";
 
@@ -44,14 +43,17 @@ export default class Utils {
   }
 
   public static async scheduleMessageToDelete(message: Message, time?: number) {
-    bot.messageQueue.enqueue({
-      id: message.id,
-      execute: async () => {
-        const messageDelete = message.delete.bind(message);
-        await new Promise((resolve) => setTimeout(resolve, time ?? 15_000));
-        await messageDelete();
-      },
-    });
+    // bot.messageQueue.enqueue({
+    //   id: message.id,
+    //   execute: async () => {
+    //     const messageDelete = message.delete.bind(message);
+    //     await new Promise((resolve) => setTimeout(resolve, time ?? 15_000));
+    //     await messageDelete();
+    //   },
+    // });
+    const messageDelete = message.delete.bind(message);
+    await new Promise((resolve) => setTimeout(resolve, time ?? 15_000));
+    await messageDelete();
   }
 
   public static async handleAttachment(attachment: Attachment, embed: EmbedBuilder) {
