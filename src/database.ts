@@ -230,8 +230,8 @@ export default class Database {
   //   return;
   // }
 
-  public static async getNPCs() {
-    return await prisma.nPC.findMany({ include: { users: true } });
+  public static async getNPCs(userId?: string) {
+    return await prisma.nPC.findMany({ where: { users: userId ? { some: { id: userId } } : undefined }, include: { users: true } });
   }
   public static async insertNPC(npc: Prisma.NPCUncheckedCreateInput) {
     const createdNPC = await prisma.nPC.create({ data: npc });

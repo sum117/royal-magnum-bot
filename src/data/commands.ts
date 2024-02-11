@@ -196,13 +196,10 @@ export const COMMAND_OPTIONS = {
     required: false,
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
-      const npcs = await Database.getNPCs();
+      const npcs = await Database.getNPCs(interaction.user.id);
       await interaction.respond(
         npcs
-          .filter(
-            (npc) =>
-              npc.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) && npc.users.some((user) => user.id === interaction.user.id),
-          )
+          .filter((npc) => npc.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()))
           .map((npc) => ({ name: npc.name, value: npc.id }))
           .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
       );
