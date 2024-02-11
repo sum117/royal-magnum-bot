@@ -121,8 +121,8 @@ export default class Character {
         embed.setDescription(`# História \n${sheet?.backstory}`);
       }
       const messageOptions = { embeds: [embed] };
-      if (preview === "true" && regularSheetParse.success) {
-        const previewEmbed = await Character.getCharacterPreviewEmbed(regularSheetParse.data);
+      if (preview === "true" && sheet?.type === "character") {
+        const previewEmbed = await Character.getCharacterPreviewEmbed(sheet);
         messageOptions.embeds = [previewEmbed];
       }
       await buttonInteraction.editReply(messageOptions);
@@ -133,8 +133,8 @@ export default class Character {
   public async setNoEmbedRoleplay(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ ephemeral: true });
     const user = await Database.getUser(interaction.user.id);
-    await Database.updateUser(interaction.user.id, { doesNotUseEmbed: !user.doesNotUseEmbed });
-    await interaction.editReply({ content: `Modo de roleplay sem embed ${user.doesNotUseEmbed ? "ativado" : "desativado"}.` });
+    await Database.updateUser(interaction.user.id, { doesNotUseEmbeds: !user?.doesNotUseEmbeds });
+    await interaction.editReply({ content: `Modo de roleplay sem embed ${user?.doesNotUseEmbeds ? "ativado" : "desativado"}.` });
   }
 
   @Slash(COMMANDS.characterList)
@@ -210,7 +210,7 @@ export default class Character {
         const lostTokenTreshold = 20;
         if (sheet.level <= lostTokenTreshold && sheet.type === "royal") {
           const user = await Database.getUser(interaction.user.id);
-          await Database.updateUser(interaction.user.id, { royalTokens: 1 + user.royalTokens });
+          await Database.updateUser(interaction.user.id, { royalTokens: { increment: 1 } });
           await promptInteraction.followUp({ content: `Você recebeu 1 token real de volta por deletar ${bold(sheet.name)}.` });
         }
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {

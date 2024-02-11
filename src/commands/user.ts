@@ -56,7 +56,7 @@ export default class User {
     }
     const messageOptions: BaseMessageOptions = { embeds: [embed] };
     if (userSheet) {
-      messageOptions.components = [Character.getCharacterDetailsButton(user.user.id, userSheet.characterId, "Ver Personagem Ativo", true, false)];
+      messageOptions.components = [Character.getCharacterDetailsButton(user.user.id, userSheet.id, "Ver Personagem Ativo", true, false)];
     }
     await interaction.editReply(messageOptions);
   }

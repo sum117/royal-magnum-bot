@@ -31,16 +31,16 @@ export default class CharacterEvents {
 
     let embed: EmbedBuilder;
     let hasGainedReward = false;
-    let characterOrNPC: CharacterSheetType | NPCType | undefined;
+    let characterOrNPCIn: PrismaCharacter | PrismaNPC;
     if (user.currentNpcId) {
       const npc = await Database.getNPC(user.currentNpcId);
       if (!npc) return;
       embed = await this.getNPCEmbed(message, npc);
-      characterOrNPC = npc;
+      characterOrNPCIn = npc;
     } else {
       const character = await Database.getActiveSheet(message.author.id);
       if (!character) return;
-      characterOrNPC = character;
+      characterOrNPCIn = character;
       embed = await Character.getCharacterRPEmbed(message, character);
       hasGainedReward = await this.handleActivityGains(character, message);
     }
@@ -54,8 +54,8 @@ export default class CharacterEvents {
       payload.files = [{ attachment: imageKitLink, name }];
     }
 
-    if (user.doesNotUseEmbed) {
-      const { webhook, characterParsed, npcParsed } = await this.getWebhook(message.channel as TextChannel, characterOrNPC);
+    if (user.doesNotUseEmbeds) {
+      const { webhook, characterOrNPC } = await this.getWebhook(message.channel as TextChannel, characterOrNPCIn);
       if (message.content.length >= DISCORD_MESSAGE_CONTENT_LIMIT) {
         const chunks = lodash.chunk(message.content, DISCORD_MESSAGE_CONTENT_LIMIT);
         for (const chunk of chunks) {
@@ -63,7 +63,7 @@ export default class CharacterEvents {
             content: chunk.join(""),
             files: chunks.indexOf(chunk) === chunks.length - 1 ? payload.files : undefined,
             username: characterOrNPC.name,
-            avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+            avatarURL: characterOrNPC.imageUrl,
           });
           webhookMessage.author.id = message.author.id;
           await Database.insertMessage(webhookMessage);
@@ -78,7 +78,7 @@ export default class CharacterEvents {
           content: message.content,
           files: payload.files,
           username: characterOrNPC.name,
-          avatarURL: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+          avatarURL: characterOrNPC.imageUrl,
         });
         webhookMessage.author.id = message.author.id;
         await Database.insertMessage(webhookMessage);
@@ -100,20 +100,19 @@ export default class CharacterEvents {
     }
   }
 
-  private async getWebhook(channel: TextChannel, characterOrNPC: CharacterSheetType | NPCType) {
+  private async getWebhook(channel: TextChannel, characterOrNPC: PrismaNPC | PrismaCharacter) {
     const webhooks = await channel.fetchWebhooks();
     const existingWebhook = webhooks.find((webhook) => webhook.name === characterOrNPC.name);
-    const npcParsed = npcSchema.safeParse(characterOrNPC);
-    const characterParsed = npcSchema.safeParse(characterOrNPC);
+
     if (!existingWebhook) {
       const createdWebhook = await channel.createWebhook({
         name: characterOrNPC.name,
-        avatar: npcParsed.success ? npcParsed.data.image : characterParsed.success ? characterParsed.data.image : undefined,
+        avatar: characterOrNPC.imageUrl,
         reason: `${characterOrNPC.name} is posting a message without embed.`,
       });
-      return { webhook: createdWebhook, npcParsed, characterParsed };
+      return { webhook: createdWebhook, characterOrNPC };
     }
-    return { webhook: existingWebhook, npcParsed, characterParsed };
+    return { webhook: existingWebhook, characterOrNPC };
   }
 
   private async getNPCEmbed(message: Message, npc: PrismaNPC) {
@@ -159,7 +158,8 @@ export default class CharacterEvents {
             return;
           }
           const databaseUser = await Database.getUser(user.id);
-          if (databaseUser.doesNotUseEmbed) {
+          if (!databaseUser) return;
+          if (databaseUser.doesNotUseEmbeds) {
             await originalMessage.edit(newContentMessage.content);
             isEditingMap.delete(user.id);
             Utils.scheduleMessageToDelete(newContentMessage, 0);
