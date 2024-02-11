@@ -13,13 +13,13 @@ import { CharacterSheetType } from "../schemas/characterSheetSchema";
 import { npcSchema, NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
 
+const isEditingMap = new Map<string, boolean>();
 @Discord()
 export default class CharacterEvents {
-  private isEditingMap = new Map<string, boolean>();
   @On({ event: Events.MessageCreate })
   @Guard(isRoleplayingChannel)
   public async onCharacterMessage([message]: ArgsOf<"messageCreate">) {
-    if (message.author.bot || this.isEditingMap.get(message.author.id)) return;
+    if (message.author.bot || isEditingMap.get(message.author.id)) return;
 
     const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
     if (isOutOfCharacter) {
@@ -137,7 +137,7 @@ export default class CharacterEvents {
           Utils.scheduleMessageToDelete(feedback);
           return;
         }
-        this.isEditingMap.set(user.id, true);
+        isEditingMap.set(user.id, true);
 
         const feedback = await reaction.message.channel.send(
           `${user.toString()}, você tem 30 minutos para editar sua mensagem. Qualquer mensagem enviada por você nesse canal será considerada a mensagem final.`,
@@ -155,7 +155,7 @@ export default class CharacterEvents {
           if (!newContentMessage) return;
           const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id).catch(() => null);
           if (!originalMessage || !originalMessage.embeds.length) {
-            if (this.isEditingMap.get(user.id)) this.isEditingMap.delete(user.id);
+            if (isEditingMap.get(user.id)) isEditingMap.delete(user.id);
             return;
           }
 
@@ -175,13 +175,13 @@ export default class CharacterEvents {
           } else {
             await originalMessage.edit({ embeds: [embed] });
           }
-          this.isEditingMap.delete(newContentMessage.author.id);
+          isEditingMap.delete(newContentMessage.author.id);
           Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
         break;
       case "🗑️":
         const dbMessageToDelete = await Database.getMessage(reaction.message.id);
-        if (dbMessageToDelete) this.isEditingMap.delete(dbMessageToDelete.authorId);
+        if (dbMessageToDelete) isEditingMap.delete(dbMessageToDelete.authorId);
         if (!dbMessageToDelete) {
           console.log("Mensagem não encontrada no banco de dados");
           return;

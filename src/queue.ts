@@ -10,7 +10,8 @@ enum QueueState {
 
 export class Queue {
   private tasks: Map<number | string, Task>;
-  private state: QueueState = QueueState.Idle;
+  private state: QueueState;
+
   constructor() {
     this.tasks = new Map();
     this.state = QueueState.Idle;
@@ -21,7 +22,7 @@ export class Queue {
   }
 
   private async process() {
-    while (this.tasks.size > 0) {
+    while (this.length > 0) {
       const taskId = this.tasks.keys().next().value;
       const task = this.tasks.get(taskId);
 

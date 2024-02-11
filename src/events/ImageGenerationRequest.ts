@@ -9,13 +9,10 @@ import Database from "../database";
 import { Queue } from "../queue";
 import Utils from "../utils";
 
+const imageGenerationQueue = new Queue();
 @Discord()
 export default class onImageGenerationRequest {
-  private queue: Queue;
   private TIME_PER_PERSON = 2 * 60 * 1000;
-  constructor() {
-    this.queue = new Queue();
-  }
   @On({ event: "messageCreate" })
   async main([message]: ArgsOf<"messageCreate">) {
     if (message.channel.id !== CHANNEL_IDS.imageGenerationChannel || message.author.bot || !message.content.startsWith("generate")) return;
@@ -43,10 +40,10 @@ export default class onImageGenerationRequest {
       return;
     }
 
-    const isAlreadyInQueue = this.queue.find(message.author.id);
+    const isAlreadyInQueue = imageGenerationQueue.find(message.author.id);
     if (isAlreadyInQueue) {
-      const currentPosition = this.queue.findPosition(message.author.id);
-      const timeLeft = (this.queue.length - currentPosition) * this.TIME_PER_PERSON;
+      const currentPosition = imageGenerationQueue.findPosition(message.author.id);
+      const timeLeft = (imageGenerationQueue.length - currentPosition) * this.TIME_PER_PERSON;
       await message
         .reply(
           `Você já está na fila. Tempo estimado para a sua vez: {time}. Posição na fila: {position}`
@@ -56,7 +53,7 @@ export default class onImageGenerationRequest {
         .then(Utils.scheduleMessageToDelete);
       return;
     }
-    this.queue.enqueue({
+    imageGenerationQueue.enqueue({
       id: message.author.id,
       execute: async () => {
         const loadingMessage = await message.channel.send(`Gerando imagem para ${message.author.toString()}...`);
@@ -139,7 +136,8 @@ export default class onImageGenerationRequest {
             await loadingMessage.delete().catch((error) => console.error("Failed to delete loading message", error));
           }
         }
-        lodash.delay(generateImage, this.TIME_PER_PERSON);
+        await new Promise((resolve) => setTimeout(resolve, this.TIME_PER_PERSON));
+        await generateImage();
       },
     });
   }
