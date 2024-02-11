@@ -293,7 +293,7 @@ export default class Sheet {
     await createFamilyModalSubmission.editReply({ content: "Família postada com sucesso. Aguarde a aprovação de um moderador." });
   }
 
-  @ButtonComponent({ id: /^spawnModalButtonId_.*$/ })
+  @ButtonComponent({ id: /^spawnModalButtonId:.*$/ })
   public async spawnModalButtonListener(interaction: ButtonInteraction) {
     const [, familySlug, profession, gender, origin] = interaction.customId.split(":") as SpawnModalTuple;
     const isRoyalSheet = profession === "royal";
