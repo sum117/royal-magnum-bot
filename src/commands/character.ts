@@ -23,9 +23,9 @@ import Database from "../database";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
-export const characterDetailsButtonIdPrefix = "character_details";
+export const characterDetailsButtonIdPrefix = "characterDetails";
 export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false, isStoreSheet = true) =>
-  `${characterDetailsButtonIdPrefix}-${userId}-${characterId}-${preview ? "true" : "false"}-${isStoreSheet ? "store" : "user"}`;
+  `${characterDetailsButtonIdPrefix}_${userId}_${characterId}_${preview ? "true" : "false"}_${isStoreSheet ? "store" : "user"}`;
 @Discord()
 export default class Character {
   public static getCharacterDetailsButton(userId: string, characterId: string, label?: string, preview?: boolean, isStoreSheet = true) {
@@ -109,7 +109,10 @@ export default class Character {
   public static async handleCharacterDetailsButton(buttonInteraction: ButtonInteraction, isStoreSheet: boolean = false) {
     if (buttonInteraction.customId.startsWith(characterDetailsButtonIdPrefix)) {
       await buttonInteraction.deferReply({ ephemeral: true });
-      const [userId, characterId, preview] = buttonInteraction.customId.split("-").slice(1);
+      // export const characterDetailsButtonIdPrefix = "characterDetails";
+      //export const getCharacterDetailsButtonId = (userId: string, characterId: string, preview: boolean = false, isStoreSheet = true) =>
+      // `${characterDetailsButtonIdPrefix}_${userId}_${characterId}_${preview ? "true" : "false"}_${isStoreSheet ? "store" : "user"}`;
+      const [userId, characterId, preview] = buttonInteraction.customId.split("_").slice(1);
 
       const sheet = isStoreSheet ? await Database.getStoreSheet(characterId) : await Database.getSheet(userId, characterId);
 

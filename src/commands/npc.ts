@@ -22,7 +22,7 @@ import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
 
 export const buyNpcButtonIdPrefix = "buyNPC";
-export const getBuyNPCButtonId = (npcId: string) => `${buyNpcButtonIdPrefix}-${npcId}`;
+export const getBuyNPCButtonId = (npcId: string) => `${buyNpcButtonIdPrefix}_${npcId}`;
 
 @Discord()
 export default class NPC {
@@ -121,7 +121,7 @@ export default class NPC {
   @ButtonComponent({ id: new RegExp(`^${buyNpcButtonIdPrefix}`) })
   public async buyNPCButtonListener(buttonInteraction: ButtonInteraction) {
     await buttonInteraction.deferReply({ ephemeral: true });
-    const npcId = buttonInteraction.customId.split("-")[1];
+    const npcId = buttonInteraction.customId.split("_")[1];
 
     const npc = await Database.getNPC(npcId);
     if (!npc) {

@@ -12,8 +12,8 @@ import { achievements, bot } from "../main";
 import Utils from "../utils";
 import Character, { characterDetailsButtonIdPrefix } from "./character";
 
-export const buyStoreCharacterButtonIdPrefix = "buy-sheet";
-export const getBuyStoreCharacterButtonId = (characterId: string) => `${buyStoreCharacterButtonIdPrefix}-${characterId}`;
+export const buyStoreCharacterButtonIdPrefix = "buySheet";
+export const getBuyStoreCharacterButtonId = (characterId: string) => `${buyStoreCharacterButtonIdPrefix}_${characterId}`;
 
 export const confirmButtonId = "confirmButtonId";
 export const cancelButtonId = "cancelButtonId";
@@ -104,7 +104,7 @@ export default class Store {
 
   @ButtonComponent({ id: new RegExp(`^${buyStoreCharacterButtonIdPrefix}`) })
   public async buyStoreCharacterButtonListener(buttonInteraction: ButtonInteraction) {
-    const [characterId] = buttonInteraction.customId.split("-").slice(2);
+    const [characterId] = buttonInteraction.customId.split("_").slice(1);
     await buttonInteraction.deferReply({ ephemeral: true });
 
     const sheet = await Database.getStoreSheet(characterId);
