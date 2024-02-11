@@ -1,4 +1,5 @@
-import { BaseMessageOptions, bold, EmbedBuilder, Events, Message } from "discord.js";
+import { Character as PrismaCharacter, NPC as PrismaNPC } from "@prisma/client";
+import { BaseMessageOptions, EmbedBuilder, Events, Message, bold } from "discord.js";
 import { ArgsOf, Discord, Guard, On } from "discordx";
 import lodash from "lodash";
 import { DateTime, Duration } from "luxon";
@@ -9,10 +10,7 @@ import { PROFESSION_CHANNELS } from "../data/constants";
 import Database from "../database";
 import { isRoleplayingChannel } from "../guards/isRoleplayingChannel";
 import { achievements } from "../main";
-import { CharacterSheetType } from "../schemas/characterSheetSchema";
-import { NPC as NPCType } from "../schemas/npc";
 import Utils from "../utils";
-
 @Discord()
 export default class CharacterEvents {
   private isEditingMap = new Map<string, boolean>();
@@ -28,6 +26,7 @@ export default class CharacterEvents {
     }
 
     const user = await Database.getUser(message.author.id);
+    if (!user) return;
 
     let embed: EmbedBuilder;
     let hasGainedReward = false;
@@ -61,7 +60,7 @@ export default class CharacterEvents {
     }
   }
 
-  private async getNPCEmbed(message: Message, npc: NPCType) {
+  private async getNPCEmbed(message: Message, npc: PrismaNPC) {
     const embed = EmbedBuilder.from(NPC.getNPCEmbed(npc).embeds[0]);
     embed.setDescription(message.content);
     return embed;
@@ -134,10 +133,18 @@ export default class CharacterEvents {
     }
   }
 
-  private async handleActivityGains(character: CharacterSheetType, message: Message<boolean>) {
+  private async handleActivityGains(character: PrismaCharacter, message: Message<boolean>) {
+    if (!character?.userId) {
+      console.log("Personagem sem userId");
+      return false;
+    }
     const user = await Database.getUser(character.userId);
+    if (!user) {
+      console.log("Usuário não encontrado");
+      return false;
+    }
 
-    const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromISO(user?.lastMessageAt ?? "1970-01-01T00:00:00.000Z"), "minutes").minutes >= 30;
+    const hasBeenThirtyMinutes = DateTime.now().diff(DateTime.fromJSDate(user.lastMessageAt ?? new Date()), "minutes").minutes >= 30;
     if (!hasBeenThirtyMinutes) return false;
 
     const randomMoney = lodash.random(250, 500);
@@ -149,7 +156,7 @@ export default class CharacterEvents {
     const databaseChannel = await Database.getChannel(message.channelId);
     if (!databaseChannel) return false;
 
-    const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.type].includes(character.profession);
+    const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.channelType].includes(character.profession);
     const randomCharXpMin = isInCorrectChannel ? 50 : 25;
     const randomCharXpMax = isInCorrectChannel ? 100 : 50;
     const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax);
@@ -161,11 +168,11 @@ export default class CharacterEvents {
         `🎉 ${message.author.toString()}, o personagem ${bold(character.name)} subiu para o nível ${bold(newLevel.toString())}!`,
       );
       Utils.scheduleMessageToDelete(feedback);
-      const updatedChar = await Database.updateSheet(character.userId, character.characterId, { xp: 0, level: newLevel });
+      const updatedChar = await Database.updateSheet(character.userId, character.id, { xp: 0, level: newLevel });
       if (!updatedChar) return false;
       achievements.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });
     } else {
-      await Database.updateSheet(character.userId, character.characterId, { xp: character.xp + randomCharXp });
+      await Database.updateSheet(character.userId, character.id, { xp: character.xp + randomCharXp });
     }
 
     return true;

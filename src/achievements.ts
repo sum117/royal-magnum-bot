@@ -1,10 +1,11 @@
+import { Character } from "@prisma/client";
 import { ChannelType, Message, TextChannel, User } from "discord.js";
 import { EventEmitter } from "events";
 import lodash from "lodash";
 import { CHANNEL_IDS } from "./data/constants";
 import Database from "./database";
 import { bot } from "./main";
-import { CharacterSheetType, storeCharacterSheetSchema } from "./schemas/characterSheetSchema";
+import { storeCharacterSheetSchema } from "./schemas/characterSheetSchema";
 import Utils from "./utils";
 
 export enum AchievementEvents {
@@ -17,9 +18,9 @@ export enum AchievementEvents {
 
 export type AchievementPayload = {
   onCharacterMessage: { embedMessage: Message; user: User };
-  onCharacterLevelUp: { character: CharacterSheetType; user: User };
-  onBuyCharacter: { character: CharacterSheetType; user: User };
-  onCharacterCreate: { character: CharacterSheetType; user: User };
+  onCharacterLevelUp: { character: Character; user: User };
+  onBuyCharacter: { character: Character; user: User };
+  onCharacterCreate: { character: Character; user: User };
   onAny: { user: User };
 };
 

@@ -1,3 +1,4 @@
+import { NPC as PrismaNPC } from "@prisma/client";
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -17,7 +18,6 @@ import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { CHANNEL_IDS, ROLE_IDS } from "../data/constants";
 import Database from "../database";
 import { bot } from "../main";
-import type { NPC as NPCType } from "../schemas/npc";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
 
@@ -26,14 +26,14 @@ export const getBuyNPCButtonId = (npcId: string) => `${buyNpcButtonIdPrefix}-${n
 
 @Discord()
 export default class NPC {
-  public static getNPCEmbed(npc: NPCType, isStorePreview = false) {
+  public static getNPCEmbed(npc: PrismaNPC, isStorePreview = false) {
     const price = npc.price > 0 ? npc.price.toString() : "Grátis";
     const embed = new EmbedBuilder()
       .setAuthor({ name: npc.title })
       .setTitle(npc.name)
       .setDescription(npc.description)
       .setColor(lodash.sample(Object.values(Colors)) as ColorResolvable)
-      .setThumbnail(npc.image);
+      .setThumbnail(npc.imageUrl);
 
     if (isStorePreview) {
       const buyNPCButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -67,7 +67,7 @@ export default class NPC {
       return;
     }
 
-    const newNPC = await Database.insertNPC({ title, name, description, image: imageUrl, drops: [], usersWithAccess: [], price: priceNumber });
+    const newNPC = await Database.insertNPC({ title, name, description, imageUrl, price: priceNumber });
     await modalSubmit.editReply({ content: "NPC criado com sucesso!", files: [new AttachmentBuilder(imageUrl).setName(`${lodash.kebabCase(name)}.png`)] });
 
     const storeChannel = bot.systemChannels.get(CHANNEL_IDS.generalStore)!;
@@ -96,7 +96,7 @@ export default class NPC {
       return;
     }
 
-    if (!npc.usersWithAccess.includes(interaction.user.id)) {
+    if (!npc.users.some((npcUser) => npcUser.id === interaction.user.id)) {
       await interaction.editReply({ content: "Você não tem acesso a esse NPC. Boa tentativa :)" });
       return;
     }
@@ -140,7 +140,7 @@ export default class NPC {
       return;
     }
 
-    if (npc.usersWithAccess.includes(buttonInteraction.user.id)) {
+    if (npc.users.some((npcUser) => npcUser.id === buttonInteraction.user.id)) {
       await buttonInteraction.editReply({ content: "Você já tem acesso a esse NPC" });
       return;
     }
@@ -155,7 +155,9 @@ export default class NPC {
       await promptInteraction.deferReply({ ephemeral: true });
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
         await Database.updateUser(buttonInteraction.user.id, { money: user.money - npc.price });
-        await Database.updateNPC(npcId, { usersWithAccess: [...npc.usersWithAccess, buttonInteraction.user.id] });
+        await Database.updateNPC(npcId, {
+          users: { connectOrCreate: { create: { id: promptInteraction.user.id, achievements: [] }, where: { id: promptInteraction.user.id } } },
+        });
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
             content: `🎉 Você comprou acesso para utilizar ${npc.name} por C$${npc.price}!`,

@@ -1,7 +1,7 @@
 families:
   - title: Aeternos
     slug: aeternos
-    origin: yor-devotee
+    origin: yor_devotee
     description: "Filhos do Arcanjo Maior Yos, moldados a partir das núvens com sangue celestial, de cor azul."
     image: https://ik.imagekit.io/ez2m5kovtw/static_assets/yor_f2KAx0m30.png
     entity: yos
@@ -78,7 +78,7 @@ origins:
     description: Você não pertence a esse mundo, e não tem nenhuma ligação com os deuses. Você é um intruso, e sua vida é um mistério.
 
   - channelId: "1193877508119089223"
-    id: catarsia-survivor
+    id: catarsia_survivor
     name: Sobrevivente de Catársia
     description: Você estava lá quando forças maiores se chocaram, sua vida para sempre marcada pela indiferença dos mais fortes.
 
@@ -110,7 +110,7 @@ origins:
     description: Bandido, assassino de aluguel, viciado em apostas; tudo que você conhece desde que chegou aqui, e você certamente já tentou todas essas áreas de trabalho.
 
   - channelId: "1193927772876324895"
-    id: peasant-saint
+    id: peasant_saint
     name: Camponês Santo
     description: Cercado pela bondade de Lorenta, sua vida foi calma e humilde. Nem toda aventura começa com tragédia.
 
@@ -120,7 +120,7 @@ origins:
     description: Marcado Pelo Inferno; você é uma escória. Sobrevive à maldição de demônios, e tem potêncial para tornar-se um dos poucos admiráveis guerreiros que possuem a força de vontade indomável dos infernos.
 
   - channelId: "1193912177279635587"
-    id: yor-devotee
+    id: yor_devotee
     name: Devoto de Yor
     description: Você é um devoto de Yor, servindo o povo e a vontade dos deuses sobre o cuidado de Bispo Aschevisk. Seus dias são gastos interagindo com os fiéis e cuidando das escrituras de cada um dos deuses.
 
@@ -131,12 +131,12 @@ origins:
     description: Entre as ruínas em si ou nas diversas cidadezinhas ao seu redor, você cresceu inspirado pelas histórias dessas muralhas. A bondade de Lorenta é tida como virtude, enquanto a ganância dos nobres é repudiada.
 
   - channelId: "1194466321207935026"
-    id: swarm-warden
+    id: swarm_warden
     name: Condutor do Enxame
     description: Um forte senso de comunidade é compartilhado entre os habitantes das colmeias, mesmo entre espécies e classes. Cada vida é preciosa e tem seu lugar, e a ordem é mantida pelos Dulciabri.
 
   - channelId: "1194954512276930581"
-    id: center-guardian
+    id: center_guardian
     name: Guardião do Centro
     organization: resistance
     description: Um lugar de espíritos livres e também de dever e obrigação. A maior parte da população desse local faz parte dos soldados mantendo os monstros sob controle, ou está aqui trabalhando para os mesmos; histórias de batalhas e criaturas poderosas estão por todo canto, e não há nada mais cobiçado do que a fama e o reconhecimento.

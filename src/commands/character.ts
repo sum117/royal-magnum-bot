@@ -1,4 +1,5 @@
 import { Pagination, PaginationResolver } from "@discordx/pagination";
+import { Character as PrismaCharacter } from "@prisma/client";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -17,7 +18,6 @@ import lodash from "lodash";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { ORGANIZATION_TRANSLATIONS, PAGINATION_DEFAULT_OPTIONS, PROFESSIONS_PRONOUNS_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import { CharacterSheetType, royalCharacterSchema } from "../schemas/characterSheetSchema";
 import { resourcesSchema } from "../schemas/resourceSchema";
 import Utils from "../utils";
 
@@ -31,9 +31,9 @@ export default class Character {
     );
   }
 
-  public static async getCharacterRPEmbed(message: Message, character: CharacterSheetType) {
+  public static async getCharacterRPEmbed(message: Message, character: PrismaCharacter) {
     const embed = new EmbedBuilder().setTimestamp().setThumbnail(character.imageUrl).setColor(Colors.Blurple).setDescription(message.content);
-    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[character.profession][character.gender];
+    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[character.profession][character.gender as "male" | "female"];
 
     embed.setTitle(`${professionPronoun} ${character.name}`);
 
@@ -42,22 +42,20 @@ export default class Character {
       embed.setAuthor({ name: `${originData?.name}` });
     }
 
-    const royalCharacter = royalCharacterSchema.safeParse(character);
-    if (royalCharacter.success) {
-      const family = await Database.getFamily(royalCharacter.data.familySlug);
-      embed.setTitle(`${royalCharacter.data.royalTitle} ${royalCharacter.data.name}`);
+    if (character.type === "royal" && character.familySlug) {
+      const family = await Database.getFamily(character.familySlug);
+      embed.setTitle(`${character.royalTitle} ${character.name}`);
       embed.setAuthor({ name: family?.title ?? "Família não encontrada" });
     }
 
     return embed;
   }
 
-  public static async getCharacterPreviewEmbed(sheet: CharacterSheetType) {
+  public static async getCharacterPreviewEmbed(sheet: PrismaCharacter) {
     const embed = new EmbedBuilder();
-    const royalSheet = royalCharacterSchema.safeParse(sheet);
-    if (royalSheet.success) {
-      const family = await Database.getFamily(royalSheet.data.familySlug);
-      embed.setTitle(`${royalSheet.data.royalTitle} ${royalSheet.data.name} de ${family?.title}`);
+    if (sheet.type === "royal" && sheet.familySlug) {
+      const family = await Database.getFamily(sheet.familySlug);
+      embed.setTitle(`${sheet.royalTitle} ${sheet.name} de ${family?.title}`);
     } else {
       embed.setTitle(sheet.name);
     }
@@ -65,7 +63,7 @@ export default class Character {
 
     embed.setImage(sheet.imageUrl);
     embed.setColor(Colors.Blurple);
-    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[sheet.profession][sheet.gender];
+    const professionPronoun = PROFESSIONS_PRONOUNS_TRANSLATIONS[sheet.profession][sheet.gender as "male" | "female"];
 
     const originData = (await Utils.fetchOrigins()).find((origin) => origin.id === sheet.origin);
     if (originData) {
@@ -112,9 +110,8 @@ export default class Character {
 
       const embed = new EmbedBuilder().setColor(Colors.Blurple);
 
-      const royalSheet = royalCharacterSchema.safeParse(sheet);
-      if (royalSheet.success) {
-        embed.setDescription(`# História \n${royalSheet.data.backstory}\n# Dádiva / Transformação \n${royalSheet.data.transformation}`);
+      if (sheet?.type === "royal") {
+        embed.setDescription(`# História \n${sheet.backstory}\n# Dádiva / Transformação \n${sheet.transformation}`);
       } else {
         embed.setDescription(`# História \n${sheet?.backstory}`);
       }
@@ -131,7 +128,7 @@ export default class Character {
       return;
     }
     const randomColor = lodash.sample(Object.values(Colors));
-    const formatSheetListString = (sheet: CharacterSheetType, isCurrentPage: boolean) => {
+    const formatSheetListString = (sheet: PrismaCharacter, isCurrentPage: boolean) => {
       const isActive = sheet.isActive ? "✅" : "";
       return `${isActive} ${isCurrentPage ? bold(sheet.name) : sheet.name}`;
     };
@@ -148,7 +145,7 @@ export default class Character {
         embed.setColor(randomColor ?? Colors.Blurple);
         pages.push({
           embeds: [embed],
-          components: [Character.getCharacterDetailsButton(user.id, sheet.characterId)],
+          components: [Character.getCharacterDetailsButton(user.id, sheet.id)],
         });
       }
       return pages[page];
@@ -197,7 +194,7 @@ export default class Character {
 
     const embed = new EmbedBuilder();
     embed.setTitle(family.title);
-    embed.setThumbnail(family.image);
+    embed.setThumbnail(family.imageUrl);
     embed.setColor(Colors.Blurple);
     embed.setDescription(
       `# Descrição\n${family.description}\n# Recursos\n${Utils.getResourcesString(resources)}\n# Jogadores\n${playersString} e mais ${bold(
@@ -226,7 +223,7 @@ export default class Character {
     if (!sheet?.profession || sheet.profession === "royal") return;
     sheet.profession = profession;
 
-    await Database.updateSheet(user.id, sheet.characterId, sheet);
+    await Database.updateSheet(user.id, sheet.id, sheet);
 
     await interaction.editReply({ content: `Profissão de ${user.displayName} alterada para ${profession}.` });
   }

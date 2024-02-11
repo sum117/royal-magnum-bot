@@ -10,32 +10,59 @@ datasource db {
   url      = env("DATABASE_URI")
 }
 
+model NPC {
+  id       String @id @default(uuid())
+  title   String
+  name   String
+  description String
+  imageUrl String
+  
+  price   Int @default(0)
+  users User[] 
+}
+
+
+model User {
+  id      String @id
+  achievements Json
+
+  money  Int    @default(0)
+  familyTokens Int @default(0)
+  royalTokens Int @default(0)
+  
+
+  lastMessageAt DateTime?
+
+  currentNpc NPC?  @relation(fields: [currentNpcId], references: [id])
+  currentNpcId String?  
+  
+  characters Character[]
+}
+
 model Character {
   type      CharacterType @default(character)
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   backstory String
   appearance String
-  origin    String
+  origin    Origin @default(none)
   gender   String
   isApproved Boolean @default(false)
   isActive  Boolean @default(false)
   imageUrl  String
   xp        Int     @default(0)
   level     Int     @default(1)
-  profession String
+  profession Profession @default(other)
 
   familySlug String?
   transformation String?
   royalTitle String?
 
-  price    Int?    
+  price    Int?
 
-}
-enum CharacterType {
-  character
-  royal
-  store
+  user     User? @relation(fields: [userId], references: [id])
+  userId   String?
+
 }
 
 model Channel {
@@ -50,17 +77,6 @@ model Channel {
   lastActive            DateTime @default(now())
   resourceType          ResourceType @default(wood)
   channelType           ChannelType @default(basic)
-}
-enum ChannelType {
-  blacksmith
-  tavern
-  market
-  barracks
-  training
-  royal
-  basic
-  clergy
-  health
 }
 
 model Family {
@@ -83,7 +99,7 @@ model Family {
 }
 
 model Message {
-  id       Int      @id @default(autoincrement())
+  id       String      @id 
   channelId String
   content  String
   authorId String
@@ -96,6 +112,7 @@ enum ResourceType {
   food
   gold
 }
+
 
 enum Origin {
   none
@@ -114,4 +131,51 @@ enum Origin {
   ethereal
   pagan
   hunter
+}
+
+enum Profession {
+  royal
+  blacksmith
+  merchant
+  farmer
+  hunter
+  fisherman
+  miner
+  lumberjack
+  alchemist
+  cook
+  tailor
+  mercenary
+  librarian
+  musician
+  writer
+  priest
+  doctor
+  sailor
+  soldier
+  guard
+  servant
+  slave
+  knight
+  squire
+  courtier
+  other
+}
+
+enum ChannelType {
+  blacksmith
+  tavern
+  market
+  barracks
+  training
+  royal
+  basic
+  clergy
+  health
+}
+
+enum CharacterType {
+  character
+  royal
+  store
 }

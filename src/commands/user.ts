@@ -31,7 +31,7 @@ export default class User {
 
     if (userDatabase.lastMessageAt) {
       embed.setFooter({ text: "Última mensagem enviada há:" });
-      embed.setTimestamp(DateTime.fromISO(userDatabase.lastMessageAt).toJSDate());
+      embed.setTimestamp(DateTime.fromJSDate(userDatabase.lastMessageAt).toJSDate());
     }
 
     if (currentCharacterOrNPC) {
@@ -105,8 +105,7 @@ export default class User {
   private async addOrRemoveMoney(user: DiscordUser, amount: number) {
     const userDatabase = await Database.getUser(user.id);
     if (!userDatabase) return false;
-    userDatabase.money = userDatabase.money + amount;
-    await Database.updateUser(user.id, userDatabase);
+    await Database.updateUser(user.id, { money: { increment: amount } });
     return true;
   }
 }

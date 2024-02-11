@@ -1,3 +1,4 @@
+import { ChannelType, Channel as DBChannelType } from "@prisma/client";
 import {
   ActionRowBuilder,
   Attachment,
@@ -18,8 +19,6 @@ import { DateTime } from "luxon";
 import { COMMANDS, COMMAND_OPTIONS } from "../data/commands";
 import { CHANNEL_TYPES_TRANSLATIONS, RESOURCES_TRANSLATIONS } from "../data/constants";
 import Database from "../database";
-import type { Channel as DatabaseChannel } from "../schemas/channelSchema";
-import { ChannelType } from "../schemas/enums";
 import { ResourceType } from "../schemas/resourceSchema";
 import { imageGifUrl } from "../schemas/utils";
 import Utils from "../utils";
@@ -57,11 +56,11 @@ export default class Channel {
     await this.generatePlaceholderMessage(channel, databaseChannelData, oldPlaceholderMessage);
   }
 
-  public static makeInfoExpandMessage(channel: DatabaseChannel) {
+  public static makeInfoExpandMessage(channel: DBChannelType) {
     const embed = new EmbedBuilder();
     embed.setTitle(lodash.startCase(channel.name));
     embed.addFields(
-      { name: "Tipo", value: CHANNEL_TYPES_TRANSLATIONS[channel.type], inline: true },
+      { name: "Tipo", value: CHANNEL_TYPES_TRANSLATIONS[channel.channelType], inline: true },
       { name: "Eficiência", value: `${channel.efficiency}%`, inline: true },
       { name: "Recurso", value: RESOURCES_TRANSLATIONS[channel.resourceType], inline: true },
       { name: "Nível", value: channel.level.toString(), inline: true },
@@ -89,7 +88,7 @@ export default class Channel {
     } satisfies BaseMessageOptions;
   }
 
-  private static async generatePlaceholderMessage(channel: TextChannel, databaseChannelData: DatabaseChannel, oldPlaceholderMessage?: Message) {
+  private static async generatePlaceholderMessage(channel: TextChannel, databaseChannelData: DBChannelType, oldPlaceholderMessage?: Message) {
     if (oldPlaceholderMessage) await Utils.scheduleMessageToDelete(oldPlaceholderMessage, 0);
 
     const placeholderMessageComponent = await Channel.makePlaceholderMessage(channel);
@@ -132,8 +131,8 @@ export default class Channel {
       createdUpdatedChannel = await Database.updateChannel(channel.id, {
         name: lodash.kebabCase(name),
         description,
-        image: imageUrl.data,
-        type,
+        imageUrl: imageUrl.data,
+        channelType: type,
         efficiency,
         resourceType,
       });
@@ -141,8 +140,8 @@ export default class Channel {
       createdUpdatedChannel = await Database.insertChannel({
         description,
         name: lodash.kebabCase(name),
-        image: imageUrl.data,
-        type,
+        imageUrl: imageUrl.data,
+        channelType: type,
         efficiency,
         id: channel.id,
         resourceType,

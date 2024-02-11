@@ -60,13 +60,11 @@ export default class Store {
       appearance,
       type: "store",
       transformation,
-      inventory: [],
       price,
       gender,
       origin: familyData?.origin ?? "none",
       familySlug: family,
       imageUrl: imageURL,
-      isStoreCharacter: true,
       profession: "royal",
     });
 
@@ -83,8 +81,8 @@ export default class Store {
     await storeChannel?.send({
       embeds: [embed],
       components: [
-        Character.getCharacterDetailsButton(sheet.userId, sheet.characterId).addComponents(
-          new ButtonBuilder().setCustomId(getBuyStoreCharacterButtonId(sheet.characterId)).setLabel("Comprar").setStyle(ButtonStyle.Success),
+        Character.getCharacterDetailsButton(sheet.userId ?? "store", sheet.id).addComponents(
+          new ButtonBuilder().setCustomId(getBuyStoreCharacterButtonId(sheet.id)).setLabel("Comprar").setStyle(ButtonStyle.Success),
         ),
       ],
     });
@@ -120,7 +118,7 @@ export default class Store {
       return;
     }
 
-    if (user.money < sheet.price) {
+    if (user.money < (sheet.price ?? 0)) {
       Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Você não tem dinheiro suficiente." }));
       return;
     }
@@ -133,12 +131,12 @@ export default class Store {
     sentPrompt.collector.on("collect", async (promptInteraction) => {
       await promptInteraction.deferUpdate();
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
-        await Database.updateUser(buttonInteraction.user.id, { money: user.money - sheet.price });
+        await Database.updateUser(buttonInteraction.user.id, { money: user.money - (sheet.price ?? 0) });
         await Database.insertSheet(buttonInteraction.user.id, sheet);
-        await Database.deleteStoreSheet(sheet.characterId);
+        await Database.deleteStoreSheet(sheet.id);
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
-            content: `🎉 Personagem ${bold(sheet.name)} comprado(a) com sucesso por C$${bold(sheet.price.toString())}!`,
+            content: `🎉 Personagem ${bold(sheet.name)} comprado(a) com sucesso por C$${bold((sheet.price ?? 0).toString())}!`,
             components: [],
           }),
         );

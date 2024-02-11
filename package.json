@@ -10,12 +10,14 @@
     "build:changelog": "npx @discordx/changelog --src src",
     "dev": "node --loader ts-node/esm/transpile-only src/main.ts",
     "start": "node --import=extensionless/register build/main.js",
-    "watch": "nodemon --exec pnpm dev"
+    "watch": "nodemon --exec pnpm dev",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@discordx/importer": "^1.3.0",
     "@discordx/pagination": "^3.5.0",
     "@img/sharp-linux-x64": "^0.33.1",
+    "@prisma/client": "5.9.1",
     "axios": "^1.6.2",
     "better-sqlite3": "^9.2.2",
     "discord.js": "^14.14.1",
@@ -41,6 +43,7 @@
     "@types/node-cron": "^3.0.11",
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1",
+    "prisma": "^5.9.1",
     "ts-node": "^10.9.2",
     "typescript": "5.3.3"
   },

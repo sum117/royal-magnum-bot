@@ -99,6 +99,8 @@ export default class Sheet {
     }
 
     const databaseUser = await Database.getUser(interaction.user.id);
+    if (!databaseUser) return;
+
     if (databaseUser.royalTokens < 1) {
       await interaction.reply({ content: "Você não possui fichas reais suficientes para dar a outra pessoa." });
       return;
@@ -121,7 +123,9 @@ export default class Sheet {
     await interaction.deferReply({ ephemeral: true, fetchReply: true });
 
     const user = await Database.getUser(interaction.user.id);
-    if (user.royalTokens < 1) {
+    if (!user) return;
+
+    if (user?.royalTokens < 1) {
       return await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
     }
 
@@ -156,7 +160,7 @@ export default class Sheet {
       content: `Você selecionou a família ${bold(family.title)}, o gênero ${bold(GENDER_TRANSLATIONS_MAP[gender])} e a origem ${
         originName ?? "Desconhecida"
       }. Pressione o botão abaixo para preencher o formulário de personagem.`,
-      files: [new AttachmentBuilder(family.image).setName(`${family.slug}.png`)],
+      files: [new AttachmentBuilder(family.imageUrl).setName(`${family.slug}.png`)],
       components: [button],
     });
   }
@@ -202,6 +206,8 @@ export default class Sheet {
     await interaction.deferReply({ ephemeral: true });
 
     const user = await Database.getUser(interaction.user.id);
+    if (!user) return;
+
     if (user.familyTokens < 1) {
       await interaction.editReply({ content: "Você não possui fichas de família suficientes para criar uma ficha de família." });
       return;
@@ -260,7 +266,7 @@ export default class Sheet {
       return;
     }
 
-    const createdFamily = await Database.setFamily(slug, { slug, title: name, description, image, entity: entitySlug, origin: familyData?.origin });
+    const createdFamily = await Database.setFamily(slug, { slug, title: name, description, imageUrl: image, entity: entitySlug, origin: familyData?.origin });
     if (!createdFamily) {
       await createFamilyModalSubmission.editReply({ content: "Não foi possível criar a família." });
       return;
@@ -309,13 +315,15 @@ export default class Sheet {
     }
 
     const { sheetEmbed, savedSheet } = await this.createSheetFromModal(modalSubmit, familySlug, profession, gender, origin, imageKitLink);
-    const evaluationButtons = this.getEvaluationButtons("character", savedSheet.characterId, savedSheet.userId);
+    if (!savedSheet.userId) return;
+    const evaluationButtons = this.getEvaluationButtons("character", savedSheet.id, savedSheet.userId);
     await modalSubmit.editReply({
       content: `Ficha criada com sucesso! Aguarde a aprovação de um moderador em ${bot.systemChannels.get(CHANNEL_IDS.sheetWaitingRoom)?.toString()}`,
     });
 
     if (isRoyalSheet) {
       const user = await Database.getUser(savedSheet.userId);
+      if (!user) return;
       await Database.updateUser(savedSheet.userId, { royalTokens: user.royalTokens - 1 });
     }
 
@@ -344,6 +352,7 @@ export default class Sheet {
     } else if (namespace === "family") {
       const databaseUpdateFn = async () => {
         const user = await Database.getUser(userId);
+        if (!user) return;
         await Database.updateFamily(characterIdOrFamilySlug, { isApproved: action === "approve" });
         await Database.updateUser(userId, { familyTokens: user.familyTokens - 1 });
       };
@@ -474,6 +483,10 @@ export default class Sheet {
 
     await interaction.deferReply({ ephemeral: true });
     const databaseUser = await Database.getUser(user.id);
+    if (!databaseUser) {
+      await interaction.editReply({ content: "Usuário não encontrado." });
+      return;
+    }
     await Database.updateUser(user.id, { [tokenType]: databaseUser[tokenType] + 1 });
     await interaction.editReply({ content: `${lodash.capitalize(messageMap[tokenType])} dada com sucesso para ${userMention(user.id)}` });
     await interaction.channel?.send({ content: `👑 ${user.toString()} recebeu uma ${messageMap[tokenType]} de ${interaction.user.toString()}!` });
