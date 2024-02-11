@@ -156,7 +156,7 @@ export default class NPC {
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
         await Database.updateUser(buttonInteraction.user.id, { money: BigInt(Number(user.money) - npc.price) });
         await Database.updateNPC(npcId, {
-          users: { connectOrCreate: { create: { id: promptInteraction.user.id, achievements: [] }, where: { id: promptInteraction.user.id } } },
+          users: { connect: { id: buttonInteraction.user.id } },
         });
         Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({

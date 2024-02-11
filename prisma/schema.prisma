@@ -20,7 +20,7 @@ model NPC {
   imageUrl String @db.Text
   
   price   Int @default(0)
-  users User[] 
+  users User[]
 }
 
 
@@ -35,8 +35,8 @@ model User {
 
   lastMessageAt DateTime?
 
-  currentNpc NPC?  @relation(fields: [currentNpcId], references: [id])
   currentNpcId String?  
+  npcs NPC[]
   doesNotUseEmbeds Boolean @default(false)
   characters Character[]
 }

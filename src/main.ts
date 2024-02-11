@@ -39,6 +39,11 @@ bot.once("ready", async (readyClient) => {
   await bot.initApplicationCommands();
   await registerSchedules(readyClient);
   console.log("Bot started");
+  // Database.getNPCs().then(async (npcs) => {
+  //   for (const npc of npcs.toSorted((a, b) => b.price - a.price)) {
+  //     await (bot.channels.cache.get(CHANNEL_IDS.generalStore) as TextChannel).send(NPC.getNPCEmbed(npc, true));
+  //   }
+  // });
 });
 
 bot.on("interactionCreate", (interaction: Interaction) => {
