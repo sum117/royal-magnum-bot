@@ -158,7 +158,13 @@ export default class CharacterEvents {
             if (isEditingMap.get(user.id)) isEditingMap.delete(user.id);
             return;
           }
-
+          const databaseUser = await Database.getUser(user.id);
+          if (databaseUser.doesNotUseEmbed) {
+            await originalMessage.edit(newContentMessage.content);
+            isEditingMap.delete(user.id);
+            Utils.scheduleMessageToDelete(newContentMessage, 0);
+            return;
+          }
           const embed = EmbedBuilder.from(originalMessage.embeds[0]);
           embed.setDescription(newContentMessage.content);
 
