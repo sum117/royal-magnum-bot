@@ -8,7 +8,7 @@ export const familySchema = z
     description: z.string(),
     origin: originEnumSchema.default("none"),
     slug: z.string(),
-    image: z.string(),
+    imageUrl: z.string(),
     entity: z.string(),
     population: z.number().default(0),
     populationCap: z.number().default(0),

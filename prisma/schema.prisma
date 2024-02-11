@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URI")
+}
+
+model NPC {
+  id       String @id @default(uuid())
+  title   String
+  name   String
+  description String
+  imageUrl String
+  
+  price   Int @default(0)
+  users User[] 
+}
+
+
+model User {
+  id      String @id
+  achievements Json
+
+  money  Int    @default(0)
+  familyTokens Int @default(0)
+  royalTokens Int @default(0)
+  
+
+  lastMessageAt DateTime?
+
+  currentNpc NPC?  @relation(fields: [currentNpcId], references: [id])
+  currentNpcId String?  
+  
+  characters Character[]
+}
+
+model Character {
+  type      CharacterType @default(character)
+  id        String   @id @default(uuid())
+  name      String
+  backstory String
+  appearance String
+  origin    Origin @default(none)
+  gender   String
+  isApproved Boolean @default(false)
+  isActive  Boolean @default(false)
+  imageUrl  String
+  xp        Int     @default(0)
+  level     Int     @default(1)
+  profession Profession @default(other)
+
+  familySlug String?
+  transformation String?
+  royalTitle String?
+
+  price    Int?
+
+  user     User? @relation(fields: [userId], references: [id])
+  userId   String?
+
+}
+
+model Channel {
+  id                    String @id
+  placeholderMessageId String?
+  name                  String
+  description           String
+  imageUrl              String
+
+  efficiency            Int
+  level                Int @default(1)
+  lastActive            DateTime @default(now())
+  resourceType          ResourceType @default(wood)
+  channelType           ChannelType @default(basic)
+}
+
+model Family {
+  slug       String @id
+  title      String
+  description String
+  origin     Origin @default(none)
+  imageUrl   String
+  entity String 
+  population Int @default(0)
+  populationCap Int @default(0)
+  populationGrowth Int @default(0)
+  isApproved Boolean @default(false)
+
+  wood     Int @default(0)
+  stone   Int @default(0)
+  iron    Int @default(0)
+  food    Int @default(0)
+  gold    Int @default(0)
+}
+
+model Message {
+  id       String      @id 
+  channelId String
+  content  String
+  authorId String
+}
+
+enum ResourceType {
+  wood
+  stone
+  iron
+  food
+  gold
+}
+
+
+enum Origin {
+  none
+  catarsia_survivor
+  coastsman
+  corsair
+  vagabond
+  orphan
+  deepwoken
+  peasant_saint
+  shadowbound
+  yor_devotee
+  terryan
+  swarm_warden
+  center_guardian
+  ethereal
+  pagan
+  hunter
+}
+
+enum Profession {
+  royal
+  blacksmith
+  merchant
+  farmer
+  hunter
+  fisherman
+  miner
+  lumberjack
+  alchemist
+  cook
+  tailor
+  mercenary
+  librarian
+  musician
+  writer
+  priest
+  doctor
+  sailor
+  soldier
+  guard
+  servant
+  slave
+  knight
+  squire
+  courtier
+  other
+}
+
+enum ChannelType {
+  blacksmith
+  tavern
+  market
+  barracks
+  training
+  royal
+  basic
+  clergy
+  health
+}
+
+enum CharacterType {
+  character
+  royal
+  store
+}

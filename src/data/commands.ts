@@ -122,7 +122,7 @@ export const COMMAND_OPTIONS = {
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
       const userSheets = await Database.getUserSheetsByName(interaction.user.id, interaction.options.getFocused());
-      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.characterId })));
+      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.id })));
     },
   },
   changeCharacterAvatarAttachment: {
@@ -138,7 +138,7 @@ export const COMMAND_OPTIONS = {
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
       const userSheets = await Database.getUserSheetsByName(interaction.user.id, interaction.options.getFocused());
-      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.characterId })));
+      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.id })));
     },
   },
   setProfessionUser: {
@@ -199,7 +199,10 @@ export const COMMAND_OPTIONS = {
       const npcs = await Database.getNPCs();
       await interaction.respond(
         npcs
-          .filter((npc) => npc.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) && npc.usersWithAccess.includes(interaction.user.id))
+          .filter(
+            (npc) =>
+              npc.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()) && npc.users.some((user) => user.id === interaction.user.id),
+          )
           .map((npc) => ({ name: npc.name, value: npc.id }))
           .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
       );
@@ -262,7 +265,7 @@ export const COMMAND_OPTIONS = {
     type: ApplicationCommandOptionType.String,
     autocomplete: async (interaction) => {
       const userSheets = await Database.getUserSheetsByName(interaction.user.id, interaction.options.getFocused());
-      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.characterId })));
+      await interaction.respond(userSheets.map((sheet) => ({ name: sheet.name, value: sheet.id })));
     },
   },
   showFamilyDetails: {
@@ -453,19 +456,20 @@ export const COMMAND_OPTIONS = {
       await interaction.respond(options);
     },
   },
-  makeItemRecipeItemId: {
-    name: "item-id",
-    description: "ID do item",
-    required: true,
-    type: ApplicationCommandOptionType.String,
-    autocomplete: async (interaction) => {
-      const items = await Database.getItems();
-      await interaction.respond(
-        items
-          .filter((item) => item.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()))
-          .map((item) => ({ name: item.name, value: item.id }))
-          .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
-      );
-    },
-  },
+  // TODO: Reimplement this after prisma item additions.
+  // makeItemRecipeItemId: {
+  //   name: "item-id",
+  //   description: "ID do item",
+  //   required: true,
+  //   type: ApplicationCommandOptionType.String,
+  //   autocomplete: async (interaction) => {
+  //     const items = await Database.getItems();
+  //     await interaction.respond(
+  //       items
+  //         .filter((item) => item.name.toLowerCase().includes(interaction.options.getFocused().toLowerCase()))
+  //         .map((item) => ({ name: item.name, value: item.id }))
+  //         .slice(0, DISCORD_AUTOCOMPLETE_LIMIT),
+  //     );
+  //   },
+  // },
 } satisfies CommandOptionData;
