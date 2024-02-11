@@ -114,7 +114,7 @@ export default class onImageGenerationRequest {
             }
             const attachment = new AttachmentBuilder(image).setName(`${input.join(",").slice(0, 80)} s-${seed}.png`);
             if (!isNitro) {
-              await Database.updateUser(message.author.id, { money: (user?.money ?? 0) - imageGenerationCost });
+              await Database.updateUser(message.author.id, { money: BigInt(Number(user?.money ?? 0) - imageGenerationCost) });
             }
             await message.channel.send({
               content: `{user}, aqui está a imagem gerada com base no prompt {prompt}\n💰{cost}`

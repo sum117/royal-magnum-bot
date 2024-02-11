@@ -131,7 +131,7 @@ export default class Store {
     sentPrompt.collector.on("collect", async (promptInteraction) => {
       await promptInteraction.deferUpdate();
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
-        await Database.updateUser(buttonInteraction.user.id, { money: user.money - (sheet.price ?? 0) });
+        await Database.updateUser(buttonInteraction.user.id, { money: BigInt(Number(user.money) - (sheet.price ?? 0)) });
         await Database.insertSheet(buttonInteraction.user.id, { ...sheet, type: "royal", price: undefined });
         await Database.deleteStoreSheet(sheet.id);
         Utils.scheduleMessageToDelete(

@@ -14,8 +14,8 @@ model NPC {
   id       String @id @default(uuid())
   title   String
   name   String
-  description String
-  imageUrl String
+  description String @db.Text
+  imageUrl String @db.Text
   
   price   Int @default(0)
   users User[] 
@@ -26,7 +26,7 @@ model User {
   id      String @id
   achievements Json
 
-  money  Int    @default(0)
+  money  BigInt    @default(0) 
   familyTokens Int @default(0)
   royalTokens Int @default(0)
   
@@ -43,19 +43,19 @@ model Character {
   type      CharacterType @default(character)
   id        String   @id @default(uuid())
   name      String
-  backstory String
-  appearance String
+  backstory String @db.Text
+  appearance String @db.Text
   origin    Origin @default(none)
   gender   String
   isApproved Boolean @default(false)
   isActive  Boolean @default(false)
-  imageUrl  String
+  imageUrl  String @db.Text
   xp        Int     @default(0)
   level     Int     @default(1)
   profession Profession @default(other)
 
   familySlug String?
-  transformation String?
+  transformation String? @db.Text
   royalTitle String?
 
   price    Int?
@@ -69,8 +69,8 @@ model Channel {
   id                    String @id
   placeholderMessageId String?
   name                  String
-  description           String
-  imageUrl              String
+  description           String @db.Text
+  imageUrl              String @db.Text
 
   efficiency            Int
   level                Int @default(1)
@@ -82,9 +82,9 @@ model Channel {
 model Family {
   slug       String @id
   title      String
-  description String
+  description String @db.Text
   origin     Origin @default(none)
-  imageUrl   String
+  imageUrl   String @db.Text
   entity String 
   population Int @default(0)
   populationCap Int @default(0)
@@ -101,7 +101,6 @@ model Family {
 model Message {
   id       String      @id 
   channelId String
-  content  String
   authorId String
 }
 

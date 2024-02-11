@@ -3,15 +3,6 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Message } from "discord.js";
 import { Achievement } from "./achievements";
 import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
-
-// TODO: completely remove quick.db
-//const mysqlDriver = new MySQLDriver({
-//  uri: process.env.DATABASE_URI,
-// });
-// await mysqlDriver.connect();
-
-// const db = new QuickDB({ driver: mysqlDriver });
-
 const prisma = new PrismaClient();
 
 export default class Database {
@@ -31,7 +22,6 @@ export default class Database {
         id: message.id,
         authorId: message.author.id,
         channelId: message.channel.id,
-        content: message.content,
       },
     });
     return insertedMessage;
@@ -60,8 +50,8 @@ export default class Database {
     return true;
   }
 
-  public static async insertUser(userId: string) {
-    const user = await prisma.user.create({ data: { id: userId, achievements: [] } });
+  public static async insertUser(userId: string, data: Prisma.UserUncheckedCreateInput = { id: userId, achievements: [] }) {
+    const user = await prisma.user.create({ data });
     return user;
   }
 
@@ -261,3 +251,88 @@ export default class Database {
     return;
   }
 }
+// export function seed() {
+//   try {
+//     // Object.values(sheets).forEach(async (user) => {
+//     //   Object.values(user).forEach(async (sheet) => {
+//     //     await Database.insertSheet(sheet.userId, {
+//     //       name: sheet.name,
+//     //       appearance: sheet.appearance,
+//     //       backstory: sheet.backstory,
+//     //       gender: sheet.gender,
+//     //       imageUrl: sheet.imageUrl,
+//     //       familySlug: "familySlug" in sheet && typeof sheet.familySlug === "string" ? sheet.familySlug : undefined,
+//     //       isActive: sheet.isActive,
+//     //       level: sheet.level,
+//     //       origin: sheet.origin.replace("-", "_") as Origin,
+//     //       isApproved: sheet.isApproved,
+//     //       price: "price" in sheet && typeof sheet.price === "number" ? sheet.price : undefined,
+//     //       profession: sheet.profession as Profession,
+//     //       royalTitle: "royalTitle" in sheet && typeof sheet.royalTitle === "string" ? sheet.royalTitle : undefined,
+//     //       type: "type" in sheet && typeof sheet.type === "string" ? (sheet.type as CharacterType) : undefined,
+//     //       transformation: "transformation" in sheet && typeof sheet.transformation === "string" ? sheet.transformation : undefined,
+//     //       userId: sheet.userId,
+//     //       xp: sheet.xp,
+//     //     });
+//     //   });
+//     // });
+//     // Object.entries(users).forEach(async ([userId, user]) => {
+//     //   await Database.insertUser(userId, {
+//     //     id: userId,
+//     //     achievements: "achievements" in user && Array.isArray(user.achievements) ? (user.achievements as never[]) : [],
+//     //     doesNotUseEmbeds: "doesNotUseEmbeds" in user && typeof user.doesNotUseEmbeds === "boolean" ? user.doesNotUseEmbeds : false,
+//     //     familyTokens: "familyTokens" in user && typeof user.familyTokens === "number" ? user.familyTokens : 0,
+//     //     lastMessageAt: "lastMessageAt" in user && typeof user.lastMessageAt === "string" ? new Date(user.lastMessageAt) : new Date(),
+//     //     money: "money" in user && typeof user.money === "number" ? user.money : 0,
+//     //     royalTokens: "royalTokens" in user && typeof user.royalTokens === "number" ? user.royalTokens : 0,
+//     //   });
+//     // });
+//     // Object.values(channels).forEach(async (channel) => {
+//     //   await Database.insertChannel({
+//     //     id: channel.id,
+//     //     name: channel.name,
+//     //     description: channel.description,
+//     //     efficiency: channel.efficiency,
+//     //     imageUrl: channel.image,
+//     //     channelType: channel.type as ChannelType,
+//     //     lastActive: new Date(),
+//     //     level: channel.level,
+//     //     placeholderMessageId: channel.placeholderMessageId,
+//     //     resourceType: channel.resourceType as ResourceType,
+//     //   });
+//     // });
+//     // Object.values(families).forEach(async (family) => {
+//     //   await Database.setFamily(family.slug, {
+//     //     title: family.title,
+//     //     description: family.description,
+//     //     imageUrl: family.image,
+//     //     slug: family.slug,
+//     //     entity: family.entity,
+//     //     isApproved: family.isApproved,
+//     //     food: family.food,
+//     //     gold: family.gold,
+//     //     iron: family.iron,
+//     //     origin: family.origin.replace("-", "_") as Origin,
+//     //     population: family.population,
+//     //     populationCap: family.populationCap,
+//     //     populationGrowth: family.populationGrowth,
+//     //     stone: family.stone,
+//     //     wood: family.wood,
+//     //   });
+//     // });
+//     // Object.values(npcs).forEach(async (npc) => {
+//     //   await Database.insertNPC({
+//     //     description: npc.description,
+//     //     imageUrl: npc.image,
+//     //     name: npc.name,
+//     //     title: npc.title,
+//     //     price: npc.price,
+//     //     users: {
+//     //       connect: npc.usersWithAccess.map((userId: string) => ({ id: userId })).filter(Boolean),
+//     //     },
+//     //   });
+//     // });
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }

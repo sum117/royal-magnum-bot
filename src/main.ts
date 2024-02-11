@@ -13,9 +13,7 @@ import AchievementEmitter, {
 } from "./achievements";
 import Channel from "./commands/channel";
 import { CHANNEL_IDS, CRON_EXPRESSIONS } from "./data/constants";
-import Database from "./database";
 import { Queue } from "./queue";
-import Utils from "./utils";
 
 export const bot = new Client({
   intents: [
@@ -37,7 +35,7 @@ export const bot = new Client({
 bot.once("ready", async (readyClient) => {
   bot.messageQueue = new Queue();
   assignSystemChannels(readyClient);
-  await seedStaticData();
+  //await seedStaticData();
   await bot.initApplicationCommands();
   await registerSchedules(readyClient);
   console.log("Bot started");
@@ -58,10 +56,10 @@ achievements.on(AchievementEvents.onCharacterLevelUp, handleCharacterLevelUpAchi
 achievements.on(AchievementEvents.onCharacterMessage, handleCharacterMessageAchievements);
 achievements.on(AchievementEvents.onCharacterCreate, handleCharacterCreate);
 
-async function seedStaticData() {
-  const families = await Utils.fetchBaseFamilies();
-  await Promise.all(families.map((family) => Database.setFamily(family.slug, family)));
-}
+// async function seedStaticData() {
+//   const families = await Utils.fetchBaseFamilies();
+//   await Promise.all(families.map((family) => Database.setFamily(family.slug, family)));
+// }
 
 function assignSystemChannels(readyClient: DiscordClient<true>) {
   const guild = readyClient.guilds.cache.first();
@@ -104,5 +102,4 @@ async function run() {
 bot.on("error", console.error);
 process.on("unhandledRejection", console.error);
 process.on("uncaughtException", console.error);
-
 void run();

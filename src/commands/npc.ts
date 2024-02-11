@@ -154,7 +154,7 @@ export default class NPC {
     sentPrompt.collector.on("collect", async (promptInteraction) => {
       await promptInteraction.deferReply({ ephemeral: true });
       if (promptInteraction.customId === confirmationPrompt.confirmButtonId) {
-        await Database.updateUser(buttonInteraction.user.id, { money: user.money - npc.price });
+        await Database.updateUser(buttonInteraction.user.id, { money: BigInt(Number(user.money) - npc.price) });
         await Database.updateNPC(npcId, {
           users: { connectOrCreate: { create: { id: promptInteraction.user.id, achievements: [] }, where: { id: promptInteraction.user.id } } },
         });
