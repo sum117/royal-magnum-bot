@@ -10,3 +10,4 @@ json.sqlite
 build
 node_modules
 .idea
+oldDb
