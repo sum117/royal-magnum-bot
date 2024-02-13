@@ -107,17 +107,24 @@ async function run() {
 
 function logError(error: Error) {
   const errorChannel = <TextChannel>bot.systemChannels.get(CHANNEL_IDS.errorLog);
-  let message;
+  let message: { label: string; stack: string } = { label: "", stack: "" };
   if (error instanceof DiscordAPIError && error.code === 10008) {
-    message = `🧹 Tentei deletar uma mensagem que não existe mais: [${error.name}](${error.url})\n\n${error.stack}`;
+    message.label = `🧹 Tentei deletar uma mensagem que não existe mais: [${error.name}](${error.url})`;
   } else if (error instanceof DiscordAPIError && error.code === 10062) {
-    message = `⏲️ Um usuário demorou demais para responder o bot. A interação não foi reconhecida: [${error.name}](${error.url})\n\n${error.stack}`;
+    message.label = `⏲️ Um usuário demorou demais para responder o bot. A interação não foi reconhecida: [${error.name}](${error.url})`;
   } else {
-    message = `🔥 Erro: ${error.message}\n\n${error.stack}`;
+    message.label = `🚨 Ocorreu um erro: ${error.name}`;
   }
+  message.stack = error.stack ?? "";
   console.error(error);
   void errorChannel?.send({
-    embeds: [{ title: "Erro", description: codeBlock("js", lodash.truncate(message, { length: 4000, omission: " [...]" })), color: 0xff0000 }],
+    embeds: [
+      {
+        title: "Erro do Royal Magnum Bot",
+        description: message.label + "\n\n" + codeBlock("js", lodash.truncate(message.stack, { length: 4000, omission: " [...]" })),
+        color: 0xff0000,
+      },
+    ],
   });
 }
 
