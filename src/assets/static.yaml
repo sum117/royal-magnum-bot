@@ -8,7 +8,7 @@ families:
 
   - title: Vespas Negras
     origin: shadowbound
-    slug: vespas-negras
+    slug: vespas_negras
     description: "Trazidos ao plano pelo Demônio Superior Azhta. Andarilhos infernais com um senso de justiça impiedoso, mas legítimo."
     imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/azhta_ZWcx2i2Jn.png
     entity: azhta
@@ -35,8 +35,8 @@ families:
     entity: lorenta
 
   - title: Abelhas Reais
-    slug: abelhas-reais
-    origin: swarm-warden
+    slug: abelhas_reais
+    origin: swarm_warden
     description: "Vindos da Alta Colmeia Celeste, abençoados pela entidade Hibma. Suas armaduras tem tanta vida quanto os insetos na terra, e seus corpos são feitos de queratina pura."
     imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/hibma_FKB7pyDmw.png
     entity: hibma
