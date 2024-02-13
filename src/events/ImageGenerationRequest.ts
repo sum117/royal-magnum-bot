@@ -9,9 +9,13 @@ import Database from "../database";
 import { Queue } from "../queue";
 import Utils from "../utils";
 
-const imageGenerationQueue = new Queue();
 @Discord()
 export default class onImageGenerationRequest {
+  private imageGenerationQueue: Queue;
+  constructor() {
+    this.imageGenerationQueue = new Queue();
+  }
+
   private TIME_PER_PERSON = 2 * 60 * 1000;
   @On({ event: "messageCreate" })
   async main([message]: ArgsOf<"messageCreate">) {
@@ -40,10 +44,10 @@ export default class onImageGenerationRequest {
       return;
     }
 
-    const isAlreadyInQueue = imageGenerationQueue.find(message.author.id);
+    const isAlreadyInQueue = this.imageGenerationQueue.find(message.author.id);
     if (isAlreadyInQueue) {
-      const currentPosition = imageGenerationQueue.findPosition(message.author.id);
-      const timeLeft = (imageGenerationQueue.length - currentPosition) * this.TIME_PER_PERSON;
+      const currentPosition = this.imageGenerationQueue.findPosition(message.author.id);
+      const timeLeft = (this.imageGenerationQueue.length - currentPosition) * this.TIME_PER_PERSON;
       await message
         .reply(
           `Você já está na fila. Tempo estimado para a sua vez: {time}. Posição na fila: {position}`
@@ -53,7 +57,7 @@ export default class onImageGenerationRequest {
         .then(void Utils.scheduleMessageToDelete);
       return;
     }
-    imageGenerationQueue.enqueue({
+    this.imageGenerationQueue.enqueue({
       id: message.author.id,
       execute: async () => {
         const loadingMessage = await message.channel.send(`Gerando imagem para ${message.author.toString()}...`);
