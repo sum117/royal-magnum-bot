@@ -554,12 +554,12 @@ export default class Sheet {
           content: userMention(userId),
           embeds: [embed],
         });
-        Utils.scheduleMessageToDelete(interaction.message, 1000);
+        await Utils.scheduleMessageToDelete(interaction.message, 1000);
         break;
       case "reject":
         await databaseDeleteFn();
         await interaction.editReply({ content: "Ficha reprovada com sucesso." });
-        Utils.scheduleMessageToDelete(interaction.message, 1000);
+        await Utils.scheduleMessageToDelete(interaction.message, 1000);
         break;
     }
   }
@@ -634,19 +634,19 @@ export default class Sheet {
           const feedbackText = "Essa mensagem não possui anexos válidos. Por favor, tente novamente.";
           if (message.attachments.size < 1) {
             const feedback = await message.reply(feedbackText);
-            Utils.scheduleMessageToDelete(feedback);
+            void Utils.scheduleMessageToDelete(feedback);
             return;
           }
 
           const attachment = message.attachments.first()!;
           if (!imageGifUrl.safeParse(attachment.url).success) {
             const feedback = await message.reply(feedbackText);
-            Utils.scheduleMessageToDelete(feedback);
+            void Utils.scheduleMessageToDelete(feedback);
             return;
           }
 
           const imageKitLink = await Utils.uploadToImageKit(attachment.url);
-          Utils.scheduleMessageToDelete(message);
+          void Utils.scheduleMessageToDelete(message);
           resolve(imageKitLink);
         });
 

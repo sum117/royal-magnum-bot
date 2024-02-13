@@ -158,7 +158,7 @@ export default class NPC {
         await Database.updateNPC(npcId, {
           users: { connect: { id: buttonInteraction.user.id } },
         });
-        Utils.scheduleMessageToDelete(
+        void Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
             content: `🎉 Você comprou acesso para utilizar ${npc.name} por C$${npc.price}!`,
             components: [],
@@ -168,7 +168,7 @@ export default class NPC {
         if (!member) return;
         if (!member.roles.cache.get(ROLE_IDS.member)) member.roles.add(ROLE_IDS.member);
       } else {
-        Utils.scheduleMessageToDelete(await promptInteraction.editReply({ content: "Compra cancelada." }));
+        void Utils.scheduleMessageToDelete(await promptInteraction.editReply({ content: "Compra cancelada." }));
       }
     });
   }

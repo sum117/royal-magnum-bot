@@ -89,7 +89,7 @@ export default class Database {
         transformation: sheet.transformation,
         type: sheet.type,
         xp: sheet.xp,
-        user: { connect: { id: userId } },
+        user: { connectOrCreate: { create: { id: userId, achievements: [] }, where: { id: userId } } },
       },
     });
     return createdSheet;
@@ -99,7 +99,6 @@ export default class Database {
     const createdSheet = await prisma.character.create({
       data: {
         ...sheet,
-        profession: "royal",
       },
     });
     return createdSheet;

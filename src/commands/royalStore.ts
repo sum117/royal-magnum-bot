@@ -39,7 +39,7 @@ export default class Store {
         return null;
       });
     if (!modalSubmit) {
-      Utils.scheduleMessageToDelete(await interaction.editReply({ content: "Modal expirado." }));
+      void Utils.scheduleMessageToDelete(await interaction.editReply({ content: "Modal expirado." }));
       return;
     }
     await modalSubmit.deferReply();
@@ -49,7 +49,7 @@ export default class Store {
 
     const familyData = await Database.getFamily(family);
     if (!familyData) {
-      Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Família não encontrada." }));
+      void Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Família não encontrada." }));
       return;
     }
 
@@ -94,7 +94,7 @@ export default class Store {
       files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
     });
 
-    Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Personagem adicionado à loja com sucesso!" }));
+    void Utils.scheduleMessageToDelete(await modalSubmit.editReply({ content: "Personagem adicionado à loja com sucesso!" }));
   }
 
   @ButtonComponent({ id: new RegExp(`^${characterDetailsButtonIdPrefix}`) })
@@ -109,17 +109,17 @@ export default class Store {
 
     const sheet = await Database.getStoreSheet(characterId);
     if (!sheet) {
-      Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Personagem não encontrado." }));
+      void Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Personagem não encontrado." }));
       return;
     }
     const user = await Database.getUser(buttonInteraction.user.id);
     if (!user) {
-      Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Usuário não encontrado." }));
+      void Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Usuário não encontrado." }));
       return;
     }
 
     if (user.money < (sheet.price ?? 0)) {
-      Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Você não tem dinheiro suficiente." }));
+      void Utils.scheduleMessageToDelete(await buttonInteraction.editReply({ content: "Você não tem dinheiro suficiente." }));
       return;
     }
 
@@ -134,7 +134,7 @@ export default class Store {
         await Database.updateUser(buttonInteraction.user.id, { money: BigInt(Number(user.money) - (sheet.price ?? 0)) });
         await Database.insertSheet(buttonInteraction.user.id, { ...sheet, type: "royal", price: undefined });
         await Database.deleteStoreSheet(sheet.id);
-        Utils.scheduleMessageToDelete(
+        void Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
             content: `🎉 Personagem ${bold(sheet.name)} comprado(a) com sucesso por C$${bold((sheet.price ?? 0).toString())}!`,
             components: [],
@@ -146,10 +146,10 @@ export default class Store {
           files: [{ name: `${lodash.kebabCase(sheet.name)}.jpg`, attachment: sheet.imageUrl }],
         });
 
-        Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
+        void Utils.scheduleMessageToDelete(buttonInteraction.message, 0);
         achievements.emit(AchievementEvents.onBuyCharacter, { character: sheet, user: promptInteraction.user });
       } else if (promptInteraction.customId === confirmationPrompt.cancelButtonId) {
-        Utils.scheduleMessageToDelete(
+        void Utils.scheduleMessageToDelete(
           await promptInteraction.editReply({
             content: "Compra cancelada.",
             components: [],

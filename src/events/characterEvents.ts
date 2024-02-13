@@ -22,7 +22,7 @@ export default class CharacterEvents {
 
     const isOutOfCharacter = /^(?:\(\(|\[\[|\{\{|\\\\|\/\/|OOC)/.test(message.content);
     if (isOutOfCharacter) {
-      await Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 1 }).as("milliseconds"));
+      void Utils.scheduleMessageToDelete(message, Duration.fromObject({ minutes: 1 }).as("milliseconds"));
       return;
     }
 
@@ -133,7 +133,7 @@ export default class CharacterEvents {
         }
         if (dbMessage.authorId !== user.id) {
           const feedback = await reaction.message.channel.send(`${user.toString()}, você não pode editar a mensagem de outra pessoa.`);
-          Utils.scheduleMessageToDelete(feedback);
+          void Utils.scheduleMessageToDelete(feedback);
           return;
         }
         isEditingMap.set(user.id, true);
@@ -141,7 +141,7 @@ export default class CharacterEvents {
         const feedback = await reaction.message.channel.send(
           `${user.toString()}, você tem 30 minutos para editar sua mensagem. Qualquer mensagem enviada por você nesse canal será considerada a mensagem final.`,
         );
-        Utils.scheduleMessageToDelete(feedback);
+        void Utils.scheduleMessageToDelete(feedback);
 
         const collector = reaction.message.channel.createMessageCollector({
           filter: (msg) => msg.author.id === user.id,
@@ -162,7 +162,7 @@ export default class CharacterEvents {
           if (databaseUser.doesNotUseEmbeds) {
             await originalMessage.edit(newContentMessage.content);
             isEditingMap.delete(user.id);
-            Utils.scheduleMessageToDelete(newContentMessage, 0);
+            await Utils.scheduleMessageToDelete(newContentMessage, 0);
             return;
           }
           const embed = EmbedBuilder.from(originalMessage.embeds[0]);
@@ -182,7 +182,7 @@ export default class CharacterEvents {
             await originalMessage.edit({ embeds: [embed] });
           }
           isEditingMap.delete(newContentMessage.author.id);
-          Utils.scheduleMessageToDelete(newContentMessage, 0);
+          await Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
         break;
       case "🗑️":
@@ -194,7 +194,7 @@ export default class CharacterEvents {
         }
         if (dbMessageToDelete.authorId !== user.id) {
           const feedback = await reaction.message.channel.send(`${user.toString()}, você não pode deletar a mensagem de outra pessoa.`);
-          Utils.scheduleMessageToDelete(feedback);
+          void Utils.scheduleMessageToDelete(feedback);
           return;
         }
         await reaction.message.delete();
@@ -219,15 +219,15 @@ export default class CharacterEvents {
     const randomMoney = lodash.random(250, 500);
     await Database.updateUser(character.userId, {
       money: BigInt(randomMoney + Number(user?.money ?? 0)),
-      lastMessageAt: DateTime.now().toISO(),
+      lastMessageAt: DateTime.now().toJSDate(),
     });
 
     const databaseChannel = await Database.getChannel(message.channelId);
     if (!databaseChannel) return false;
 
     const isInCorrectChannel = PROFESSION_CHANNELS[databaseChannel.channelType].includes(character.profession);
-    const randomCharXpMin = isInCorrectChannel ? 50 : 25;
-    const randomCharXpMax = isInCorrectChannel ? 100 : 50;
+    const randomCharXpMin = isInCorrectChannel ? 50 : 2.5;
+    const randomCharXpMax = isInCorrectChannel ? 100 : 5.0;
     const randomCharXp = lodash.random(randomCharXpMin, randomCharXpMax);
     const { willLevelUp } = Character.getCharacterLevelDetails(character);
 
@@ -236,7 +236,7 @@ export default class CharacterEvents {
       const feedback = await message.channel.send(
         `🎉 ${message.author.toString()}, o personagem ${bold(character.name)} subiu para o nível ${bold(newLevel.toString())}!`,
       );
-      Utils.scheduleMessageToDelete(feedback);
+      void Utils.scheduleMessageToDelete(feedback);
       const updatedChar = await Database.updateSheet(character.userId, character.id, { xp: 0, level: newLevel });
       if (!updatedChar) return false;
       achievements.emit(AchievementEvents.onCharacterLevelUp, { character: updatedChar, user: message.author });

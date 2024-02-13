@@ -171,6 +171,6 @@ export default class Channel {
 
   @ButtonComponent({ id: dismissButtonId })
   public async dismissButtonListener(interaction: ButtonInteraction) {
-    Utils.scheduleMessageToDelete(interaction.message, 0);
+    await Utils.scheduleMessageToDelete(interaction.message, 0);
   }
 }

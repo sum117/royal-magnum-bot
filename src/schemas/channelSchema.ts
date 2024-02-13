@@ -13,15 +13,7 @@ export const channelSchema = z.object({
   conqueredBy: z.string().optional(),
   efficiency: z.number().default(0),
   level: z.number().default(1),
-  lastActive: z
-    .string()
-    .optional()
-    .refine((value) => {
-      if (!value) return true;
-      const date = new Date(value);
-      return !isNaN(date.getTime());
-    })
-    .default(new Date().toISOString()),
+  lastActive: z.date().optional(),
 
   resourceType: resourceEnumSchema,
   type: channelTypeEnumSchema,

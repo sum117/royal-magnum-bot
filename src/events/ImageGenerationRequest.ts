@@ -21,12 +21,12 @@ export default class onImageGenerationRequest {
     const isNitro = member.premiumSinceTimestamp !== null;
     const isAllowedMember = member.roles.cache.has(ROLE_IDS.admin) || member.roles.cache.has(ROLE_IDS.member) || isNitro;
     if (!isAllowedMember) {
-      await message.reply("Você não tem permissão para usar este canal.").then(Utils.scheduleMessageToDelete);
+      await message.reply("Você não tem permissão para usar este canal.").then(void Utils.scheduleMessageToDelete);
       return;
     }
     const user = await Database.getUser(message.author.id);
     if (!user) {
-      await message.reply("Você não está registrado no nosso sistema.").then(Utils.scheduleMessageToDelete);
+      await message.reply("Você não está registrado no nosso sistema.").then(void Utils.scheduleMessageToDelete);
       return;
     }
 
@@ -36,7 +36,7 @@ export default class onImageGenerationRequest {
         .reply(
           "Você não tem pontos de atividade o suficiente para gerar uma imagem. Você pode ganhar pontos de atividade fazendo RP.\n\n💡 Usuários Nitro podem gerar imagens gratuitamente. Considere apoiar nosso servidor.",
         )
-        .then(Utils.scheduleMessageToDelete);
+        .then(void Utils.scheduleMessageToDelete);
       return;
     }
 
@@ -50,7 +50,7 @@ export default class onImageGenerationRequest {
             .replace("{time}", Duration.fromMillis(timeLeft).toFormat("mm:ss"))
             .replace("{position}", currentPosition.toString()),
         )
-        .then(Utils.scheduleMessageToDelete);
+        .then(void Utils.scheduleMessageToDelete);
       return;
     }
     imageGenerationQueue.enqueue({
@@ -109,7 +109,7 @@ export default class onImageGenerationRequest {
             if (!image) {
               await message
                 .reply("Não foi possível gerar a imagem. Tente novamente mais tarde ou com uma entrada diferente.")
-                .then(Utils.scheduleMessageToDelete);
+                .then(void Utils.scheduleMessageToDelete);
               return;
             }
             const attachment = new AttachmentBuilder(image).setName(`${input.join(",").slice(0, 80)} s-${seed}.png`);
@@ -131,7 +131,7 @@ export default class onImageGenerationRequest {
             console.error("Failed to generate image", error);
             await message
               .reply("Não foi possível gerar a imagem. Tente novamente mais tarde ou com uma entrada diferente.")
-              .then(Utils.scheduleMessageToDelete);
+              .then(void Utils.scheduleMessageToDelete);
           } finally {
             await loadingMessage.delete().catch((error) => console.error("Failed to delete loading message", error));
           }

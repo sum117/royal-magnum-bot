@@ -7,15 +7,7 @@ export const userSchema = z.object({
   achievements: z.array(z.string()).default([]),
   familyTokens: z.number().default(0),
   currentNpcId: z.string().optional(),
-  lastMessageAt: z
-    .string()
-    .optional()
-    .refine((value) => {
-      if (!value) return true;
-      const date = new Date(value);
-      return !isNaN(date.getTime());
-    })
-    .default(new Date().toISOString()),
+  lastMessageAt: z.date().optional(),
 });
 export const userSchemaOptional = userSchema.partial();
 
