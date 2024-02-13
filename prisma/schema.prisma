@@ -114,7 +114,6 @@ enum ResourceType {
   gold
 }
 
-
 enum Origin {
   none
   catarsia_survivor

@@ -1,8 +1,9 @@
 import { dirname, importx } from "@discordx/importer";
 import type { Channel as DiscordChannel, Interaction, Message, TextChannel } from "discord.js";
-import { Client as DiscordClient, IntentsBitField, Partials } from "discord.js";
+import { DiscordAPIError, Client as DiscordClient, IntentsBitField, Partials, codeBlock } from "discord.js";
 import { Client } from "discordx";
 import "dotenv/config";
+import lodash from "lodash";
 import cron from "node-cron";
 import AchievementEmitter, {
   AchievementEvents,
@@ -104,7 +105,23 @@ async function run() {
   await bot.login(process.env.BOT_TOKEN);
 }
 
-bot.on("error", console.error);
-process.on("unhandledRejection", console.error);
-process.on("uncaughtException", console.error);
+function logError(error: Error) {
+  const errorChannel = <TextChannel>bot.systemChannels.get(CHANNEL_IDS.errorLog);
+  let message;
+  if (error instanceof DiscordAPIError && error.code === 10008) {
+    message = `🧹 Tentei deletar uma mensagem que não existe mais: [${error.name}](${error.url})\n\n${error.stack}`;
+  } else if (error instanceof DiscordAPIError && error.code === 10062) {
+    message = `⏲️ Um usuário demorou demais para responder o bot. A interação não foi reconhecida: [${error.name}](${error.url})\n\n${error.stack}`;
+  } else {
+    message = `🔥 Erro: ${error.message}\n\n${error.stack}`;
+  }
+  console.error(error);
+  void errorChannel?.send({
+    embeds: [{ title: "Erro", description: codeBlock("js", lodash.truncate(message, { length: 4000, omission: " [...]" })), color: 0xff0000 }],
+  });
+}
+
+bot.on("error", logError);
+process.on("unhandledRejection", logError);
+process.on("uncaughtException", logError);
 void run();

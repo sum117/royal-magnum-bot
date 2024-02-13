@@ -5,6 +5,7 @@ import { ChannelType, Profession } from "../schemas/enums";
 import { ResourceType } from "../schemas/resourceSchema";
 
 export const CHANNEL_IDS = {
+  errorLog: "1206834522864222218",
   sheetWaitingRoom: "1189003168273674281",
   approvedSheetRoom: "1189023345669316608",
   characterStore: "1189378489862848633",
