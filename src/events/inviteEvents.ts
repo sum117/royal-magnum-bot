@@ -46,10 +46,14 @@ export default class InviteEvents {
       if (!cachedInvite || typeof cachedInvite.uses !== "number" || !guildInvite.uses) return false;
       return cachedInvite.uses < guildInvite.uses;
     });
-    if (!invite) return;
 
     const logChannel = member.guild.channels.cache.get(CHANNEL_IDS.logChannel);
     if (!logChannel || !logChannel.isTextBased()) return;
+
+    if (!invite) {
+      await logChannel.send(`${member.user.toString()} entrou no servidor, mas não foi possível encontrar o convite usado (PROVAVELMENTE FOI O VANITY).`);
+      return;
+    }
 
     this.guildInvites.set(invite.code, { uses: invite.uses ?? 0, maxUses: invite.maxUses ?? null });
 

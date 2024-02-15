@@ -123,25 +123,32 @@ export default class Sheet {
     await interaction.deferReply({ ephemeral: true, fetchReply: true });
 
     const user = await Database.getUser(interaction.user.id);
-    if (!user) return;
+    if (!user) {
+      console.log("Usuário não encontrado para a criação da ficha (Isso não deve acontecer)");
+      return;
+    }
 
-    if (user?.royalTokens < 1) {
-      return await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
+    if (user.royalTokens < 1) {
+      await interaction.editReply({ content: "Você não possui fichas reais suficientes para criar uma ficha real." });
+      return;
     }
 
     const selectedFamilySlug = await this.selectFamily(interaction);
     if (!selectedFamilySlug) {
-      return await interaction.editReply({ content: "Você não selecionou uma família a tempo." });
+      await interaction.editReply({ content: "Você não selecionou uma família a tempo." });
+      return;
     }
 
     const family = await Database.getFamily(selectedFamilySlug);
     if (!family) {
-      return await interaction.editReply({ content: "A família selecionada não existe." });
+      await interaction.editReply({ content: "A família selecionada não existe." });
+      return;
     }
 
     const gender = await this.selectGender(interaction);
     if (!gender) {
-      return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      return;
     }
 
     const origin = family.origin as Origin;
@@ -171,17 +178,20 @@ export default class Sheet {
 
     const profession = await this.selectProfession(interaction);
     if (!profession) {
-      return await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
+      await interaction.editReply({ content: "Você não selecionou uma profissão a tempo." });
+      return;
     }
 
     const gender = await this.selectGender(interaction);
     if (!gender) {
-      return await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      await interaction.editReply({ content: "Você não selecionou um gênero a tempo." });
+      return;
     }
 
     const origin = await this.selectOrigin(interaction);
     if (!origin) {
-      return await interaction.editReply({ content: "Você não selecionou uma origem a tempo." });
+      await interaction.editReply({ content: "Você não selecionou uma origem a tempo." });
+      return;
     }
 
     const button = new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -527,7 +537,7 @@ export default class Sheet {
     if (!interaction.inCachedGuild()) return;
     await interaction.deferReply({ ephemeral: true });
     const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-    if (!isAdmin) {
+    if (!isAdmin || !interaction.member.roles.cache.has(ROLE_IDS.moderator)) {
       await interaction.editReply({ content: "Você não tem permissão para executar essa ação." });
       return;
     }

@@ -1,6 +1,7 @@
 import { Character, NPC, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Message } from "discord.js";
+import { DateTime } from "luxon";
 import { Achievement } from "./achievements";
 import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 const prisma = new PrismaClient();
@@ -29,11 +30,11 @@ export default class Database {
 
   public static async getUser(userId: string) {
     try {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
       return user;
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError && error.code === "P2025") {
-        const createdUser = await prisma.user.create({ data: { id: userId, achievements: [] } }).catch(() => null);
+        const createdUser = await prisma.user.create({ data: { id: userId, achievements: [], lastMessageAt: DateTime.now().toJSDate() } }).catch(() => null);
         return createdUser;
       }
     }

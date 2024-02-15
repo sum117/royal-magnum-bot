@@ -19,7 +19,7 @@ export default class onImageGenerationRequest {
   private TIME_PER_PERSON = 2 * 60 * 1000;
   @On({ event: "messageCreate" })
   async main([message]: ArgsOf<"messageCreate">) {
-    if (message.channel.id !== CHANNEL_IDS.imageGenerationChannel || message.author.bot || !message.content.startsWith("generate")) return;
+    if (message.channel.id !== CHANNEL_IDS.imageGenerationChannel || message.author.bot || !message.content.toLowerCase().startsWith("generate")) return;
     const member = await message.member?.fetch(true);
     if (!member) return;
     const isNitro = member.premiumSinceTimestamp !== null;
