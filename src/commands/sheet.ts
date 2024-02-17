@@ -537,7 +537,7 @@ export default class Sheet {
     if (!interaction.inCachedGuild()) return;
     await interaction.deferReply({ ephemeral: true });
     const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-    if (!isAdmin || !interaction.member.roles.cache.has(ROLE_IDS.moderator)) {
+    if (!isAdmin && !interaction.member.roles.cache.has(ROLE_IDS.moderator)) {
       await interaction.editReply({ content: "Você não tem permissão para executar essa ação." });
       return;
     }
