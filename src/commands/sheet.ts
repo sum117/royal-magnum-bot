@@ -536,8 +536,8 @@ export default class Sheet {
   private async handleEvaluationButtons<UpdateT>({ interaction, databaseUpdateFn, databaseDeleteFn, action, userId }: HandleEvaluationButtonsParams<UpdateT>) {
     if (!interaction.inCachedGuild()) return;
     await interaction.deferReply({ ephemeral: true });
-    const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
-    if (!isAdmin && !interaction.member.roles.cache.has(ROLE_IDS.moderator)) {
+    const isAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || interaction.member.roles.cache.has(ROLE_IDS.moderator);
+    if (!isAdmin) {
       await interaction.editReply({ content: "Você não tem permissão para executar essa ação." });
       return;
     }

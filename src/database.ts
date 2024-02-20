@@ -51,7 +51,10 @@ export default class Database {
     return true;
   }
 
-  public static async insertUser(userId: string, data: Prisma.UserUncheckedCreateInput = { id: userId, achievements: [] }) {
+  public static async insertUser(
+    userId: string,
+    data: Prisma.UserUncheckedCreateInput = { id: userId, achievements: [], lastMessageAt: DateTime.now().toJSDate() },
+  ) {
     const user = await prisma.user.create({ data });
     return user;
   }

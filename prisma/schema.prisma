@@ -33,7 +33,7 @@ model User {
   royalTokens Int @default(0)
   
 
-  lastMessageAt DateTime?
+  lastMessageAt DateTime @default(now())
 
   currentNpcId String?  
   npcs NPC[]
