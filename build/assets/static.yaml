@@ -1,0 +1,159 @@
+families:
+  - title: Aeternos
+    slug: aeternos
+    origin: yor_devotee
+    description: "Filhos do Arcanjo Maior Yos, moldados a partir das núvens com sangue celestial, de cor azul."
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/yor_f2KAx0m30.png
+    entity: yos
+
+  - title: Vespas Negras
+    origin: shadowbound
+    slug: vespas_negras
+    description: "Trazidos ao plano pelo Demônio Superior Azhta. Andarilhos infernais com um senso de justiça impiedoso, mas legítimo."
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/azhta_ZWcx2i2Jn.png
+    entity: azhta
+
+  - title: Soberanos
+    origin: coastsman
+    slug: soberanos
+    description: "Gerações das profundezas abissais da Deusa Ada, hominídeos de carne salobra que tornam o que tocam em líquido."
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/ada_nb786vT3w.png
+    entity: ada
+
+  - title: Consumadores
+    slug: consumadores
+    origin: ethereal
+    description: "Seguidores de Mirthir. Criaturas sem gênero com a força de vontade exalando para além da pele."
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/mirthir_JlKacbbQ4.png
+    entity: mirthir
+
+  - title: Lorentais
+    slug: lorentais
+    origin: terryan
+    description: 'Crias da Entidade "Lorenta", provenientes do barro. Da terra úmida vieram, e para a terra úmida voltarão.'
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/lorenta_iMWc3Cpys.png
+    entity: lorenta
+
+  - title: Abelhas Reais
+    slug: abelhas_reais
+    origin: swarm_warden
+    description: "Vindos da Alta Colmeia Celeste, abençoados pela entidade Hibma. Suas armaduras tem tanta vida quanto os insetos na terra, e seus corpos são feitos de queratina pura."
+    imageUrl: https://ik.imagekit.io/ez2m5kovtw/static_assets/hibma_FKB7pyDmw.png
+    entity: hibma
+entities:
+  - title: Hibma
+    slug: hibma
+    transformation:
+      - "Vá minha pequena operária, polinize a derrota de seu oponente em nome de Hibma!"
+      - "Hibma assiste e concede a tu, pequeno inseto, o poder para vencer esta luta."
+      - "Em prol de Hibma, em prol da colmeia, lute!"
+      - "O momento de esmagar eles COMO insetos chegou, não se segure e traga vitória para a colônia!"
+      - "Tu faz parte de uma colônia e neste momento Hibma olha unicamente por você, vá."
+      - "Nectar para os insetos vencedores, morte para os perdedores, Hibma garante e você também garantirá."
+  - title: Yos
+    slug: yos
+  - title: Ada
+    slug: ada
+  - title: Azhta
+    slug: azhta
+  - title: Lorenta
+    slug: lorenta
+    transformation:
+      - "Escutei teu chamado, filho(a) do barro. Erga-se e mostre para os tolos o preço da ignorância e a força da terra!"
+      - "Eu estou aqui, meu herdeiro. É hora de mostrar para teus opositores o custo de subestimar os chãos."
+      - "O gigante que corre em teu sangue se levantou para lutar nas fronteiras, e ele se levantará agora para exterminar teus opositores. Essa é uma ordem!"
+      - "Argila. Pedras estilhaçadas, ERGAM-SE EM NOME DE MÃE LORENTA, POIS É ELA QUEM VS ORDENA!"
+      - "O barro é o catalisador da vida; encontrá-lo é uma das consequências da morte. Chegou o momento de reforçar este ditado. LEVANTE-SE!"
+      - "Mostre para eles o que significa ser um herdeiro de MÃE LORENTA! FAÇA DOS DESTROÇOS A TUA NOVA CASA, ESSA É MINHA ORDEM!"
+      - "Faça a terra ser regada com o sangue de seus opositores, filho meu. Eu te dou a permissão de se erguer."
+      - "Enriqueça o barro com um banho de sangue! Mostre ao mundo o poder que corre em tuas veias, a benção de MÃE LORENTA!"
+  - title: Mirthir
+    slug: mirthir
+    transformation:
+      - "Que a grandiosa batalha de titãs comece! Que o destino seja escrito com o sangue de teus adversários! Eu, Mirthir, te empresto meu poder."
+origins:
+  - channelId: ""
+    id: none
+    name: Intruso
+    description: Você não pertence a esse mundo, e não tem nenhuma ligação com os deuses. Você é um intruso, e sua vida é um mistério.
+
+  - channelId: "1193877508119089223"
+    id: catarsia_survivor
+    name: Sobrevivente de Catársia
+    description: Você estava lá quando forças maiores se chocaram, sua vida para sempre marcada pela indiferença dos mais fortes.
+
+  - channelId: "1193158115034681355"
+    id: coastsman
+    name: Costeiro
+    description: Nascido de uma estranha cidade no meio do oceano, você tem ligação direta com os mares e sua rainha.
+
+  - channelId: "1192175144425226352"
+    id: corsair
+    name: Corsário
+    description: Você cresceu longe da influência dos Deuses, cercado por fartura e festivais. Mas provavelmente não conhece seus pais.
+
+  - channelId: "1192164319031468052"
+    id: vagabond
+    name: Vagabundo
+    organization: vagabonds
+    description: Ganância, idiotice ou azar; seja qual o motivo para acabar aqui, sua vida nunca mais foi a mesma. Você viveu o suficiente entre esses mercenários para saber que não existe hierarquia, apenas força.
+
+  - channelId: "1192142248180187136"
+    id: orphan
+    name: Escória do Mar
+    organization: vagabonds
+    description: Você cresceu pelas ruas ou orfanatos de uma cidade portuária qualquer. Sua única herança é uma bússola que não aponta para o norte e uma sede por aventura.
+
+  - channelId: "1192460586202697788"
+    id: deepwoken
+    name: Profundamente Acordado
+    description: Bandido, assassino de aluguel, viciado em apostas; tudo que você conhece desde que chegou aqui, e você certamente já tentou todas essas áreas de trabalho.
+
+  - channelId: "1193927772876324895"
+    id: peasant_saint
+    name: Camponês Santo
+    description: Cercado pela bondade de Lorenta, sua vida foi calma e humilde. Nem toda aventura começa com tragédia.
+
+  - channelId: "1192903681062998187"
+    id: shadowbound
+    name: Destinado à Sombra
+    description: Marcado Pelo Inferno; você é uma escória. Sobrevive à maldição de demônios, e tem potêncial para tornar-se um dos poucos admiráveis guerreiros que possuem a força de vontade indomável dos infernos.
+
+  - channelId: "1193912177279635587"
+    id: yor_devotee
+    name: Devoto de Yor
+    description: Você é um devoto de Yor, servindo o povo e a vontade dos deuses sobre o cuidado de Bispo Aschevisk. Seus dias são gastos interagindo com os fiéis e cuidando das escrituras de cada um dos deuses.
+
+  - channelId: "1194463202956824627"
+    id: terryan
+    name: Terryano
+    organization: resistance
+    description: Entre as ruínas em si ou nas diversas cidadezinhas ao seu redor, você cresceu inspirado pelas histórias dessas muralhas. A bondade de Lorenta é tida como virtude, enquanto a ganância dos nobres é repudiada.
+
+  - channelId: "1194466321207935026"
+    id: swarm_warden
+    name: Condutor do Enxame
+    description: Um forte senso de comunidade é compartilhado entre os habitantes das colmeias, mesmo entre espécies e classes. Cada vida é preciosa e tem seu lugar, e a ordem é mantida pelos Dulciabri.
+
+  - channelId: "1194954512276930581"
+    id: center_guardian
+    name: Guardião do Centro
+    organization: resistance
+    description: Um lugar de espíritos livres e também de dever e obrigação. A maior parte da população desse local faz parte dos soldados mantendo os monstros sob controle, ou está aqui trabalhando para os mesmos; histórias de batalhas e criaturas poderosas estão por todo canto, e não há nada mais cobiçado do que a fama e o reconhecimento.
+
+  - channelId: "1195894592453738627"
+    id: ethereal
+    name: Etério
+    description: Nas costas de um titã artificial, a capital movediça representa um mundo totalmente diferente daquele ao seu redor. Uma metrópole desproporcionalmente avançada, onde as mentes mais brilhantes do mundo se reúnem para criar itens maravilhosos.
+
+  - channelId: "1195899278556663958"
+    id: pagan
+    name: Pagão
+    description: Escondido do resto do mundo, você faz parte do grupo que demonstra maior perigo para a ordem atual. Aqui os Pagãos desenvolvem suas armas químicas e preparam seus próximos movimentos, longe da influência de seus inimigos.
+    organization: pagans
+
+  - channelId: "1194988447589466153"
+    id: hunter
+    name: Caçador de Dádiva
+    organization: hunters
+    description: Você é um caçador de dádivas, um dos poucos que se aventuram nas profundezas do mundo para encontrar os itens mais raros e valiosos. Seu trabalho é perigoso, mas a recompensa é tentadora. Os nobres odeiam você.

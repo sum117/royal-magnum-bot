@@ -1,0 +1,50 @@
+@declare nythra (
+    frown = nythra_frown.png
+    happy = nythra_happy.png
+    idle = nythra_idle.png
+    inhaling = nythra_inhaling.png
+    surprised = nythra_surprised.png
+    sad_blush = nythra_sad_blush.png
+    happy_blush = nythra_happy_blush.png
+)
+
+@chapter Begin (
+    @background bg_dark_shop.png
+    @character nythra->idle->center
+
+    nythra "Bem-vindo à forja da Nythra."
+
+    @character nythra->happy->left
+
+    nythra "Sou a Nythra, proprietária deste lugar. Como pode notar, não me destaco muito nos títulos, mas quando se trata de forjar espadas, sou imbatível."
+    nythra "Faço as melhores lâminas de Terryan, sem concorrência."
+
+    @character nythra->happy->center
+
+    nythra "Então, alguma lâmina chamou sua atenção na loja, ou você está apenas de passagem?"
+
+    @choice PeopleQuestion "Espadas não são apenas para desbravar o interior. Elas têm outros usos, sabia?"
+    @choice NotReally "Na verdade, não estou procurando nada em especial..."
+)
+
+@chapter PeopleQuestion -> Ending (
+
+    nythra "Interessante. Pode me contar mais sobre esses outros usos, ou é apenas curiosidade?"
+
+    @character nythra->inhaling->center
+
+    nythra "Às vezes, clientes estranhos aparecem aqui procurando algo 'grande o suficiente para derrubar um gigante'."
+    nythra "Não oferecemos esse tipo de produto aqui. Não seria bom para os negócios, nem para a minha reputação."
+    nythra "Você entende o que estou dizendo, não é?"
+)
+
+@chapter NotReally -> Ending (
+    @character nythra->sad_blush->left
+
+    nythra "Ah, sem problemas. Não é todo dia que alguém entra aqui sem um propósito definido."
+    nythra "Mas, se mudar de ideia e decidir que precisa de algo extraordinário, estarei aqui."
+)
+
+@chapter Ending (
+    nythra "Ok, tchau!"
+)
