@@ -159,39 +159,42 @@ export default class CharacterEvents {
         });
 
         collector.on("end", async (collectedMessages) => {
-          const newContentMessage = collectedMessages.first();
-          if (!newContentMessage) return;
-          const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id).catch(() => null);
-          if (!originalMessage || !originalMessage.embeds.length) {
-            if (this.isEditingMap.get(user.id)) this.isEditingMap.delete(user.id);
-            return;
-          }
-          const databaseUser = await Database.getUser(user.id);
-          if (!databaseUser) return;
-          if (databaseUser.doesNotUseEmbeds) {
-            await originalMessage.edit(newContentMessage.content);
-            this.isEditingMap.delete(user.id);
-            await Utils.scheduleMessageToDelete(newContentMessage, 0);
-            return;
-          }
-          const embed = EmbedBuilder.from(originalMessage.embeds[0]);
-          embed.setDescription(newContentMessage.content);
+          try {
+            const newContentMessage = collectedMessages.first();
+            if (!newContentMessage) return;
+            const originalMessage = await reaction.message.channel.messages.fetch(dbMessage.id).catch(() => null);
+            if (!originalMessage || !originalMessage.embeds.length) {
+              return;
+            }
+            const databaseUser = await Database.getUser(user.id);
+            if (!databaseUser) return;
+            if (databaseUser.doesNotUseEmbeds) {
+              await originalMessage.edit(newContentMessage.content);
+              await Utils.scheduleMessageToDelete(newContentMessage, 0);
+              return;
+            }
+            const embed = EmbedBuilder.from(originalMessage.embeds[0]);
+            embed.setDescription(newContentMessage.content);
 
-          const originalAttachment = originalMessage.embeds[0].image?.url;
-          const attachment = newContentMessage.attachments.first();
-          if (attachment) {
-            const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
-            await originalMessage.edit({ embeds: [embed], files: [{ attachment: imageKitLink, name }] });
-          } else if (originalAttachment && !attachment) {
-            const attachmentName = originalAttachment.split("/").pop()?.split("?").shift();
-            if (!attachmentName) return;
-            embed.setImage(`attachment://${attachmentName}`);
-            await originalMessage.edit({ embeds: [embed], files: [new AttachmentBuilder(originalAttachment).setName(attachmentName)] });
-          } else {
-            await originalMessage.edit({ embeds: [embed] });
+            const originalAttachment = originalMessage.embeds[0].image?.url;
+            const attachment = newContentMessage.attachments.first();
+            if (attachment) {
+              const { imageKitLink, name } = await Utils.handleAttachment(attachment, embed);
+              await originalMessage.edit({ embeds: [embed], files: [{ attachment: imageKitLink, name }] });
+            } else if (originalAttachment && !attachment) {
+              const attachmentName = originalAttachment.split("/").pop()?.split("?").shift();
+              if (!attachmentName) return;
+              embed.setImage(`attachment://${attachmentName}`);
+              await originalMessage.edit({ embeds: [embed], files: [new AttachmentBuilder(originalAttachment).setName(attachmentName)] });
+            } else {
+              await originalMessage.edit({ embeds: [embed] });
+            }
+            await Utils.scheduleMessageToDelete(newContentMessage, 0);
+          } catch (error) {
+            console.error("Erro ao editar mensagem", error);
+          } finally {
+            this.isEditingMap.delete(user.id);
           }
-          this.isEditingMap.delete(newContentMessage.author.id);
-          await Utils.scheduleMessageToDelete(newContentMessage, 0);
         });
         break;
       case "🗑️":
