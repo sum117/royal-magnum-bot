@@ -5,6 +5,7 @@ import {
   ChannelType,
   ChatInputCommandInteraction,
   Collection,
+  Colors,
   CommandInteraction,
   EmbedBuilder,
   GuildMember,
@@ -13,6 +14,7 @@ import {
   PermissionFlagsBits,
   roleMention,
   ThreadAutoArchiveDuration,
+  userMention,
 } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
 import lodash from "lodash";
@@ -20,7 +22,8 @@ import { Duration } from "luxon";
 import readingTime from "reading-time";
 import AskRoleplayForm from "../components/AskRoleplayForm";
 import { COMMAND_OPTIONS, COMMANDS } from "../data/commands";
-import { CATEGORY_IDS, CHANNEL_IDS, ROLE_IDS } from "../data/constants";
+import { CATEGORY_IDS, CHANNEL_IDS, ROLE_IDS, SERVER_BANNER_URL } from "../data/constants";
+import Database from "../database";
 import { bot } from "../main";
 import { imageGifUrl } from "../schemas/utils";
 
@@ -186,6 +189,33 @@ export default class Utils {
     }
 
     await thread?.send(notice);
+  }
+
+  @Slash(COMMANDS.top)
+  public async top(interaction: CommandInteraction) {
+    await interaction.deferReply();
+    const users = await Database.getUsersWithMessageCount();
+
+    const usersString = users.map((user, index) => {
+      const letterAveragePerPost = 1250;
+      const wordsPerMinute = 200;
+      const letterAveragePerWord = 5;
+      const readingMinutes = (Number(user.messageCount) * (letterAveragePerPost / letterAveragePerWord)) / wordsPerMinute;
+      const readingTimeString = Duration.fromObject({ minutes: Math.floor(readingMinutes) })
+        .toFormat("h 'horas e' m 'minutos'")
+        .replace("0 horas e ", "");
+      const position = index + 1;
+      return `${bold(position.toString())}. ${userMention(user.id)} | ${Number(user.messageCount)} posts, aproximadamente ${readingTimeString} de leitura.`;
+    });
+
+    const embed = new EmbedBuilder()
+      .setTitle(`👑 Top 10 do Royal Magnum.`)
+      .setDescription(usersString.join("\n\n"))
+      .setColor(Colors.Gold)
+      .setThumbnail(SERVER_BANNER_URL)
+      .setFooter({ text: "💗 Obrigado por fazer parte do nosso servidor!" });
+
+    await interaction.editReply({ embeds: [embed] });
   }
   // TODO: Doesn't work. Will remake.
   // @SimpleCommand({ name: "clear" })

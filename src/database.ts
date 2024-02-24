@@ -1,12 +1,32 @@
 import { Character, NPC, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { Message } from "discord.js";
+import { Message, User } from "discord.js";
 import { DateTime } from "luxon";
 import { Achievement } from "./achievements";
 import { DISCORD_AUTOCOMPLETE_LIMIT } from "./data/constants";
 const prisma = new PrismaClient();
 
+type MessageCountMessage = { channelId: string; messageId: string };
+export type UserWithMessageCount = User & { achievementCount: number; latestMessages: MessageCountMessage[]; messageCount: number };
 export default class Database {
+  public static async getUsersWithMessageCount() {
+    const users = await prisma.$queryRaw`
+      SELECT User.*,
+      JSON_LENGTH(User.achievements) as achievementCount,
+      JSON_ARRAYAGG(JSON_OBJECT("channelId", Message.channelId, "messageId", Message.id)) as latestMessages,
+      COUNT(Message.id) as messageCount
+      FROM User
+      LEFT JOIN Message ON User.id = Message.authorId
+      GROUP BY User.id
+      ORDER BY messageCount DESC
+      LIMIT 10
+    `;
+    for (const user of users as any) {
+      user.latestMessages = <MessageCountMessage[]>(<string[]>JSON.parse(user.latestMessages)).map((message) => JSON.parse(message));
+      user.achievements = JSON.parse(user.achievements);
+    }
+    return users as UserWithMessageCount[];
+  }
   public static async getAllUserStoreSheets(userId: string) {
     const userWithStoreCharacters = await prisma.user.findUnique({ where: { id: userId }, include: { characters: { where: { type: "store" } } } });
     const npcs = await prisma.nPC.findMany({ where: { users: { some: { id: userId } } } });
@@ -298,62 +318,62 @@ export default class Database {
 //     //     });
 //     //   });
 //     // });
-//     // Object.entries(users).forEach(async ([userId, user]) => {
-//     //   await Database.insertUser(userId, {
-//     //     id: userId,
-//     //     achievements: "achievements" in user && Array.isArray(user.achievements) ? (user.achievements as never[]) : [],
-//     //     doesNotUseEmbeds: "doesNotUseEmbeds" in user && typeof user.doesNotUseEmbeds === "boolean" ? user.doesNotUseEmbeds : false,
-//     //     familyTokens: "familyTokens" in user && typeof user.familyTokens === "number" ? user.familyTokens : 0,
-//     //     lastMessageAt: "lastMessageAt" in user && typeof user.lastMessageAt === "string" ? new Date(user.lastMessageAt) : new Date(),
-//     //     money: "money" in user && typeof user.money === "number" ? user.money : 0,
-//     //     royalTokens: "royalTokens" in user && typeof user.royalTokens === "number" ? user.royalTokens : 0,
-//     //   });
-//     // });
-//     // Object.values(channels).forEach(async (channel) => {
-//     //   await Database.insertChannel({
-//     //     id: channel.id,
-//     //     name: channel.name,
-//     //     description: channel.description,
-//     //     efficiency: channel.efficiency,
-//     //     imageUrl: channel.image,
-//     //     channelType: channel.type as ChannelType,
-//     //     lastActive: new Date(),
-//     //     level: channel.level,
-//     //     placeholderMessageId: channel.placeholderMessageId,
-//     //     resourceType: channel.resourceType as ResourceType,
-//     //   });
-//     // });
-//     // Object.values(families).forEach(async (family) => {
-//     //   await Database.setFamily(family.slug, {
-//     //     title: family.title,
-//     //     description: family.description,
-//     //     imageUrl: family.image,
-//     //     slug: family.slug,
-//     //     entity: family.entity,
-//     //     isApproved: family.isApproved,
-//     //     food: family.food,
-//     //     gold: family.gold,
-//     //     iron: family.iron,
-//     //     origin: family.origin.replace("-", "_") as Origin,
-//     //     population: family.population,
-//     //     populationCap: family.populationCap,
-//     //     populationGrowth: family.populationGrowth,
-//     //     stone: family.stone,
-//     //     wood: family.wood,
-//     //   });
-//     // });
-//     // Object.values(npcs).forEach(async (npc) => {
-//     //   await Database.insertNPC({
-//     //     description: npc.description,
-//     //     imageUrl: npc.image,
-//     //     name: npc.name,
-//     //     title: npc.title,
-//     //     price: npc.price,
-//     //     users: {
-//     //       connect: npc.usersWithAccess.map((userId: string) => ({ id: userId })).filter(Boolean),
-//     //     },
-//     //   });
-//     // });
+// Object.entries(users).forEach(async ([userId, user]) => {
+//   await Database.insertUser(userId, {
+//     id: userId,
+//     achievements: "achievements" in user && Array.isArray(user.achievements) ? (user.achievements as never[]) : [],
+//     doesNotUseEmbeds: "doesNotUseEmbeds" in user && typeof user.doesNotUseEmbeds === "boolean" ? user.doesNotUseEmbeds : false,
+//     familyTokens: "familyTokens" in user && typeof user.familyTokens === "number" ? user.familyTokens : 0,
+//     lastMessageAt: "lastMessageAt" in user && typeof user.lastMessageAt === "string" ? new Date(user.lastMessageAt) : new Date(),
+//     money: "money" in user && typeof user.money === "number" ? user.money : 0,
+//     royalTokens: "royalTokens" in user && typeof user.royalTokens === "number" ? user.royalTokens : 0,
+//   });
+// });
+// Object.values(channels).forEach(async (channel) => {
+//   await Database.insertChannel({
+//     id: channel.id,
+//     name: channel.name,
+//     description: channel.description,
+//     efficiency: channel.efficiency,
+//     imageUrl: channel.image,
+//     channelType: channel.type as ChannelType,
+//     lastActive: new Date(),
+//     level: channel.level,
+//     placeholderMessageId: channel.placeholderMessageId,
+//     resourceType: channel.resourceType as ResourceType,
+//   });
+// });
+// Object.values(families).forEach(async (family) => {
+//   await Database.setFamily(family.slug, {
+//     title: family.title,
+//     description: family.description,
+//     imageUrl: family.image,
+//     slug: family.slug,
+//     entity: family.entity,
+//     isApproved: family.isApproved,
+//     food: family.food,
+//     gold: family.gold,
+//     iron: family.iron,
+//     origin: family.origin.replace("-", "_") as Origin,
+//     population: family.population,
+//     populationCap: family.populationCap,
+//     populationGrowth: family.populationGrowth,
+//     stone: family.stone,
+//     wood: family.wood,
+//   });
+// });
+// Object.values(npcs).forEach(async (npc) => {
+//   await Database.insertNPC({
+//     description: npc.description,
+//     imageUrl: npc.image,
+//     name: npc.name,
+//     title: npc.title,
+//     price: npc.price,
+//     users: {
+//       connect: npc.usersWithAccess.map((userId: string) => ({ id: userId })).filter(Boolean),
+//     },
+//   });
+// });
 //   } catch (error) {
 //     console.error(error);
 //   }

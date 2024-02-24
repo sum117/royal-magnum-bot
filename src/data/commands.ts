@@ -13,6 +13,10 @@ type CommandData = Record<string, ApplicationCommandOptions<Lowercase<string>, s
 type CommandOptionData = Record<string, SlashOptionOptions<Lowercase<string>, string>>;
 
 export const COMMANDS = {
+  top: {
+    name: "top",
+    description: "Mostra o ranking do servidor",
+  },
   changeCharacterAvatar: {
     name: "change-character-avatar",
     description: "Muda o avatar de um personagem",
